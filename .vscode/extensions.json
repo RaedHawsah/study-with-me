@@ -1,0 +1,13 @@
+{
+  // Recommended extensions for this project
+  "recommendations": [
+    // Tailwind CSS IntelliSense — provides @theme, @utility autocomplete + no false warnings
+    "bradlc.vscode-tailwindcss",
+    // ESLint
+    "dbaeumer.vscode-eslint",
+    // Prettier
+    "esbenp.prettier-vscode",
+    // i18n Ally — shows translation keys inline
+    "lokalise.i18n-ally"
+  ]
+}

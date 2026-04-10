@@ -1,0 +1,400 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Study With Me — Global Design System
+   Tailwind v4 CSS-first configuration.
+   All tokens are CSS custom properties consumed by Tailwind's @theme block.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Google Fonts — must come first ───────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap");
+
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS — CSS Custom Properties
+   These are the single source of truth. Tailwind's @theme block maps them
+   to utility classes. Change a value here and the whole UI updates.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Color Palette — Light Theme */
+  --background:          #f8f8fc;
+  --foreground:          #0f0f1a;
+  --card:                #ffffff;
+  --card-foreground:     #0f0f1a;
+  --popover:             #ffffff;
+  --popover-foreground:  #0f0f1a;
+
+  --primary:             #5b5ef6;   /* indigo */
+  --primary-foreground:  #ffffff;
+  --primary-hover:       #4a4de0;
+
+  --secondary:           #ededff;
+  --secondary-foreground:#4a4de0;
+
+  --accent:              #f59e0b;   /* amber — focus / streak highlights */
+  --accent-foreground:   #0f0f1a;
+  --accent-hover:        #d97706;
+
+  --success:             #22c55e;
+  --success-foreground:  #ffffff;
+
+  --destructive:         #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --muted:               #f1f1f8;
+  --muted-foreground:    #6b7280;
+
+  --border:              #e4e4f0;
+  --input:               #e4e4f0;
+  --ring:                #5b5ef6;
+
+  /* Sidebar tokens */
+  --sidebar:             #ffffff;
+  --sidebar-foreground:  #0f0f1a;
+  --sidebar-border:      #e4e4f0;
+  --sidebar-accent:      #ededff;
+  --sidebar-accent-fg:   #5b5ef6;
+  --sidebar-width:       240px;
+  --sidebar-width-icon:  64px;
+
+  /* Typography */
+  --font-sans:    "Inter", system-ui, sans-serif;
+  --font-arabic:  "Noto Sans Arabic", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* Radius */
+  --radius-xs:    4px;
+  --radius-sm:    8px;
+  --radius-md:    12px;
+  --radius-lg:    16px;
+  --radius-xl:    24px;
+  --radius-full:  9999px;
+
+  /* Shadow */
+  --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm:    0 1px 4px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-md:    0 4px 12px 0 rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg:    0 10px 24px 0 rgb(0 0 0 / 0.10), 0 4px 8px -4px rgb(0 0 0 / 0.06);
+  --shadow-xl:    0 20px 40px 0 rgb(0 0 0 / 0.12);
+
+  /* Motion */
+  --duration-fast:   120ms;
+  --duration-normal: 200ms;
+  --duration-slow:   320ms;
+  --ease-out:        cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:     cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* Z-index scale */
+  --z-sidebar:   40;
+  --z-header:    50;
+  --z-modal:     100;
+  --z-toast:     200;
+}
+
+/* ── Dark Theme ─────────────────────────────────────────────────────────────── */
+/* System preference: applies when no explicit data-theme is set.                */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background:          #0a0a12;
+    --foreground:          #e8e8f4;
+    --card:                #13131f;
+    --card-foreground:     #e8e8f4;
+    --popover:             #1a1a2e;
+    --popover-foreground:  #e8e8f4;
+
+    --primary:             #7577f8;
+    --primary-foreground:  #ffffff;
+    --primary-hover:       #9091fa;
+
+    --secondary:           #1c1c36;
+    --secondary-foreground:#a5b4fc;
+
+    --accent:              #f59e0b;
+    --accent-foreground:   #0f0f1a;
+    --accent-hover:        #fbbf24;
+
+    --success:             #4ade80;
+    --success-foreground:  #0f0f1a;
+
+    --destructive:         #f87171;
+    --destructive-foreground: #0f0f1a;
+
+    --muted:               #1a1a2e;
+    --muted-foreground:    #9ca3af;
+
+    --border:              #1e1e38;
+    --input:               #1e1e38;
+    --ring:                #7577f8;
+
+    --sidebar:             #0d0d1f;
+    --sidebar-foreground:  #e8e8f4;
+    --sidebar-border:      #1e1e38;
+    --sidebar-accent:      #1c1c36;
+    --sidebar-accent-fg:   #a5b4fc;
+
+    --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.20);
+    --shadow-sm:    0 1px 4px 0 rgb(0 0 0 / 0.28), 0 1px 2px -1px rgb(0 0 0 / 0.20);
+    --shadow-md:    0 4px 12px 0 rgb(0 0 0 / 0.36), 0 2px 4px -2px rgb(0 0 0 / 0.28);
+    --shadow-lg:    0 10px 24px 0 rgb(0 0 0 / 0.40), 0 4px 8px -4px rgb(0 0 0 / 0.30);
+    --shadow-xl:    0 20px 40px 0 rgb(0 0 0 / 0.50);
+  }
+}
+
+/* Explicit dark override (user chose dark, ignores system) */
+[data-theme="dark"] {
+  --background:          #0a0a12;
+  --foreground:          #e8e8f4;
+  --card:                #13131f;
+  --card-foreground:     #e8e8f4;
+  --popover:             #1a1a2e;
+  --popover-foreground:  #e8e8f4;
+  --primary:             #7577f8;
+  --primary-foreground:  #ffffff;
+  --primary-hover:       #9091fa;
+  --secondary:           #1c1c36;
+  --secondary-foreground:#a5b4fc;
+  --accent:              #f59e0b;
+  --accent-foreground:   #0f0f1a;
+  --accent-hover:        #fbbf24;
+  --success:             #4ade80;
+  --success-foreground:  #0f0f1a;
+  --destructive:         #f87171;
+  --destructive-foreground: #0f0f1a;
+  --muted:               #1a1a2e;
+  --muted-foreground:    #9ca3af;
+  --border:              #1e1e38;
+  --input:               #1e1e38;
+  --ring:                #7577f8;
+  --sidebar:             #0d0d1f;
+  --sidebar-foreground:  #e8e8f4;
+  --sidebar-border:      #1e1e38;
+  --sidebar-accent:      #1c1c36;
+  --sidebar-accent-fg:   #a5b4fc;
+  --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.20);
+  --shadow-sm:    0 1px 4px 0 rgb(0 0 0 / 0.28), 0 1px 2px -1px rgb(0 0 0 / 0.20);
+  --shadow-md:    0 4px 12px 0 rgb(0 0 0 / 0.36), 0 2px 4px -2px rgb(0 0 0 / 0.28);
+  --shadow-lg:    0 10px 24px 0 rgb(0 0 0 / 0.40), 0 4px 8px -4px rgb(0 0 0 / 0.30);
+  --shadow-xl:    0 20px 40px 0 rgb(0 0 0 / 0.50);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2. TAILWIND THEME — Map CSS variables to Tailwind utilities
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Colors */
+  --color-background:         var(--background);
+  --color-foreground:         var(--foreground);
+  --color-card:               var(--card);
+  --color-card-foreground:    var(--card-foreground);
+  --color-popover:            var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary:            var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover:      var(--primary-hover);
+  --color-secondary:          var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent:             var(--accent);
+  --color-accent-foreground:  var(--accent-foreground);
+  --color-accent-hover:       var(--accent-hover);
+  --color-success:            var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-destructive:        var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted:              var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-border:             var(--border);
+  --color-input:              var(--input);
+  --color-ring:               var(--ring);
+  --color-sidebar:            var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border:     var(--sidebar-border);
+  --color-sidebar-accent:     var(--sidebar-accent);
+  --color-sidebar-accent-fg:  var(--sidebar-accent-fg);
+
+  /* Typography */
+  --font-sans:   var(--font-sans);
+  --font-arabic: var(--font-arabic);
+  --font-mono:   var(--font-mono);
+
+  /* Radius utilities: rounded-xs, rounded-sm, rounded-md … */
+  --radius-xs:   var(--radius-xs);
+  --radius-sm:   var(--radius-sm);
+  --radius-md:   var(--radius-md);
+  --radius-lg:   var(--radius-lg);
+  --radius-xl:   var(--radius-xl);
+  --radius-full: var(--radius-full);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. BASE STYLES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+html {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+/* Apply locale-aware font: Arabic pages use Noto Sans Arabic */
+html[lang="ar"] body {
+  font-family: var(--font-arabic);
+}
+
+html[lang="en"] body {
+  font-family: var(--font-sans);
+}
+
+body {
+  min-height: 100%;
+  /* --app-background: set dynamically by ThemeEngine when a background preset is active */
+  background: var(--app-background, var(--background));
+  color: var(--foreground);
+  transition:
+    background-color var(--duration-normal) var(--ease-out),
+    color var(--duration-normal) var(--ease-out);
+}
+
+/* Remove default list styles for nav elements */
+nav ul,
+nav ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Focus ring — keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* Scrollbar — subtle styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* ── Custom Range Slider ─────────────────────────────────────────────────────── */
+/* Used by SoundCard volume controls. Thumb colour = sound accent (via `color` prop). */
+
+input[type='range'].swm-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  border-radius: var(--radius-full);
+  outline: none;
+  cursor: pointer;
+  /* direction: ltr is forced per-element in SoundCard so the filled-track
+     gradient always fills left → right in both LTR and RTL locales.       */
+}
+
+input[type='range'].swm-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: currentColor;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+input[type='range'].swm-slider:hover::-webkit-slider-thumb,
+input[type='range'].swm-slider:focus::-webkit-slider-thumb {
+  transform: scale(1.3);
+}
+
+input[type='range'].swm-slider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border: none;
+  border-radius: 50%;
+  background: currentColor;
+  cursor: pointer;
+}
+
+input[type='range'].swm-slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   4. COMPONENT UTILITIES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@layer utilities {
+  /* Capacitor / iPhone safe area */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+
+  /* Sidebar layout helpers */
+  .sidebar-inset {
+    margin-inline-start: var(--sidebar-width);
+    transition: margin-inline-start var(--duration-normal) var(--ease-out);
+  }
+  .sidebar-inset-icon {
+    margin-inline-start: var(--sidebar-width-icon);
+    transition: margin-inline-start var(--duration-normal) var(--ease-out);
+  }
+
+  /* Glass morphism card */
+  .glass {
+    background: color-mix(in srgb, var(--card) 80%, transparent);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Smooth all transitions */
+  .transition-theme {
+    transition:
+      background-color var(--duration-normal) var(--ease-out),
+      border-color var(--duration-normal) var(--ease-out),
+      color var(--duration-normal) var(--ease-out),
+      box-shadow var(--duration-normal) var(--ease-out);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   5. KEYFRAMES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* AmbientMixer equalizer bars */
+@keyframes soundWave {
+  from { height: 3px; }
+  to   { height: 14px; }
+}

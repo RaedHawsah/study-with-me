@@ -1,0 +1,163 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "timer": "المؤقّت",
+    "group": "دراسة جماعية",
+    "notes": "الملاحظات",
+    "stats": "الإحصائيات",
+    "settings": "الإعدادات"
+  },
+  "app": {
+    "name": "ادرس معي",
+    "tagline": "ركّز. تعلّم. انمُ."
+  },
+  "home": {
+    "greeting": "مستعد للدراسة؟",
+    "greetingMorning": "صباح الخير! هيّا ندرس.",
+    "greetingAfternoon": "مساء الخير! لنركّز معاً.",
+    "greetingEvening": "مساء النور! جلسة أخيرة؟",
+    "startSession": "ابدأ الجلسة",
+    "todayGoal": "هدف اليوم",
+    "minutesStudied": "دقيقة دراسة",
+    "streakDays": "يوم متواصل",
+    "noSessions": "لا جلسات حتى الآن. هيّا نبدأ!"
+  },
+  "timer": {
+    "focus": "تركيز",
+    "shortBreak": "استراحة قصيرة",
+    "longBreak": "استراحة طويلة",
+    "start": "ابدأ",
+    "pause": "توقّف",
+    "resume": "استئنف",
+    "reset": "إعادة ضبط",
+    "skip": "تخطّى",
+    "session": "جلسة",
+    "cycle": "دورة",
+    "of": "من",
+    "settings": "إعدادات المؤقّت",
+    "focusDuration": "تركيز",
+    "shortBreakDuration": "استراحة قصيرة",
+    "longBreakDuration": "استراحة طويلة",
+    "cyclesBeforeLongBreak": "الدورات",
+    "autoStartBreaks": "بدء الاستراحات تلقائياً",
+    "autoStartFocus": "بدء التركيز تلقائياً",
+    "minutesSuffix": "د",
+    "sessionSelector": "اختر نوع الجلسة",
+    "activeTask": "أعمل على",
+    "noActiveTask": "لا مهمّة مرتبطة"
+  },
+  "tasks": {
+    "title": "المهام",
+    "all": "الكل",
+    "active": "نشطة",
+    "done": "منجزة",
+    "completed": "مكتملة",
+    "placeholder": "ماذا تعمل الآن؟",
+    "add": "أضف",
+    "clearCompleted": "مسح المنجزة",
+    "noTasks": "لا مهام بعد. أضف مهمة!",
+    "estimate": "تقدير",
+    "linkToSession": "ربط بالمؤقّت",
+    "unlink": "فك الربط",
+    "deleteTask": "حذف",
+    "complete": "تمييز كمنجز",
+    "markActive": "استعادة المهمّة",
+    "filterLabel": "تصفية المهام"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "appearance": "المظهر",
+    "ambientSounds": "الأصوات المحيطة",
+    "colorTheme": "نظام الألوان",
+    "background": "الخلفية",
+    "timerShape": "شكل المؤقّت",
+    "custom": "مخصّص"
+  },
+  "themes": {
+    "default": "افتراضي",
+    "forest": "الغابة",
+    "ocean": "المحيط",
+    "sunset": "الغروب",
+    "midnight": "منتصف الليل",
+    "rose": "الوردة"
+  },
+  "timerShape": {
+    "circular": "دائري",
+    "minimal": "بسيط",
+    "card": "بطاقة"
+  },
+  "audio": {
+    "wind": "الريح",
+    "fire": "النار",
+    "rain": "المطر",
+    "coffee": "مقهى",
+    "lofi": "موسيقى لوفي",
+    "nature": "الطبيعة",
+    "play": "تشغيل",
+    "stop": "إيقاف",
+    "tapToPlay": "اضغط على صوت للتشغيل",
+    "notSupported": "واجهة برمجة الصوت غير مدعومة في هذا المتصفح."
+  },
+  "bg": {
+    "default": "افتراضي",
+    "cream": "كريمي",
+    "linen": "كتاني",
+    "sage": "أخضر مائل",
+    "sky": "سماوي",
+    "blush": "وردي خفيف",
+    "charcoal": "فحمي",
+    "navy": "كحلي",
+    "forest": "غابة",
+    "dawn": "الفجر",
+    "dusk": "الغسق",
+    "aurora": "الشفق القطبي",
+    "midnightSky": "سماء منتصف الليل",
+    "oceanDepth": "أعماق المحيط"
+  },
+  "locale": {
+    "en": "English",
+    "ar": "العربية",
+    "switchTo": "تغيير اللغة"
+  },
+  "theme": {
+    "toggle": "تبديل المظهر",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "تلقائي"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ ما.",
+    "retry": "إعادة المحاولة",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "back": "رجوع"
+  },
+  "room": {
+    "title": "غرفة الدراسة الجماعية",
+    "description": "انضم إلى غرفة هادئة للتركيز مع الآخرين. الميكروفونات معطلة بشكل دائم.",
+    "nameLabel": "الاسم",
+    "namePlaceholder": "أدخل اسم العرض الخاص بك",
+    "joinBtn": "الانضمام للغرفة",
+    "connecting": "جاري الاتصال...",
+    "cameraOn": "تشغيل الكاميرا",
+    "cameraOff": "إيقاف الكاميرا",
+    "shareScreen": "مشاركة الشاشة",
+    "chat": "التواصل النصي",
+    "leave": "مغادرة الغرفة",
+    "waiting": "في انتظار الآخرين",
+    "waitingDesc": "سيظهر زملاؤك هنا عند انضمامهم.",
+    "groupChat": "محادثة جماعية",
+    "noMessages": "لا توجد رسائل بعد.",
+    "chatPlaceholder": "اكتب رسالة..."
+  },
+  "gami": {
+    "leaderboard": "لوحة الصدارة",
+    "rankDesc": "الترتيب حسب إجمالي وقت الدراسة وكفاءة التركيز.",
+    "global": "عالمي",
+    "university": "مجموعتي",
+    "level": "المستوى",
+    "xp": "نقاط"
+  }
+}

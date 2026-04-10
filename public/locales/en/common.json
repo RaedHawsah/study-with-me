@@ -1,0 +1,163 @@
+{
+  "nav": {
+    "home": "Home",
+    "timer": "Timer",
+    "group": "Group Study",
+    "notes": "Notes",
+    "stats": "Stats",
+    "settings": "Settings"
+  },
+  "app": {
+    "name": "Study With Me",
+    "tagline": "Focus. Learn. Grow."
+  },
+  "home": {
+    "greeting": "Ready to study?",
+    "greetingMorning": "Good morning! Ready to study?",
+    "greetingAfternoon": "Good afternoon! Let's focus.",
+    "greetingEvening": "Good evening! One more session?",
+    "startSession": "Start Session",
+    "todayGoal": "Today's Goal",
+    "minutesStudied": "minutes studied",
+    "streakDays": "day streak",
+    "noSessions": "No sessions yet today. Let's get started!"
+  },
+  "timer": {
+    "focus": "Focus",
+    "shortBreak": "Short Break",
+    "longBreak": "Long Break",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset",
+    "skip": "Skip",
+    "session": "Session",
+    "cycle": "Cycle",
+    "of": "of",
+    "settings": "Timer Settings",
+    "focusDuration": "Focus",
+    "shortBreakDuration": "Short Break",
+    "longBreakDuration": "Long Break",
+    "cyclesBeforeLongBreak": "Cycles",
+    "autoStartBreaks": "Auto-start breaks",
+    "autoStartFocus": "Auto-start focus",
+    "minutesSuffix": "min",
+    "sessionSelector": "Select session type",
+    "activeTask": "Doing now",
+    "noActiveTask": "No task linked"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "all": "All",
+    "active": "Active",
+    "done": "Done",
+    "completed": "Completed",
+    "placeholder": "What are you working on?",
+    "add": "Add",
+    "clearCompleted": "Clear done",
+    "noTasks": "No tasks yet. Add one above!",
+    "estimate": "est.",
+    "linkToSession": "Link to timer",
+    "unlink": "Unlink",
+    "deleteTask": "Delete",
+    "complete": "Mark done",
+    "markActive": "Restore task",
+    "filterLabel": "Filter tasks"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "ambientSounds": "Ambient Sounds",
+    "colorTheme": "Color Theme",
+    "background": "Background",
+    "timerShape": "Timer Shape",
+    "custom": "Custom"
+  },
+  "themes": {
+    "default": "Default",
+    "forest": "Forest",
+    "ocean": "Ocean",
+    "sunset": "Sunset",
+    "midnight": "Midnight",
+    "rose": "Rose"
+  },
+  "timerShape": {
+    "circular": "Circular",
+    "minimal": "Minimal",
+    "card": "Card"
+  },
+  "audio": {
+    "wind": "Wind",
+    "fire": "Fire",
+    "rain": "Rain",
+    "coffee": "Coffee Shop",
+    "lofi": "Lofi Music",
+    "nature": "Nature",
+    "play": "Play",
+    "stop": "Stop",
+    "tapToPlay": "Tap a sound to begin",
+    "notSupported": "Web Audio API is not supported in this browser."
+  },
+  "bg": {
+    "default": "Default",
+    "cream": "Cream",
+    "linen": "Linen",
+    "sage": "Sage",
+    "sky": "Sky",
+    "blush": "Blush",
+    "charcoal": "Charcoal",
+    "navy": "Navy",
+    "forest": "Forest",
+    "dawn": "Dawn",
+    "dusk": "Dusk",
+    "aurora": "Aurora",
+    "midnightSky": "Midnight Sky",
+    "oceanDepth": "Ocean Depth"
+  },
+  "locale": {
+    "en": "English",
+    "ar": "العربية",
+    "switchTo": "Switch language"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong.",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back"
+  },
+  "room": {
+    "title": "Group Study Room",
+    "description": "Join an online quiet room to focus with others. Microphones are permanently disabled.",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "Enter your display name",
+    "joinBtn": "Join Room",
+    "connecting": "Connecting...",
+    "cameraOn": "Turn on camera",
+    "cameraOff": "Turn off camera",
+    "shareScreen": "Share screen",
+    "chat": "Toggle chat",
+    "leave": "Leave Room",
+    "waiting": "Waiting for others",
+    "waitingDesc": "Your peers will appear here when they join.",
+    "groupChat": "Group Chat",
+    "noMessages": "No messages yet.",
+    "chatPlaceholder": "Type a message..."
+  },
+  "gami": {
+    "leaderboard": "Leaderboard",
+    "rankDesc": "Ranked by total study time and focus efficiency.",
+    "global": "Global",
+    "university": "My Group",
+    "level": "Level",
+    "xp": "XP"
+  }
+}

@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// USER PROGRESSION
+// -----------------------------------------------------------------------------
+model User {
+  id                 String   @id @default(uuid())
+  name               String
+  email              String?  @unique
+  totalXp            Int      @default(0)
+  level              Int      @default(1)
+  weeklyStudyMinutes Int      @default(0)
+  universityGroup    String?  // nullable, e.g., "Harvard", "MIT"
+  
+  // Relations
+  pets               Pet[]
+  studySessions      StudySession[]
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// PET COMPANION
+// -----------------------------------------------------------------------------
+enum PetType {
+  CAT
+  DOG
+  FALCON
+  EGG
+}
+
+model Pet {
+  id        String   @id @default(uuid())
+  type      PetType  @default(EGG)
+  name      String   @default("Buddy")
+  xp        Int      @default(0)
+  level     Int      @default(1)
+  
+  // Relation back to owner
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// LEDGER (For Leaderboards & Analytics)
+// -----------------------------------------------------------------------------
+model StudySession {
+  id              String   @id @default(uuid())
+  durationMinutes Int      // e.g. 25
+  xpEarned        Int      // e.g. 50
+  
+  // Relation
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+
+  createdAt       DateTime @default(now())
+}

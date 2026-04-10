@@ -1,0 +1,23 @@
+{
+  // Tell VS Code's CSS language server to stop validating files that use
+  // Tailwind-specific at-rules like @theme, @utility, @source, etc.
+  // These are valid Tailwind v4 CSS-first syntax but unknown to the plain CSS spec.
+  "css.validate": false,
+
+  // Use the Tailwind CSS IntelliSense extension's language server instead.
+  // (Install "Tailwind CSS IntelliSense" from the VS Code marketplace if not already.)
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+
+  // Treat globals.css as a Tailwind file so snippet completion works
+  "files.associations": {
+    "globals.css": "tailwindcss"
+  },
+
+  // TypeScript: restart the TS server automatically after node_modules changes
+  "typescript.tsserver.maxTsServerMemory": 4096,
+
+  // Recommended: use the workspace version of TypeScript (not VS Code's bundled one)
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
