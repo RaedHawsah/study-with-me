@@ -12,6 +12,7 @@ import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import { getDir, type Locale } from '@/i18n/config';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -87,6 +88,7 @@ export default async function RootLayout({
       <body className="min-h-screen bg-background text-foreground transition-theme">
         {children}
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
