@@ -30,7 +30,10 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { LocaleSwitcher } from './LocaleSwitcher';
-import { ThemeToggle } from './ThemeToggle';
+import { GlobalAmbience } from '../audio/GlobalAmbience';
+import { GlobalTimerInitializer } from '@/hooks/usePomodoro';
+import { AuthMenu } from './AuthMenu';
+import { StoreInitializer } from './StoreInitializer';
 import type { Locale } from '@/i18n/config';
 import { isRtl } from '@/i18n/config';
 
@@ -78,6 +81,9 @@ export function NavShell({ locale, children }: NavShellProps) {
 
   return (
     <>
+      <GlobalTimerInitializer />
+      <StoreInitializer />
+
       {/* ── Desktop Sidebar ─────────────────────────────────────────────────── */}
       <aside
         aria-label={t('nav.home')}
@@ -158,9 +164,12 @@ export function NavShell({ locale, children }: NavShellProps) {
         </nav>
 
         {/* Footer controls */}
-        <div className="shrink-0 flex flex-col gap-1 p-2 border-t border-sidebar-border">
+        <div className="shrink-0 flex flex-col gap-2 p-2 border-t border-sidebar-border relative">
+          <AuthMenu collapsed={collapsed} />
+          
+          <div className="w-full h-px bg-sidebar-border hidden md:block" />
+          
           <LocaleSwitcher locale={locale} collapsed={collapsed} />
-          <ThemeToggle collapsed={collapsed} />
 
           {/* Collapse toggle */}
           <button
@@ -192,18 +201,18 @@ export function NavShell({ locale, children }: NavShellProps) {
             : 'var(--sidebar-width)',
         }}
         className="
-          hidden md:block min-h-screen
+          hidden md:flex flex-col min-h-screen
           transition-[margin-inline-start] duration-[var(--duration-normal)] ease-out
         "
       >
-        <main id="main-content" className="p-6 max-w-5xl mx-auto">
+        <main id="main-content" className="flex-1 p-6 lg:p-10 max-w-[1400px] w-full mx-auto">
           {children}
         </main>
       </div>
 
       {/* ── Mobile Layout ───────────────────────────────────────────────────── */}
-      <div className="md:hidden flex flex-col min-h-screen">
-        <main id="main-content-mobile" className="flex-1 overflow-y-auto p-4">
+      <div className="md:hidden flex flex-col min-h-[100dvh] overflow-hidden">
+        <main id="main-content-mobile" className="flex-1 overflow-x-hidden overflow-y-auto px-4 pt-6 pb-28">
           {children}
         </main>
 
@@ -248,6 +257,9 @@ export function NavShell({ locale, children }: NavShellProps) {
           </div>
         </nav>
       </div>
+
+      {/* Global Ambient Audio Dock */}
+      <GlobalAmbience />
     </>
   );
 }

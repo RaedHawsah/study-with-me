@@ -1,10 +1,5 @@
-/**
- * Timer Store — persists settings and session progress.
- * Runtime state (status, remainingSeconds, lastUpdatedAt) is also persisted
- * so the usePomodoro hook can re-hydrate correctly after tab navigation.
- */
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { createClient } from '@/utils/supabase/client';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,7 +28,7 @@ export function getSessionDuration(
   }
 }
 
-const DEFAULT_SETTINGS: TimerSettings = {
+export const DEFAULT_SETTINGS: TimerSettings = {
   focusDuration: 25,
   shortBreakDuration: 5,
   longBreakDuration: 15,
@@ -45,10 +40,9 @@ const DEFAULT_SETTINGS: TimerSettings = {
 // ─── Store ────────────────────────────────────────────────────────────────────
 
 interface TimerStore {
-  // ── Runtime state (also persisted for re-hydration) ──
+  // ── Runtime state (not in DB for performance during active session) ──
   status: TimerStatus;
   remainingSeconds: number;
-  /** Wall-clock timestamp when remainingSeconds was last updated by the worker */
   lastUpdatedAt: number;
 
   // ── Session state ──
@@ -57,11 +51,16 @@ interface TimerStore {
   currentCycle: number;
   completedFocusSessions: number;
 
-  // ── User preferences ──
+  // ── User preferences (Synced with DB) ──
   settings: TimerSettings;
   activeTaskId: string | null;
 
-  // ── Setters (called by usePomodoro hook) ──
+  // ── Actions ──
+  fetchSettings: (userId?: string) => Promise<void>;
+  clearStore: () => void;
+  updateSettings: (updates: Partial<TimerSettings>) => Promise<void>;
+  
+  // ── Setters ──
   setStatus: (s: TimerStatus) => void;
   setRemaining: (s: number) => void;
   setSessionType: (t: SessionType) => void;
@@ -69,52 +68,104 @@ interface TimerStore {
   setTotalSeconds: (n: number) => void;
   setActiveTask: (id: string | null) => void;
   incrementCompletedSessions: () => void;
-  updateSettings: (updates: Partial<TimerSettings>) => void;
 }
 
-export const useTimerStore = create<TimerStore>()(
-  persist(
-    (set, get) => ({
-      status: 'idle',
-      remainingSeconds: DEFAULT_SETTINGS.focusDuration * 60,
-      lastUpdatedAt: Date.now(),
+export const useTimerStore = create<TimerStore>((set, get) => ({
+  status: 'idle',
+  remainingSeconds: DEFAULT_SETTINGS.focusDuration * 60,
+  lastUpdatedAt: Date.now(),
 
-      sessionType: 'focus',
-      totalSeconds: DEFAULT_SETTINGS.focusDuration * 60,
-      currentCycle: 1,
-      completedFocusSessions: 0,
+  sessionType: 'focus',
+  totalSeconds: DEFAULT_SETTINGS.focusDuration * 60,
+  currentCycle: 1,
+  completedFocusSessions: 0,
 
-      settings: DEFAULT_SETTINGS,
-      activeTaskId: null,
+  settings: DEFAULT_SETTINGS,
+  activeTaskId: null,
 
-      setStatus:    (status) => set({ status, lastUpdatedAt: Date.now() }),
-      setRemaining: (remainingSeconds) => set({ remainingSeconds, lastUpdatedAt: Date.now() }),
-      setSessionType:  (sessionType) => set({ sessionType }),
-      setCurrentCycle: (currentCycle) => set({ currentCycle }),
-      setTotalSeconds: (totalSeconds) => set({ totalSeconds }),
-      setActiveTask:   (activeTaskId) => set({ activeTaskId }),
+  fetchSettings: async (userId?: string) => {
+    const supabase = createClient();
+    let effectiveUserId = userId;
 
-      incrementCompletedSessions: () =>
-        set((s) => ({ completedFocusSessions: s.completedFocusSessions + 1 })),
+    if (!effectiveUserId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      effectiveUserId = user?.id;
+    }
 
-      updateSettings: (updates) => {
-        const newSettings = { ...get().settings, ...updates };
-        const { sessionType, status } = get();
-        const newTotal = getSessionDuration(sessionType, newSettings);
-        if (status === 'idle') {
-          set({
-            settings: newSettings,
-            totalSeconds: newTotal,
-            remainingSeconds: newTotal,
-          });
-        } else {
-          set({ settings: newSettings });
-        }
-      },
-    }),
-    {
-      name: 'swm-timer-v2',
-      storage: createJSONStorage(() => localStorage),
-    },
-  ),
-);
+    if (!effectiveUserId) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('settings')
+      .eq('id', effectiveUserId)
+      .single();
+
+    if (!error && data?.settings?.timer) {
+      const dbSettings = data.settings.timer as TimerSettings;
+      const { sessionType, status } = get();
+      const newTotal = getSessionDuration(sessionType, dbSettings);
+      
+      set({ 
+        settings: dbSettings,
+        totalSeconds: status === 'idle' ? newTotal : get().totalSeconds,
+        remainingSeconds: status === 'idle' ? newTotal : get().remainingSeconds
+      });
+    } else if (error && error.code !== 'PGRST116') {
+      // PGRST116 is 'no rows found', which is fine for brand new users
+      console.error('Failed to fetch timer settings:', error.message || error);
+    }
+  },
+
+  clearStore: () => set({
+    settings: DEFAULT_SETTINGS,
+    status: 'idle',
+    sessionType: 'focus',
+    remainingSeconds: DEFAULT_SETTINGS.focusDuration * 60,
+    totalSeconds: DEFAULT_SETTINGS.focusDuration * 60,
+    currentCycle: 1,
+  }),
+
+  updateSettings: async (updates) => {
+    const currentSettings = get().settings;
+    const newSettings = { ...currentSettings, ...updates };
+    
+    // Optimistic Update
+    set({ settings: newSettings });
+
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      // Get current profile data since we store settings in a jsonb column
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('settings')
+        .eq('id', user.id)
+        .single();
+
+      const updatedFullSettings = {
+        ...(profile?.settings || {}),
+        timer: newSettings
+      };
+
+      await supabase
+        .from('profiles')
+        .update({ settings: updatedFullSettings })
+        .eq('id', user.id);
+    }
+
+    const { sessionType, status } = get();
+    if (status === 'idle') {
+      const newTotal = getSessionDuration(sessionType, newSettings);
+      set({ totalSeconds: newTotal, remainingSeconds: newTotal });
+    }
+  },
+
+  setStatus: (status) => set({ status, lastUpdatedAt: Date.now() }),
+  setRemaining: (remainingSeconds) => set({ remainingSeconds, lastUpdatedAt: Date.now() }),
+  setSessionType: (sessionType) => set({ sessionType }),
+  setCurrentCycle: (currentCycle) => set({ currentCycle }),
+  setTotalSeconds: (totalSeconds) => set({ totalSeconds }),
+  setActiveTask: (activeTaskId) => set({ activeTaskId }),
+  incrementCompletedSessions: () => 
+    set((s) => ({ completedFocusSessions: s.completedFocusSessions + 1 })),
+}));

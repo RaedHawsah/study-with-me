@@ -50,28 +50,28 @@ export function ChatPanel() {
             {t('room.noMessages')}
           </p>
         ) : (
-          messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              className={`flex flex-col ${msg.isOwn ? 'items-end' : 'items-start'}`}
-            >
-              {!msg.isOwn && (
-                <span className="text-[10px] text-muted-foreground ms-1 mb-1 font-medium">
-                  {msg.fromName}
-                </span>
-              )}
+            messages.map((msg, idx) => (
               <div 
-                className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${
-                  msg.isOwn 
-                    ? 'bg-primary text-primary-foreground rounded-tr-sm' 
-                    : 'bg-muted text-foreground rounded-tl-sm'
-                }`}
-                style={{ wordBreak: 'break-word' }}
+                key={msg.id || idx} 
+                className={`flex flex-col ${msg.isOwn ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-1 duration-300`}
               >
-                {msg.text}
+                {!msg.isOwn && (
+                  <span className="text-[10px] text-muted-foreground ms-2 mb-1 font-bold uppercase tracking-tight">
+                    {msg.fromName}
+                  </span>
+                )}
+                <div 
+                  className={`max-w-[85%] px-4 py-2.5 rounded-[1.2rem] text-sm shadow-sm transition-all hover:scale-[1.02] ${
+                    msg.isOwn 
+                      ? 'bg-primary text-primary-foreground rounded-tr-none' 
+                      : 'bg-muted/40 backdrop-blur-md text-foreground border border-white/5 rounded-tl-none'
+                  }`}
+                  style={{ wordBreak: 'break-word' }}
+                >
+                  {msg.text}
+                </div>
               </div>
-            </div>
-          ))
+            ))
         )}
         <div ref={endRef} />
       </div>

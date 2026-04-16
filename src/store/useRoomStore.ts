@@ -11,7 +11,13 @@ import { create } from 'zustand';
 export interface RoomPeer {
   id: string;
   name: string;
-  stream: MediaStream | null;
+  avatar_url?: string;
+  level?: number;
+  xp?: number;
+  streak?: number;
+  status: 'focus' | 'shortBreak' | 'longBreak' | 'idle';
+  stream?: MediaStream | null;
+  screenStream?: MediaStream | null;
 }
 
 export interface ChatMessage {
@@ -29,12 +35,16 @@ export type RoomStatus = 'idle' | 'joining' | 'joined' | 'error';
 
 const INITIAL_STATE = {
   status:       'idle' as RoomStatus,
+  roomType:     'random' as 'random' | 'private',
   roomId:       null as string | null,
+  roomCode:     null as string | null,
   myId:         null as string | null,
   myName:       '' as string,
   peers:        {} as Record<string, RoomPeer>,
+  timerSync:    false, // Only for private rooms
+  leaderId:     null as string | null,
 
-  // Local media — camera & screen share are always audio-free
+  // Local media
   localStream:  null as MediaStream | null,
   screenStream: null as MediaStream | null,
   cameraOn:     false,
@@ -54,13 +64,18 @@ type RoomState = typeof INITIAL_STATE;
 
 export interface RoomStore extends RoomState {
   setStatus:       (s: RoomStatus) => void;
+  setRoomType:     (t: 'random' | 'private') => void;
   setRoomId:       (id: string)    => void;
+  setRoomCode:     (c: string)    => void;
+  setTimerSync:    (v: boolean)    => void;
   setMyId:         (id: string)    => void;
   setMyName:       (n: string)     => void;
+  setLeaderId:     (id: string | null) => void;
 
   addPeer:         (peer: RoomPeer)                          => void;
   removePeer:      (id: string)                              => void;
   setPeerStream:   (peerId: string, stream: MediaStream)     => void;
+  setPeerScreenStream: (peerId: string, stream: MediaStream) => void;
 
   setLocalStream:  (s: MediaStream | null)                   => void;
   setScreenStream: (s: MediaStream | null)                   => void;
@@ -76,24 +91,36 @@ export interface RoomStore extends RoomState {
 export const useRoomStore = create<RoomStore>()((set) => ({
   ...INITIAL_STATE,
 
-  setStatus:  (status)  => set({ status }),
-  setRoomId:  (roomId)  => set({ roomId }),
-  setMyId:    (myId)    => set({ myId }),
-  setMyName:  (myName)  => set({ myName }),
+  setStatus:   (status)  => set({ status }),
+  setRoomType: (roomType) => set({ roomType }),
+  setRoomId:   (roomId)  => set({ roomId }),
+  setRoomCode: (roomCode) => set({ roomCode }),
+  setTimerSync: (timerSync) => set({ timerSync }),
+  setMyId:     (myId)    => set({ myId }),
+  setMyName:   (myName)  => set({ myName }),
+  setLeaderId: (leaderId) => set({ leaderId }),
 
   addPeer: (peer) =>
     set((s) => ({ peers: { ...s.peers, [peer.id]: peer } })),
 
   removePeer: (id) =>
     set((s) => {
-      const { [id]: _removed, ...rest } = s.peers;
-      return { peers: rest };
+      const peers = { ...s.peers };
+      delete peers[id];
+      return { peers };
     }),
 
   setPeerStream: (peerId, stream) =>
     set((s) => ({
       peers: s.peers[peerId]
         ? { ...s.peers, [peerId]: { ...s.peers[peerId], stream } }
+        : s.peers,
+    })),
+
+  setPeerScreenStream: (peerId, screenStream) =>
+    set((s) => ({
+      peers: s.peers[peerId]
+        ? { ...s.peers, [peerId]: { ...s.peers[peerId], screenStream } }
         : s.peers,
     })),
 

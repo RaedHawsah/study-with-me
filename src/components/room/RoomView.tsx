@@ -5,27 +5,33 @@ import { useTranslation } from 'react-i18next';
 import { Users, Loader2 } from 'lucide-react';
 import { useRoomStore } from '@/store/useRoomStore';
 import { useStudyRoom } from '@/hooks/useStudyRoom';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { VideoGrid } from './VideoGrid';
 import { RoomControls } from './RoomControls';
 import { ChatPanel } from './ChatPanel';
 
 export function RoomView() {
   const { t } = useTranslation('common');
-  const { status, errorMessage, chatOpen } = useRoomStore();
+  const { status, errorMessage, chatOpen, setError } = useRoomStore();
   const { joinRoom, leaveRoom } = useStudyRoom();
+  const { user } = useSupabaseAuth();
   const leaveRoomRef = useRef(leaveRoom);
   leaveRoomRef.current = leaveRoom;
 
   // Only the top-level RoomView cleans up the room when destroyed
   useEffect(() => {
-    return () => leaveRoomRef.current();
+    return () => {
+      leaveRoomRef.current();
+    };
   }, []);
 
   const [name, setName] = useState('');
+  const [roomType, setJoinType] = useState<'random' | 'private'>('random');
+  const [code, setCode] = useState('');
 
-  const handleJoin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim()) joinRoom(name.trim());
+  const handleJoin = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (name.trim()) joinRoom(name.trim(), roomType, code, user?.id);
   };
 
   // ─── JOIN SCREEN ───────────────────────────────────────────────────────────
@@ -46,34 +52,87 @@ export function RoomView() {
           </p>
 
           {status === 'error' && errorMessage && (
-            <div className="w-full p-3 mb-6 bg-red-500/10 text-red-500 text-sm rounded-xl border border-red-500/20">
-              {errorMessage}
+            <div className="w-full flex flex-col gap-3 mb-6">
+              <div className="w-full p-3 bg-red-500/10 text-red-500 text-sm rounded-xl border border-red-500/20">
+                {errorMessage}
+              </div>
+              <button 
+                onClick={() => handleJoin()}
+                className="text-xs font-bold text-primary hover:underline"
+              >
+                {t('common.retry', 'Retry Connection')}
+              </button>
             </div>
           )}
 
-          <form onSubmit={handleJoin} className="w-full flex flex-col gap-4">
-            <div className="flex flex-col text-start">
-              <label htmlFor="join-name" className="text-sm font-medium mb-1.5 ms-1 text-foreground">
-                {t('room.nameLabel')}
-              </label>
-              <input
-                id="join-name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t('room.namePlaceholder')}
-                maxLength={32}
-                className="w-full bg-background border border-border focus:border-primary px-4 py-3 rounded-xl outline-none transition-colors"
-                autoFocus
-              />
+          <form onSubmit={handleJoin} className="w-full flex flex-col gap-6">
+            <div className="flex flex-col text-start gap-4">
+              {/* Display Name */}
+              <div className="space-y-1.5">
+                <label htmlFor="join-name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ms-1">
+                  {t('room.nameLabel', 'Your Display Name')}
+                </label>
+                <input
+                  id="join-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (status === 'error') setError('');
+                  }}
+                  placeholder={t('room.namePlaceholder', 'e.g. Abdullah')}
+                  maxLength={20}
+                  className="w-full bg-background/50 border border-border focus:border-primary px-5 py-3.5 rounded-2xl outline-none transition-all placeholder:text-muted-foreground/30 font-medium"
+                  autoFocus
+                />
+              </div>
+
+              {/* Room Type Selector */}
+              <div className="flex p-1 bg-background/40 border border-border rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() => setJoinType('random')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                    roomType === 'random' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  Random Group
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setJoinType('private')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                    roomType === 'private' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  Private Room
+                </button>
+              </div>
+
+              {/* Private Code Input */}
+              {roomType === 'private' && (
+                <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label htmlFor="room-code" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ms-1">
+                    Room Code
+                  </label>
+                  <input
+                    id="room-code"
+                    type="text"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Enter Code (e.g. a1b2c3d4)"
+                    className="w-full bg-background/50 border border-border focus:border-primary px-5 py-3.5 rounded-2xl outline-none transition-all font-mono"
+                  />
+                </div>
+              )}
             </div>
             
             <button
               type="submit"
-              disabled={!name.trim()}
-              className="w-full py-3 rounded-xl font-semibold bg-primary text-primary-foreground disabled:opacity-50 hover:bg-primary-hover transition-colors shadow-md mt-2"
+              disabled={!name.trim() || (roomType === 'private' && !code.trim())}
+              className="w-full py-4 rounded-2xl font-bold bg-primary text-primary-foreground disabled:opacity-30 hover:bg-primary-hover transition-all shadow-xl shadow-primary/20 active:scale-95 text-sm"
             >
-              {t('room.joinBtn')}
+              {roomType === 'random' ? 'Find a Group' : 'Join Private Room'}
             </button>
           </form>
 

@@ -18,6 +18,7 @@ import { ThemeEngine } from '@/components/theme/ThemeEngine';
 import { MovingWallpaper } from '@/components/theme/MovingWallpaper';
 import { NavShell } from '@/components/shell/NavShell';
 import { LocaleSyncClient } from '@/components/LocaleSyncClient';
+import { AudioPreloader } from '@/components/audio/AudioPreloader';
 
 // Pre-load all translation files so they're bundled correctly
 import enMessages from '../../../public/locales/en/common.json';
@@ -75,6 +76,8 @@ export default async function LocaleLayout({
         <MovingWallpaper />
         {/* Sync the URL locale to Zustand store on the client */}
         <LocaleSyncClient locale={validLocale} />
+        {/* Preload audio bytes in background as soon as layout mounts */}
+        <AudioPreloader />
         <NavShell locale={validLocale}>{children}</NavShell>
       </ThemeProvider>
     </I18nProvider>

@@ -1,11 +1,11 @@
 {
-  "name": "Study With Me",
-  "short_name": "SWM",
-  "description": "Your focused study companion. Track sessions, take notes, and build study streaks.",
+  "name": "Study With Me | Focus",
+  "short_name": "StudyMe",
+  "description": "A high-fidelity focused productivity companion. Track sessions, build streaks, and study with style.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8f8fc",
-  "theme_color": "#5b5ef6",
+  "background_color": "#050505",
+  "theme_color": "#050505",
   "orientation": "portrait-primary",
   "categories": ["education", "productivity"],
   "icons": [

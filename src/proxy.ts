@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { locales, defaultLocale, getLocaleFromPathname, type Locale } from '@/i18n/config';
+import { updateSession } from '@/utils/supabase/middleware';
 
 /**
  * Determine the best locale for an incoming request.
@@ -28,7 +29,7 @@ function detectLocale(request: NextRequest): Locale {
   return defaultLocale;
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip Next.js internals, static files, and API routes
@@ -41,13 +42,26 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // If the path already has a valid locale prefix, pass through
+  // 1. Run session check/update first
+  const sessionResponse = await updateSession(request);
+
+  // 2. Handle Localization
   const existingLocale = getLocaleFromPathname(pathname);
+  
   if (existingLocale) {
-    // Forward the detected locale as a request header so that
-    // the root layout can read it without re-parsing the URL.
-    const response = NextResponse.next();
+    // Forward the detected locale as a request header
+    const response = NextResponse.next({
+      request: {
+        headers: new Headers(request.headers),
+      },
+    });
     response.headers.set('x-locale', existingLocale);
+    
+    // Copy cookies from session update (crucial for Auth)
+    sessionResponse.cookies.getAll().forEach((c) => {
+      response.cookies.set(c.name, c.value, c);
+    });
+    
     return response;
   }
 
@@ -56,7 +70,14 @@ export function proxy(request: NextRequest) {
   const redirectUrl = new URL(`/${locale}${pathname}`, request.url);
   redirectUrl.search = request.nextUrl.search;
 
-  return NextResponse.redirect(redirectUrl);
+  const redirectResponse = NextResponse.redirect(redirectUrl);
+  
+  // Copy cookies from session update to redirect
+  sessionResponse.cookies.getAll().forEach((c) => {
+    redirectResponse.cookies.set(c.name, c.value, c);
+  });
+
+  return redirectResponse;
 }
 
 export const config = {

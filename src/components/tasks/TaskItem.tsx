@@ -111,7 +111,7 @@ export function TaskItem({
             onClick={isActive ? onUnlink : onLink}
             aria-label={isActive ? t('tasks.unlink') : t('tasks.linkToSession')}
             className="
-              w-7 h-7 rounded-lg flex items-center justify-center
+              w-9 h-9 rounded-lg flex items-center justify-center
               transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
             "
             style={{
@@ -121,7 +121,7 @@ export function TaskItem({
               color: isActive ? 'var(--primary)' : 'var(--muted-foreground)',
             }}
           >
-            {isActive ? <Unlink2 size={13} /> : <Link2 size={13} />}
+            {isActive ? <Unlink2 size={17} /> : <Link2 size={17} />}
           </button>
         )}
 
@@ -130,12 +130,12 @@ export function TaskItem({
           onClick={onDelete}
           aria-label={t('tasks.deleteTask')}
           className="
-            w-7 h-7 rounded-lg flex items-center justify-center
+            w-9 h-9 rounded-lg flex items-center justify-center
             text-muted-foreground hover:text-red-500 hover:bg-red-500/10
             transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
           "
         >
-          <Trash2 size={13} />
+          <Trash2 size={17} />
         </button>
       </div>
     </li>

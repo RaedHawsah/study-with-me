@@ -1,17 +1,31 @@
-import { getTranslations } from '@/i18n/server';
-import type { Locale } from '@/i18n/config';
+'use client';
+
+import { useTranslation } from 'react-i18next';
 import { BookMarked, Flame, Clock } from 'lucide-react';
+import { useGamificationStore } from '@/store/useGamificationStore';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
-interface HomePageProps {
-  params: Promise<{ locale: string }>;
-}
-
-export default async function HomePage({ params }: HomePageProps) {
-  const { locale } = await params;
-  const { t } = await getTranslations(locale as Locale);
+export default function HomePage() {
+  const { t } = useTranslation('common');
+  const { user } = useSupabaseAuth();
+  const { weeklyStudyMinutes, currentStreak } = useGamificationStore();
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 animate-fade-in">
+      {!user && (
+        <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-200 text-sm flex items-center justify-between gap-4">
+          <p>
+            <strong>{t('common.info', { defaultValue: 'Guest Mode' })}:</strong> {t('auth.guestWarning', { defaultValue: 'Sign in to save your study progress, XP, and notes to the cloud.' })}
+          </p>
+          <button 
+            onClick={() => (document.getElementById('nav-settings') as HTMLElement)?.click()}
+            className="px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-colors shrink-0"
+          >
+            {t('common.signIn', { defaultValue: 'Sign In' })}
+          </button>
+        </div>
+      )}
+
       {/* ── Greeting ──────────────────────────────────────────────────────── */}
       <section aria-labelledby="greeting-heading">
         <div className="flex flex-col gap-2">
@@ -29,7 +43,7 @@ export default async function HomePage({ params }: HomePageProps) {
             id="greeting-heading"
             className="text-3xl font-bold tracking-tight text-foreground"
           >
-            {t('home.greeting')}
+            {user ? `${t('home.greeting')}, ${user.user_metadata?.full_name || user.email?.split('@')[0]}` : t('home.greeting')}
           </h1>
           <p className="text-muted-foreground text-sm">
             {t('app.tagline')}
@@ -62,7 +76,9 @@ export default async function HomePage({ params }: HomePageProps) {
             <Clock size={20} strokeWidth={2} aria-hidden="true" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-foreground tabular-nums">0</p>
+            <p className="text-2xl font-bold text-foreground tabular-nums">
+              {weeklyStudyMinutes}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {t('home.minutesStudied')}
             </p>
@@ -88,7 +104,9 @@ export default async function HomePage({ params }: HomePageProps) {
             <Flame size={20} strokeWidth={2} aria-hidden="true" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-foreground tabular-nums">0</p>
+            <p className="text-2xl font-bold text-foreground tabular-nums">
+              {currentStreak}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {t('home.streakDays')}
             </p>
@@ -99,10 +117,12 @@ export default async function HomePage({ params }: HomePageProps) {
       {/* ── CTA ───────────────────────────────────────────────────────────── */}
       <section>
         <p className="text-sm text-muted-foreground mb-4">
-          {t('home.noSessions')}
+          {weeklyStudyMinutes === 0 
+            ? t('home.noSessions') 
+            : t('home.keepGoing', { defaultValue: 'Keep up the great work!' })}
         </p>
-        <a
-          href={`/${locale}/timer`}
+        <button
+          onClick={() => window.location.href = './timer'}
           id="home-start-session"
           className="
             inline-flex items-center justify-center gap-2
@@ -116,7 +136,7 @@ export default async function HomePage({ params }: HomePageProps) {
           "
         >
           {t('home.startSession')}
-        </a>
+        </button>
       </section>
     </div>
   );

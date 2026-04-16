@@ -23,6 +23,7 @@ import { TimerControls } from './TimerControls';
 import { TimerSettings } from './TimerSettings';
 import { TaskList } from '@/components/tasks/TaskList';
 import { PetCompanion } from '@/components/gamification/PetCompanion';
+import { StreakBadge } from '@/components/gamification/StreakBadge';
 
 export function TimerView() {
   const { t } = useTranslation('common');
@@ -51,6 +52,11 @@ export function TimerView() {
 
   return (
     <div className="flex flex-col gap-8 items-center max-w-xl mx-auto py-2 w-full">
+      
+      {/* ── Gamification Header ────────────────────────────────────────── */}
+      <div className="w-full flex justify-center">
+        <StreakBadge />
+      </div>
 
       {/* ── Session selector ──────────────────────────────────────────────── */}
       <div className="w-full">

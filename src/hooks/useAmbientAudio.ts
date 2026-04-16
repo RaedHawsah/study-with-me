@@ -3,51 +3,68 @@
 /**
  * useAmbientAudio — manages the AmbientSoundEngine lifecycle.
  *
- * Creates the engine on first mount, syncs Zustand toggles to audio playback,
- * and tears down all audio on unmount so renders stay clean.
+ * v2 — fixes:
+ *  - Visibility-change recovery: resumes AudioContext when tab regains focus.
+ *  - Toggle guard: prevents double-play/stop on rapid clicks.
+ *  - Engine state is source of truth via engine.isPlaying() check.
  */
-import { useCallback, useEffect, useRef } from 'react';
-import { usePreferencesStore, type SoundId } from '@/store/usePreferencesStore';
+import { useCallback, useEffect } from 'react';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { AmbientSoundEngine } from '@/lib/audioEngine';
 
 export function useAmbientAudio() {
-  const { sounds, toggleSound, setSoundVolume } = usePreferencesStore();
-  const engineRef = useRef<AmbientSoundEngine | null>(null);
+  const { sounds, toggleSound, setSoundVolume, setSoundLoading } = usePreferencesStore();
 
-  // Lazy-create engine (browser-only)
-  function getEngine(): AmbientSoundEngine {
-    if (!engineRef.current) {
-      engineRef.current = new AmbientSoundEngine();
-    }
-    return engineRef.current;
-  }
+  const getEngine = () => AmbientSoundEngine.getInstance();
 
-  // Stop all audio on unmount
+  // ── Resume AudioContext when user returns to tab ─────────────────────────
   useEffect(() => {
-    return () => {
-      engineRef.current?.stopAll();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        getEngine().resumeContext();
+      }
     };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Toggle ───────────────────────────────────────────────────────────────
   const handleToggle = useCallback(
-    async (id: SoundId) => {
-      const current = sounds[id];
+    async (id: string) => {
       const engine = getEngine();
+      const current = sounds[id] || { isPlaying: false, volume: 0.5 };
+
       if (current.isPlaying) {
-        await engine.stop(id);
+        // Update Zustand immediately (so UI is snappy)
+        toggleSound(id);
+        // Then fade out audio
+        engine.stop(id);
       } else {
-        await engine.play(id, current.volume);
+        // Mark loading
+        setSoundLoading(id, true);
+        try {
+          await engine.play(id, current.volume ?? 0.5);
+          // Only mark as playing if engine confirms it worked
+          if (engine.isPlaying(id)) {
+            toggleSound(id);
+          }
+        } catch (err) {
+          console.error(`[useAmbientAudio] Failed to play "${id}":`, err);
+        } finally {
+          setSoundLoading(id, false);
+        }
       }
-      toggleSound(id);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sounds, toggleSound],
+    [sounds, toggleSound, setSoundLoading],
   );
 
+  // ── Volume ───────────────────────────────────────────────────────────────
   const handleVolumeChange = useCallback(
-    (id: SoundId, volume: number) => {
+    (id: string, volume: number) => {
       setSoundVolume(id, volume);
-      if (sounds[id].isPlaying) {
+      if (sounds[id]?.isPlaying) {
         getEngine().setVolume(id, volume);
       }
     },
@@ -57,7 +74,7 @@ export function useAmbientAudio() {
 
   const isSupported =
     typeof window !== 'undefined'
-      ? (engineRef.current ?? new AmbientSoundEngine()).isSupported()
+      ? AmbientSoundEngine.getInstance().isSupported()
       : false;
 
   const anyPlaying = Object.values(sounds).some((s) => s.isPlaying);

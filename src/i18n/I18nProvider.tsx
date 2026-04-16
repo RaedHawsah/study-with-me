@@ -11,7 +11,7 @@
  */
 import i18next from 'i18next';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
-import { type ReactNode, useRef } from 'react';
+import { type ReactNode, useState, useEffect } from 'react';
 import type { Locale } from './config';
 
 interface I18nProviderProps {
@@ -22,14 +22,9 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ locale, messages, children }: I18nProviderProps) {
-  // Create the instance once per component mount (useRef = stable across re-renders)
-  const i18nRef = useRef<typeof i18next | null>(null);
-
-  if (!i18nRef.current) {
+  // Initialise the instance once
+  const [i18n] = useState(() => {
     const instance = i18next.createInstance();
-
-    // `initImmediate` was removed in i18next v26; synchronous init is now
-    // the default when no async backend is used.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (instance.use(initReactI18next) as any).init({
       lng: locale,
@@ -40,16 +35,18 @@ export function I18nProvider({ locale, messages, children }: I18nProviderProps) 
       interpolation: { escapeValue: false },
       react: { useSuspense: false },
     });
+    return instance;
+  });
 
-    i18nRef.current = instance;
-  } else if (i18nRef.current.language !== locale) {
-    // Hot-swap locale when the user switches language without unmounting
-    i18nRef.current.changeLanguage(locale);
-    // Merge new messages in case they differ
-    i18nRef.current.addResourceBundle(locale, 'common', messages, true, true);
-  }
+  // Hot-swap locale when the user switches language
+  useEffect(() => {
+    if (i18n.language !== locale) {
+      i18n.changeLanguage(locale);
+      i18n.addResourceBundle(locale, 'common', messages, true, true);
+    }
+  }, [i18n, locale, messages]);
 
   return (
-    <I18nextProvider i18n={i18nRef.current}>{children}</I18nextProvider>
+    <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
   );
 }

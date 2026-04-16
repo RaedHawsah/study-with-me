@@ -98,7 +98,7 @@ export function TaskList() {
 
       {/* ── Task list ──────────────────────────────────────────────────────── */}
       {displayed.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8 select-none">
+        <p className="text-base md:text-lg font-medium opacity-80 text-muted-foreground text-center py-8 select-none">
           {t('tasks.noTasks')}
         </p>
       ) : (

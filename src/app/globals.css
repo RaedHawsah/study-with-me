@@ -4,10 +4,18 @@
    All tokens are CSS custom properties consumed by Tailwind's @theme block.
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* ── Google Fonts — must come first ───────────────────────────────────────── */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap");
-
 @import "tailwindcss";
+
+@layer utilities {
+  @keyframes sound-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+  @keyframes ambient-glow {
+    0%, 100% { box-shadow: 0 0 15px var(--glow-color); }
+    50% { box-shadow: 0 0 30px var(--glow-color); }
+  }
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    1. DESIGN TOKENS — CSS Custom Properties
@@ -395,6 +403,6 @@ input[type='range'].swm-slider:disabled {
 
 /* AmbientMixer equalizer bars */
 @keyframes soundWave {
-  from { height: 3px; }
-  to   { height: 14px; }
+  from { transform: scaleY(0.2); }
+  to   { transform: scaleY(1); }
 }

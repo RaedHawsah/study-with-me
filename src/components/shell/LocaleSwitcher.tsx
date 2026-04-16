@@ -23,7 +23,7 @@ function setLocaleCookie(locale: Locale) {
 }
 
 export function LocaleSwitcher({ locale, collapsed = false }: LocaleSwitcherProps) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const pathname = usePathname();
   const router = useRouter();
 
@@ -32,11 +32,23 @@ export function LocaleSwitcher({ locale, collapsed = false }: LocaleSwitcherProp
 
     setLocaleCookie(next);
 
+    // تحديث اتجاه الصفحة ولغتها فورياً (Instant Update)
+    document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = next;
+    
+    // تحديث نصوص الترجمة فورياً للمكونات الموجودة على المتصفح
+    if (i18n && i18n.changeLanguage) {
+      i18n.changeLanguage(next);
+    }
+
     // Replace the locale segment in the current pathname
     // e.g. /en/timer → /ar/timer
     const segments = pathname.split('/');
     segments[1] = next; // index 0 is '', index 1 is the locale
-    router.push(segments.join('/'));
+    const newPath = segments.join('/');
+    
+    router.push(newPath);
+    router.refresh(); // لضمان تحديث الـ Server Components باللغة الجديدة
   }
 
   const nextLocale = locales.find((l) => l !== locale) ?? locales[0];

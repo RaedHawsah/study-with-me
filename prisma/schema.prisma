@@ -17,52 +17,63 @@ model User {
   totalXp            Int      @default(0)
   level              Int      @default(1)
   weeklyStudyMinutes Int      @default(0)
-  universityGroup    String?  // nullable, e.g., "Harvard", "MIT"
+  currentStreak      Int      @default(0)
+  lastStudyDate      DateTime?
+  settings           Json?    // Stores timer and theme preferences
   
   // Relations
   pets               Pet[]
   studySessions      StudySession[]
+  tasks              Task[]
+  notes              Note[]
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
-}
 
-// -----------------------------------------------------------------------------
-// PET COMPANION
-// -----------------------------------------------------------------------------
-enum PetType {
-  CAT
-  DOG
-  FALCON
-  EGG
-}
+  @@map("profiles")
+ }
 
-model Pet {
+model Note {
   id        String   @id @default(uuid())
-  type      PetType  @default(EGG)
-  name      String   @default("Buddy")
-  xp        Int      @default(0)
-  level     Int      @default(1)
-  
-  // Relation back to owner
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-
+  title     String   @default("")
+  content   String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("notes")
 }
 
-// -----------------------------------------------------------------------------
-// LEDGER (For Leaderboards & Analytics)
-// -----------------------------------------------------------------------------
+model Task {
+  id                 String   @id @default(uuid())
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
+  title              String
+  completed          Boolean  @default(false)
+  pomodorosCompleted Int      @default(0)
+  pomodorosEstimated Int      @default(0)
+  studySessions      StudySession[]
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("tasks")
+}
+
 model StudySession {
   id              String   @id @default(uuid())
-  durationMinutes Int      // e.g. 25
-  xpEarned        Int      // e.g. 50
+  sessionType     String   // "focus", "shortBreak", "longBreak"
+  durationMinutes Int
+  xpEarned        Int      @default(0)
   
-  // Relation
+  // Relations
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String
+  task            Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  taskId          String?
 
   createdAt       DateTime @default(now())
+
+  @@map("study_sessions")
 }

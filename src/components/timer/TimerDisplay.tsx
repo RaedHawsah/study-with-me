@@ -40,7 +40,7 @@ function CircularTimer({ remainingSeconds, totalSeconds, sessionType, status }: 
           {formatTime(remainingSeconds)}
         </span>
         <span
-          className="text-xs font-bold uppercase tracking-widest mt-1.5"
+          className="text-base md:text-lg font-bold uppercase tracking-widest mt-1.5"
           style={{ color }}
         >
           {t(`timer.${sessionType}`)}
@@ -69,7 +69,7 @@ function MinimalTimer({ remainingSeconds, sessionType, status }: Omit<DisplayPro
         {formatTime(remainingSeconds)}
       </span>
       <span
-        className="text-sm font-bold uppercase tracking-widest"
+        className="text-lg md:text-xl font-bold uppercase tracking-widest"
         style={{ color }}
       >
         {t(`timer.${sessionType}`)}
@@ -94,7 +94,7 @@ function CardTimer({ remainingSeconds, totalSeconds, sessionType, status }: Disp
       }}
     >
       <span
-        className="text-xs font-bold uppercase tracking-widest"
+        className="text-base md:text-lg font-bold uppercase tracking-widest"
         style={{ color }}
       >
         {t(`timer.${sessionType}`)}

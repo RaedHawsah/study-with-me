@@ -63,19 +63,27 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
             style={{ direction: 'ltr' }}
           >
             <span className="text-xs" aria-hidden="true">🍅</span>
-            <input
-              type="number"
-              min={0}
-              max={20}
-              value={estimate || ''}
-              placeholder="0"
-              onChange={(e) => setEstimate(Math.max(0, parseInt(e.target.value) || 0))}
-              className="
-                w-8 bg-transparent text-xs text-muted-foreground
-                text-center outline-none tabular-nums
-              "
-              aria-label={t('tasks.estimate')}
-            />
+            <div className="flex items-center gap-0.5 bg-muted/40 rounded-lg p-0.5">
+              <button 
+                type="button" 
+                onClick={() => setEstimate(Math.max(0, estimate - 1))}
+                className="w-5 h-5 flex items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors leading-none"
+                aria-label="Decrease Pomodoros"
+              >
+                −
+              </button>
+              <span className="w-5 text-center text-xs font-semibold text-foreground tabular-nums">
+                {estimate}
+              </span>
+              <button 
+                type="button"
+                onClick={() => setEstimate(Math.min(20, estimate + 1))}
+                className="w-5 h-5 flex items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors leading-none"
+                aria-label="Increase Pomodoros"
+              >
+                +
+              </button>
+            </div>
           </div>
         )}
       </div>

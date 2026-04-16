@@ -1,31 +1,62 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trophy, Medal, MapPin, User as UserIcon } from 'lucide-react';
+import { Trophy, Medal, MapPin, User as UserIcon, Loader2, Zap } from 'lucide-react';
 import { useGamificationStore } from '@/store/useGamificationStore';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { createClient } from '@/utils/supabase/client';
 
-// Mock Data for the Leaderboard
-const MOCK_LEADERBOARD = [
-  { id: '1', name: 'Zainab A.', xp: 14500, avatar: 'ZA', group: 'King Saud Univ.' },
-  { id: '2', name: 'Omar K.', xp: 12200, avatar: 'OK', group: 'MIT' },
-  { id: '3', name: 'Amira F.', xp: 9850, avatar: 'AF', group: 'Harvard' },
-  { id: '4', name: 'You (Current)', xp: 0, avatar: 'ME', group: 'Independent' },
-  { id: '5', name: 'Sarah M.', xp: 450, avatar: 'SM', group: 'King Saud Univ.' },
-];
+interface LeaderboardUser {
+  id: string;
+  full_name: string;
+  avatar_url: string;
+  xp: number;
+  level: number;
+}
+
 
 export function Leaderboard() {
   const { t } = useTranslation('common');
-  const [tab, setTab] = useState<'global' | 'group'>('global');
+  const [tab, setTab] = useState<'global' | 'friends' | 'group'>('global');
+  const [users, setUsers] = useState<LeaderboardUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user: authUser } = useSupabaseAuth();
+  const currentUserId = authUser?.id;
   const { totalXp } = useGamificationStore();
 
-  // Inject current user live XP into the mock data
-  const boardData = [...MOCK_LEADERBOARD];
-  boardData[3].xp = totalXp;
-  
-  const sortedBoard = boardData
-    .filter(u => tab === 'global' ? true : u.group === 'King Saud Univ.')
-    .sort((a, b) => b.xp - a.xp);
+  useEffect(() => {
+    async function fetchLeaderboard() {
+      setLoading(true);
+      const supabase = createClient();
+      
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+      let query = supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, xp, level')
+        .order('xp', { ascending: false })
+        .limit(20);
+
+      const { data, error } = await query;
+
+      if (!error && data) {
+        setUsers(data as LeaderboardUser[]);
+      }
+      setLoading(false);
+    }
+
+    fetchLeaderboard();
+  }, [tab]);
+
+  if (loading) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center p-20 gap-4">
+        <Loader2 className="animate-spin text-primary" size={40} />
+        <p className="text-muted-foreground animate-pulse font-medium">Loading high scores...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-xl mx-auto flex flex-col gap-6">
@@ -65,8 +96,13 @@ export function Leaderboard() {
 
       {/* Ranks list */}
       <div className="w-full bg-card/60 backdrop-blur-xl border border-border rounded-3xl p-2 shadow-2xl flex flex-col gap-2">
-        {sortedBoard.map((user, index) => {
-          const isMe = user.id === '4';
+        {users.length === 0 ? (
+          <div className="p-10 text-center text-muted-foreground italic">
+            No entries found yet. Start studying to be the first!
+          </div>
+        ) : users.map((user, index) => {
+          const isMe = user.id === currentUserId; 
+          
           return (
             <div 
               key={user.id} 
@@ -83,28 +119,32 @@ export function Leaderboard() {
               </div>
 
               {/* Avatar */}
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-inner ${
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-inner overflow-hidden shadow-primary/20 ${
                 isMe ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
               }`}>
-                {user.avatar}
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  user.full_name?.charAt(0) || <UserIcon size={20} />
+                )}
               </div>
 
               {/* Info */}
               <div className="flex-1 overflow-hidden">
                 <h4 className="font-bold text-base truncate flex items-center gap-2">
-                  {user.name}
+                  {user.full_name || 'Anonymous Student'}
                   {isMe && <span className="bg-primary px-2 py-0.5 rounded-full text-[10px] text-primary-foreground uppercase tracking-wider">You</span>}
                 </h4>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                  <MapPin size={12} />
-                  <span className="truncate">{user.group}</span>
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5 uppercase font-bold tracking-tighter">
+                  <Zap size={10} className="text-primary" fill="currentColor" />
+                  Level {user.level || 1}
                 </div>
               </div>
 
               {/* XP Score */}
               <div className="text-right">
                 <p className="font-mono font-bold text-lg text-primary tracking-tight">
-                  {user.xp.toLocaleString()}
+                  {(user.xp || 0).toLocaleString()}
                 </p>
                 <p className="text-[10px] text-muted-foreground uppercase font-semibold">XP</p>
               </div>

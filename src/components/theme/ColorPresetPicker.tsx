@@ -52,7 +52,7 @@ export function ColorPresetPicker() {
         })}
       </div>
       <p className="text-xs text-muted-foreground font-semibold">
-        {COLOR_PRESETS[colorPresetId].nameKey}
+        {COLOR_PRESETS[colorPresetId]?.nameKey || 'Unknown Theme'}
       </p>
     </div>
   );

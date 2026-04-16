@@ -68,175 +68,167 @@ async function sendNotification(type: SessionType) {
   });
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+let globalWorker: Worker | null = null;
+let completing = false;
+let initialized = false;
 
-export function usePomodoro() {
-  const store    = useTimerStore();
-  const taskStore= useTaskStore();
-  const workerRef     = useRef<Worker | null>(null);
-  const completingRef = useRef(false); // guard against double-fire
+// ── Session advance (also called on skip, but then skipped=true) ─────────────
+function advanceSession(completedType: SessionType, skipped = false) {
+  const store = useTimerStore.getState();
+  const { settings, currentCycle, activeTaskId } = store;
 
-  // ── Session advance (also called on skip, but then skipped=true) ─────────────
-  const advanceSession = useCallback(
-    (completedType: SessionType, skipped = false) => {
-      const { settings, currentCycle, activeTaskId } = useTimerStore.getState();
+  if (!skipped && completedType === 'focus' && activeTaskId) {
+    useTaskStore.getState().incrementPomodoro(activeTaskId);
+  }
 
-      // Award Pomodoro to active task on a completed (non-skipped) focus session
-      if (!skipped && completedType === 'focus' && activeTaskId) {
-        taskStore.incrementPomodoro(activeTaskId);
-      }
-      // Award XP to global gamification and internal stats if perfectly completed
-      if (!skipped && completedType === 'focus') {
-        store.incrementCompletedSessions();
-        const durationMinutes = Math.floor(settings.focusDuration);
-        // Base formula: 2 XP per minute focused
-        const xpEarned = durationMinutes * 2; 
-        
-        useGamificationStore.getState().addStudyMinutes(durationMinutes);
-        useGamificationStore.getState().addXp(xpEarned);
-      }
+  if (!skipped && completedType === 'focus') {
+    const durationMinutes = Math.floor(settings.focusDuration);
+    useGamificationStore.getState().logStudySession({
+      type: 'focus',
+      duration: durationMinutes,
+      taskId: activeTaskId
+    });
+  }
 
-      // Determine next session type
-      let nextType: SessionType;
-      let nextCycle = currentCycle;
+  let nextType: SessionType;
+  let nextCycle = currentCycle;
 
-      if (completedType === 'focus') {
-        if (currentCycle >= settings.cyclesBeforeLongBreak) {
-          nextType = 'longBreak';
-        } else {
-          nextType = 'shortBreak';
-        }
-      } else {
-        nextType = 'focus';
-        if (completedType === 'longBreak') {
-          nextCycle = 1;
-        } else {
-          nextCycle = currentCycle + 1;
-        }
-      }
-
-      const newTotal  = getSessionDuration(nextType, settings);
-      const autoStart = completedType === 'focus'
-        ? settings.autoStartBreaks
-        : settings.autoStartFocus;
-
-      store.setCurrentCycle(nextCycle);
-      store.setSessionType(nextType);
-      store.setTotalSeconds(newTotal);
-      store.setRemaining(newTotal);
-      store.setStatus(autoStart ? 'running' : 'idle');
-
-      if (autoStart && workerRef.current) {
-        workerRef.current.postMessage({ type: 'START', totalSeconds: newTotal });
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-
-  // ── Worker lifecycle ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const worker = new Worker('/timerWorker.js');
-    workerRef.current = worker;
-
-    worker.onmessage = ({ data }) => {
-      if (data.type === 'TICK') {
-        useTimerStore.getState().setRemaining(data.remaining);
-      } else if (data.type === 'DONE') {
-        if (completingRef.current) return;
-        completingRef.current = true;
-
-        const type = useTimerStore.getState().sessionType;
-        playDing();
-        sendNotification(type);
-        advanceSession(type);
-        setTimeout(() => { completingRef.current = false; }, 600);
-      }
-    };
-
-    // ── Re-hydrate after navigation ─────────────────────────────────────────────
-    const { status, remainingSeconds, lastUpdatedAt, sessionType } =
-      useTimerStore.getState();
-
-    if (status === 'running') {
-      const elapsed         = (Date.now() - lastUpdatedAt) / 1000;
-      const actualRemaining = Math.max(0, remainingSeconds - elapsed);
-
-      if (actualRemaining <= 0) {
-        playDing();
-        sendNotification(sessionType);
-        advanceSession(sessionType);
-      } else {
-        store.setRemaining(Math.floor(actualRemaining));
-        worker.postMessage({ type: 'START', totalSeconds: Math.floor(actualRemaining) });
-      }
+  if (completedType === 'focus') {
+    if (currentCycle >= settings.cyclesBeforeLongBreak) {
+      nextType = 'longBreak';
+    } else {
+      nextType = 'shortBreak';
     }
+  } else {
+    nextType = 'focus';
+    if (completedType === 'longBreak') {
+      nextCycle = 1;
+    } else {
+      nextCycle = currentCycle + 1;
+    }
+  }
 
-    return () => {
-      worker.terminate();
-      workerRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const newTotal = getSessionDuration(nextType, settings);
+  const autoStart =
+    completedType === 'focus' ? settings.autoStartBreaks : settings.autoStartFocus;
+
+  store.setCurrentCycle(nextCycle);
+  store.setSessionType(nextType);
+  store.setTotalSeconds(newTotal);
+  store.setRemaining(newTotal);
+  store.setStatus(autoStart ? 'running' : 'idle');
+
+  if (autoStart && globalWorker) {
+    globalWorker.postMessage({ type: 'START', totalSeconds: newTotal });
+  }
+}
+
+// ── Worker lifecycle Singleton ────────────────────────────────────────────────
+export function initGlobalTimer() {
+  if (typeof window === 'undefined' || initialized) return;
+  initialized = true;
+
+  const worker = new Worker('/timerWorker.js');
+  globalWorker = worker;
+
+  worker.onmessage = ({ data }) => {
+    if (data.type === 'TICK') {
+      useTimerStore.getState().setRemaining(data.remaining);
+    } else if (data.type === 'DONE') {
+      if (completing) return;
+      completing = true;
+
+      const type = useTimerStore.getState().sessionType;
+      playDing();
+      sendNotification(type);
+      advanceSession(type);
+      setTimeout(() => {
+        completing = false;
+      }, 600);
+    }
+  };
+
+  // ── Re-hydrate on startup ──
+  const { status, remainingSeconds, lastUpdatedAt, sessionType } = useTimerStore.getState();
+
+  if (status === 'running') {
+    const elapsed = (Date.now() - lastUpdatedAt) / 1000;
+    const actualRemaining = Math.max(0, remainingSeconds - elapsed);
+
+    if (actualRemaining <= 0) {
+      playDing();
+      sendNotification(sessionType);
+      advanceSession(sessionType);
+    } else {
+      useTimerStore.getState().setRemaining(Math.floor(actualRemaining));
+      worker.postMessage({ type: 'START', totalSeconds: Math.floor(actualRemaining) });
+    }
+  }
+}
+
+// ── Initializer Component (place in layout or NavShell) ──────────────────────
+export function GlobalTimerInitializer() {
+  useEffect(() => {
+    initGlobalTimer();
   }, []);
+  return null;
+}
+
+// ── Hook for UI controls ──────────────────────────────────────────────────────
+export function usePomodoro() {
+  const store = useTimerStore();
 
   // ── Public controls ───────────────────────────────────────────────────────────
 
   const start = useCallback(() => {
-    if (!workerRef.current) return;
-    // Request notification permission proactively on first start
+    if (!globalWorker) return;
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
-    workerRef.current.postMessage({
+    globalWorker.postMessage({
       type: 'START',
       totalSeconds: useTimerStore.getState().remainingSeconds,
     });
     store.setStatus('running');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [store]);
 
   const pause = useCallback(() => {
-    workerRef.current?.postMessage({ type: 'PAUSE' });
+    globalWorker?.postMessage({ type: 'PAUSE' });
     store.setStatus('paused');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [store]);
 
   const resume = useCallback(() => {
-    if (!workerRef.current) return;
-    workerRef.current.postMessage({ type: 'RESUME' });
+    if (!globalWorker) return;
+    globalWorker.postMessage({ type: 'RESUME' });
     store.setStatus('running');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [store]);
 
   const reset = useCallback(() => {
-    workerRef.current?.postMessage({ type: 'STOP' });
+    globalWorker?.postMessage({ type: 'STOP' });
     const { sessionType, settings } = useTimerStore.getState();
     const total = getSessionDuration(sessionType, settings);
     store.setStatus('idle');
     store.setRemaining(total);
     store.setTotalSeconds(total);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [store]);
 
   const skip = useCallback(() => {
-    workerRef.current?.postMessage({ type: 'STOP' });
+    globalWorker?.postMessage({ type: 'STOP' });
     advanceSession(useTimerStore.getState().sessionType, true);
-  }, [advanceSession]);
+  }, []);
 
   const switchSession = useCallback((type: SessionType) => {
-    workerRef.current?.postMessage({ type: 'STOP' });
+    globalWorker?.postMessage({ type: 'STOP' });
     const { settings } = useTimerStore.getState();
     const total = getSessionDuration(type, settings);
     store.setStatus('idle');
     store.setSessionType(type);
     store.setTotalSeconds(total);
     store.setRemaining(total);
-    // Reset cycle when switching to focus manually
     if (type === 'focus') store.setCurrentCycle(1);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [store]);
+  
+  const { status } = store;
 
-  return { start, pause, resume, reset, skip, switchSession };
+  return { start, pause, resume, reset, skip, switchSession, status };
 }

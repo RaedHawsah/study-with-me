@@ -132,7 +132,11 @@
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "back": "Back"
+    "back": "Back",
+    "search": "Search...",
+    "add": "Add",
+    "delete": "Delete",
+    "no_results": "No results found"
   },
   "room": {
     "title": "Group Study Room",
@@ -156,8 +160,15 @@
     "leaderboard": "Leaderboard",
     "rankDesc": "Ranked by total study time and focus efficiency.",
     "global": "Global",
-    "university": "My Group",
+    "university": "University",
     "level": "Level",
     "xp": "XP"
+  },
+  "notes": {
+    "empty": "No notes yet. Create one!",
+    "untitled": "Untitled Note",
+    "no_content": "No content",
+    "placeholder_title": "Note title...",
+    "placeholder_content": "Type your thoughts here..."
   }
 }

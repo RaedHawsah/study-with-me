@@ -14,21 +14,26 @@ import { getDir, type Locale } from '@/i18n/config';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
+import Script from 'next/script';
+import { RootClientLayout } from '@/components/shell/RootClientLayout';
+
 export const metadata: Metadata = {
   title: {
-    default: 'Study With Me',
+    default: 'Study With Me | Your Ultimate Productivity Partner',
     template: '%s · Study With Me',
   },
   description:
-    'A focused productivity companion for students. Track sessions, take notes, and build study streaks.',
-  keywords: ['study', 'productivity', 'pomodoro', 'focus', 'notes'],
+    'A high-fidelity, focused productivity companion. Features 3D companions, customizable ambience, and seamless study tracking.',
+  keywords: ['study', 'productivity', 'pomodoro', 'focus', 'notes', 'ambience'],
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'StudyWithMe',
+  },
   icons: {
     icon: '/favicon.ico',
-  },
-  openGraph: {
-    type: 'website',
-    siteName: 'Study With Me',
+    apple: '/apple-icon.png',
   },
 };
 
@@ -82,10 +87,21 @@ export default async function RootLayout({
     >
       <head>
         {/* Anti-FOUC: set theme before paint */}
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeScript}
+        </Script>
+        {/* Google Fonts — preconnect first (non-blocking), then load stylesheet */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        />
       </head>
-      <body className="min-h-screen bg-background text-foreground transition-theme">
-        {children}
+      <body className="min-h-screen bg-[#050505] text-foreground transition-theme overflow-x-hidden">
+        <RootClientLayout>
+          {children}
+        </RootClientLayout>
         <SpeedInsights />
       </body>
     </html>

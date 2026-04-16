@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Settings2, ChevronDown } from 'lucide-react';
 import { useTimerStore, type TimerSettings } from '@/store/useTimerStore';
@@ -22,6 +22,20 @@ function Stepper({
   suffix?: string;
   onChange: (v: number) => void;
 }) {
+  const [internalValue, setInternalValue] = useState(value.toString());
+
+  useEffect(() => {
+    setInternalValue(value.toString());
+  }, [value]);
+
+  const handleBlur = () => {
+    let num = parseInt(internalValue, 10);
+    if (isNaN(num)) num = min;
+    const bounded = Math.min(max, Math.max(min, num));
+    setInternalValue(bounded.toString());
+    onChange(bounded);
+  };
+
   return (
     <div className="flex flex-col items-center gap-1.5">
       <span className="text-xs font-medium text-muted-foreground text-center leading-tight">
@@ -36,13 +50,31 @@ function Stepper({
             hover:bg-muted/70 transition-colors flex items-center justify-center
             font-bold text-base leading-none
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+            shrink-0
           "
         >
           −
         </button>
-        <span className="text-sm font-bold tabular-nums w-9 text-center text-foreground">
-          {value}{suffix}
-        </span>
+        <div className="relative flex items-center justify-center w-10">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={internalValue}
+            onChange={(e) => setInternalValue(e.target.value.replace(/\D/g, ''))}
+            onBlur={handleBlur}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleBlur();
+              }
+            }}
+            className="w-full text-center bg-transparent border-b border-transparent focus:border-primary/50 focus:outline-none text-sm font-bold tabular-nums text-foreground appearance-none m-0 p-0 transition-colors"
+          />
+          {suffix && (
+            <span className="absolute -end-3 text-[10px] font-bold text-muted-foreground pointer-events-none">
+              {suffix}
+            </span>
+          )}
+        </div>
         <button
           onClick={() => onChange(Math.min(max, value + 1))}
           aria-label={`Increase ${label}`}
@@ -51,6 +83,7 @@ function Stepper({
             hover:bg-muted/70 transition-colors flex items-center justify-center
             font-bold text-base leading-none
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+            shrink-0
           "
         >
           +
@@ -122,15 +155,15 @@ export function TimerSettings() {
         aria-expanded={open}
         className="
           flex items-center gap-1.5
-          text-xs text-muted-foreground hover:text-foreground
+          text-sm md:text-base font-medium text-muted-foreground hover:text-foreground
           transition-colors
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded
         "
       >
-        <Settings2 size={13} aria-hidden="true" />
+        <Settings2 size={16} aria-hidden="true" />
         <span>{t('timer.settings')}</span>
         <ChevronDown
-          size={13}
+          size={16}
           aria-hidden="true"
           style={{
             transform:  open ? 'rotate(180deg)' : 'rotate(0deg)',

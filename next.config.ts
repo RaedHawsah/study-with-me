@@ -7,6 +7,17 @@ const nextConfig: NextConfig = {
   // Strict-mode for catching React 18/19 double-invoke issues early
   reactStrictMode: true,
 
+  // Image configuration for external avatars
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+      },
+    ],
+  },
+
   // Custom headers for PWA manifest and security
   async headers() {
     return [
@@ -15,6 +26,13 @@ const nextConfig: NextConfig = {
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Content-Type', value: 'application/manifest+json' },
+        ],
+      },
+      {
+        // Cache audio files for 1 year — they never change (content-addressed)
+        source: '/audio/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
       {
