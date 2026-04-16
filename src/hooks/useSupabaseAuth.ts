@@ -48,13 +48,21 @@ export function useSupabaseAuth() {
   }, []);
 
   const signInWithGoogle = async () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const redirectTo = `${origin}/`;
+    
+    console.log('[Auth] Signing in with Google, redirecting to:', redirectTo);
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo,
       },
     });
-    if (error) throw error;
+    if (error) {
+      console.error('[Auth] Google Sign-in error:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {

@@ -237,15 +237,29 @@ export function useStudyRoom() {
             isOwn: msg.user_id === myId
           });
         })
-        .subscribe((status: string) => {
-          if (status === 'SUBSCRIBED') {
-            setStatus('joined');
-            syncPresence();
-          } else if (status === 'CHANNEL_ERROR') {
-            setError(`Failed to join: ${status}`);
-            setStatus('error');
-          }
-        }); 
+      const timeout = setTimeout(() => {
+        if (useRoomStore.getState().status === 'joining') {
+          console.error('[Room] Connection timed out after 10s');
+          setError('Connection timed out. Please check your internet or Supabase settings.');
+          setStatus('error');
+          if (channelRef.current) supabase.removeChannel(channelRef.current);
+        }
+      }, 10000);
+
+      channel.subscribe((status: string) => {
+        console.log(`[Room] Channel status: ${status}`);
+        
+        if (status === 'SUBSCRIBED') {
+          clearTimeout(timeout);
+          setStatus('joined');
+          syncPresence();
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          clearTimeout(timeout);
+          console.error(`[Room] Failed to join: ${status}`);
+          setError(`Failed to join: ${status}`);
+          setStatus('error');
+        }
+      }); 
 
     } catch (err: any) {
       console.error('Study room join failed:', err);
