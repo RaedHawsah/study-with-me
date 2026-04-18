@@ -313,7 +313,7 @@ const THEME_ANIMATIONS: Record<ColorPresetId, {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function MovingWallpaper() {
-  const { colorPresetId } = usePreferencesStore();
+  const { colorPresetId, backgroundType, backgroundValue } = usePreferencesStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const pausedRef = useRef(false);
@@ -322,7 +322,10 @@ export function MovingWallpaper() {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || backgroundType !== 'default') {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      return;
+    }
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -366,22 +369,59 @@ export function MovingWallpaper() {
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [mounted, colorPresetId]);
+  }, [mounted, colorPresetId, backgroundType]);
 
   if (!mounted) return null;
 
+  const isCustom = backgroundType === 'custom' && backgroundValue;
+  const isVideo = isCustom && /\.(mp4|webm)(\?.*)?$/i.test(backgroundValue);
+  
+  // Resolve path: if it starts with http, it's a Supabase URL, otherwise it's local
+  const resolvedSrc = isCustom && (backgroundValue.startsWith('http') 
+    ? backgroundValue 
+    : `/backgrounds/${backgroundValue}`);
+
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: -2, willChange: 'transform' }}
-        aria-hidden="true"
-      />
+      {/* Custom Background (Video or Image) */}
+      {isCustom && resolvedSrc && (
+        <div 
+          className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden"
+          style={{ zIndex: -2 }}
+        >
+          {isVideo ? (
+            <video
+              src={resolvedSrc}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              src={resolvedSrc}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          )}
+        </div>
+      )}
+
+      {/* Particle Canvas (only shown if backgroundType is 'default') */}
+      {backgroundType === 'default' && (
+        <canvas
+          ref={canvasRef}
+          className="fixed inset-0 w-full h-full pointer-events-none"
+          style={{ zIndex: -2, willChange: 'transform' }}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Dark overlay — reduced from black/55 for better visuals */}
       <div
         className="fixed inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: -1, background: 'rgba(0,0,0,0.48)' }}
+        style={{ zIndex: -1, background: isCustom ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.48)' }}
       />
     </>
   );

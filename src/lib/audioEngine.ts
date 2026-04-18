@@ -271,4 +271,57 @@ export class AmbientSoundEngine {
       ('AudioContext' in window || 'webkitAudioContext' in window)
     );
   }
+
+  // ─── Pomodoro Alarm Scheduling ─────────────────────────────────────────────
+  
+  private activeAlarmSource: AudioScheduledSourceNode | null = null;
+
+  /**
+   * Schedules the "Ding" sound to play at exactly [delaySeconds] in the future.
+   * This uses the high-precision audio hardware clock.
+   */
+  public async schedulePomodoroAlarm(delaySeconds: number): Promise<void> {
+    if (typeof window === 'undefined') return;
+    try {
+      const ctx = await this.getCtx();
+      this.cancelPomodoroAlarm();
+
+      const notes = [660, 880, 1100];
+      const startTime = ctx.currentTime + delaySeconds;
+      
+      // We create a master group for these notes
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        
+        const noteStart = startTime + i * 0.14;
+        
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.setValueAtTime(0.22, noteStart);
+        gain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.4);
+        
+        osc.start(noteStart);
+        osc.stop(noteStart + 0.4);
+        
+        // Cleanup if we stop after it starts
+        if (i === 0) {
+          // Keep track of one to allow cancellation if needed (approximate)
+          this.activeAlarmSource = osc;
+        }
+      });
+    } catch (err) {
+      console.warn('[AudioEngine] Failed to schedule alarm:', err);
+    }
+  }
+
+  public cancelPomodoroAlarm(): void {
+    if (this.activeAlarmSource) {
+      try { this.activeAlarmSource.stop(); } catch { /* ignore */ }
+      this.activeAlarmSource = null;
+    }
+  }
 }

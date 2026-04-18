@@ -244,6 +244,12 @@ export function useStudyRoom() {
             isOwn: msg.user_id === myId
           });
         })
+        .on('system', { event: '*' }, (payload: any) => {
+          console.log('[Room] System event:', payload);
+          if (payload.status === 'error') {
+            setError(`System Error: ${payload.message || 'Unknown protocol error'}`);
+          }
+        })
       const timeout = setTimeout(() => {
         if (useRoomStore.getState().status === 'joining') {
           console.error('[Room] Connection timed out after 10s');

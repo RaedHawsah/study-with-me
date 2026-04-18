@@ -71,7 +71,8 @@
     "colorTheme": "نظام الألوان",
     "background": "الخلفية",
     "timerShape": "شكل المؤقّت",
-    "custom": "مخصّص"
+    "custom": "مخصّص",
+    "customBackgrounds": "خلفيات متحركة"
   },
   "themes": {
     "default": "افتراضي",

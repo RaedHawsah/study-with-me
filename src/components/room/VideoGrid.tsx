@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
-import { User, Zap, Flame, Coffee, BookOpen, Monitor } from 'lucide-react';
+import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2 } from 'lucide-react';
 
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
   const isFocus = peer.status === 'focus';
@@ -14,6 +14,18 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       videoRef.current.srcObject = peer.stream;
     }
   }, [peer.stream]);
+  
+  const handleFullscreen = () => {
+    if (videoRef.current) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      } else if ((videoRef.current as any).webkitRequestFullscreen) {
+        (videoRef.current as any).webkitRequestFullscreen();
+      } else if ((videoRef.current as any).msRequestFullscreen) {
+        (videoRef.current as any).msRequestFullscreen();
+      }
+    }
+  };
   
   return (
     <div className={`
@@ -45,12 +57,26 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         `} />
       )}
 
-      {/* Header: Level & Status Icon */}
+      {/* Header: Level & Status Icon & Fullscreen Button */}
       <div className="flex justify-between items-start z-10">
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white shadow-inner">
-          {isScreen ? <Monitor size={10} className="text-primary" /> : <Zap size={10} className="text-primary" fill="currentColor" />}
-          {isScreen ? 'Screen' : `LVL ${peer.level || 1}`}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white shadow-inner w-fit">
+            {isScreen ? <Monitor size={10} className="text-primary" /> : <Zap size={10} className="text-primary" fill="currentColor" />}
+            {isScreen ? 'Screen' : `LVL ${peer.level || 1}`}
+          </div>
+          
+          {/* Fullscreen Button - Only shows when video exists and on hover */}
+          {peer.stream && (
+            <button
+              onClick={handleFullscreen}
+              className="group/fs p-2 rounded-xl bg-black/40 hover:bg-primary/80 backdrop-blur-md border border-white/10 text-white transition-all duration-300 opacity-0 group-hover:opacity-100 translate-x-[-10px] group-hover:translate-x-0 shadow-lg"
+              title="Fullscreen"
+            >
+              <Maximize2 size={14} className="group-hover/fs:scale-110 transition-transform" />
+            </button>
+          )}
         </div>
+
         <div className={`
           p-2 rounded-2xl shadow-lg backdrop-blur-md
           ${isFocus ? 'bg-primary/80 text-primary-foreground animate-pulse' : 

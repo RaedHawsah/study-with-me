@@ -87,9 +87,10 @@ export default async function RootLayout({
     >
       <head>
         {/* Anti-FOUC: set theme before paint */}
-        <Script id="theme-init" strategy="beforeInteractive">
-          {themeScript}
-        </Script>
+        <script
+          id="theme-init"
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
         {/* Google Fonts — preconnect first (non-blocking), then load stylesheet */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

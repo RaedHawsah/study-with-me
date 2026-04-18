@@ -79,10 +79,10 @@ export function ThemeEngine() {
   // ── Background ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const root = document.documentElement;
-    if (backgroundType === 'default' || !backgroundValue) {
-      root.style.removeProperty('--app-background');
-    } else {
+    if (['color', 'gradient', 'image'].includes(backgroundType) && backgroundValue) {
       root.style.setProperty('--app-background', backgroundValue);
+    } else {
+      root.style.removeProperty('--app-background');
     }
   }, [backgroundType, backgroundValue]);
 

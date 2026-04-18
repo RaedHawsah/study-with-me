@@ -71,7 +71,8 @@
     "colorTheme": "Color Theme",
     "background": "Background",
     "timerShape": "Timer Shape",
-    "custom": "Custom"
+    "custom": "Custom",
+    "customBackgrounds": "Custom Motion"
   },
   "themes": {
     "default": "Default",

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { createClient } from '@/utils/supabase/client';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -40,7 +41,7 @@ export const DEFAULT_SETTINGS: TimerSettings = {
 // ─── Store ────────────────────────────────────────────────────────────────────
 
 interface TimerStore {
-  // ── Runtime state (not in DB for performance during active session) ──
+  // ── Runtime state ──
   status: TimerStatus;
   remainingSeconds: number;
   lastUpdatedAt: number;
@@ -51,7 +52,7 @@ interface TimerStore {
   currentCycle: number;
   completedFocusSessions: number;
 
-  // ── User preferences (Synced with DB) ──
+  // ── User preferences ──
   settings: TimerSettings;
   activeTaskId: string | null;
 
@@ -70,102 +71,114 @@ interface TimerStore {
   incrementCompletedSessions: () => void;
 }
 
-export const useTimerStore = create<TimerStore>((set, get) => ({
-  status: 'idle',
-  remainingSeconds: DEFAULT_SETTINGS.focusDuration * 60,
-  lastUpdatedAt: Date.now(),
+export const useTimerStore = create<TimerStore>()(
+  persist(
+    (set, get) => ({
+      status: 'idle',
+      remainingSeconds: DEFAULT_SETTINGS.focusDuration * 60,
+      lastUpdatedAt: Date.now(),
 
-  sessionType: 'focus',
-  totalSeconds: DEFAULT_SETTINGS.focusDuration * 60,
-  currentCycle: 1,
-  completedFocusSessions: 0,
+      sessionType: 'focus',
+      totalSeconds: DEFAULT_SETTINGS.focusDuration * 60,
+      currentCycle: 1,
+      completedFocusSessions: 0,
 
-  settings: DEFAULT_SETTINGS,
-  activeTaskId: null,
+      settings: DEFAULT_SETTINGS,
+      activeTaskId: null,
 
-  fetchSettings: async (userId?: string) => {
-    const supabase = createClient();
-    let effectiveUserId = userId;
+      fetchSettings: async (userId?: string) => {
+        const supabase = createClient();
+        let effectiveUserId = userId;
 
-    if (!effectiveUserId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      effectiveUserId = user?.id;
+        if (!effectiveUserId) {
+          const { data: { user } } = await supabase.auth.getUser();
+          effectiveUserId = user?.id;
+        }
+
+        if (!effectiveUserId) return;
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('settings')
+          .eq('id', effectiveUserId)
+          .single();
+
+        if (!error && data?.settings?.timer) {
+          const dbSettings = data.settings.timer as TimerSettings;
+          const { sessionType, status } = get();
+          const newTotal = getSessionDuration(sessionType, dbSettings);
+          
+          set({ 
+            settings: dbSettings,
+            totalSeconds: status === 'idle' ? newTotal : get().totalSeconds,
+            remainingSeconds: status === 'idle' ? newTotal : get().remainingSeconds
+          });
+        }
+      },
+
+      clearStore: () => set({
+        settings: DEFAULT_SETTINGS,
+        status: 'idle',
+        sessionType: 'focus',
+        remainingSeconds: DEFAULT_SETTINGS.focusDuration * 60,
+        totalSeconds: DEFAULT_SETTINGS.focusDuration * 60,
+        currentCycle: 1,
+      }),
+
+      updateSettings: async (updates) => {
+        const currentSettings = get().settings;
+        const newSettings = { ...currentSettings, ...updates };
+        set({ settings: newSettings });
+
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('settings')
+            .eq('id', user.id)
+            .single();
+
+          const updatedFullSettings = {
+            ...(profile?.settings || {}),
+            timer: newSettings
+          };
+
+          await supabase
+            .from('profiles')
+            .update({ settings: updatedFullSettings })
+            .eq('id', user.id);
+        }
+
+        const { sessionType, status } = get();
+        if (status === 'idle') {
+          const newTotal = getSessionDuration(sessionType, newSettings);
+          set({ totalSeconds: newTotal, remainingSeconds: newTotal });
+        }
+      },
+
+      setStatus: (status) => set({ status, lastUpdatedAt: Date.now() }),
+      setRemaining: (remainingSeconds) => set({ remainingSeconds, lastUpdatedAt: Date.now() }),
+      setSessionType: (sessionType) => set({ sessionType }),
+      setCurrentCycle: (currentCycle) => set({ currentCycle }),
+      setTotalSeconds: (totalSeconds) => set({ totalSeconds }),
+      setActiveTask: (activeTaskId) => set({ activeTaskId }),
+      incrementCompletedSessions: () => 
+        set((s) => ({ completedFocusSessions: s.completedFocusSessions + 1 })),
+    }),
+    {
+      name: 'study-timer-v1',
+      partialize: (state) => ({
+        status: state.status,
+        remainingSeconds: state.remainingSeconds,
+        lastUpdatedAt: state.lastUpdatedAt,
+        sessionType: state.sessionType,
+        totalSeconds: state.totalSeconds,
+        currentCycle: state.currentCycle,
+        completedFocusSessions: state.completedFocusSessions,
+        settings: state.settings,
+        activeTaskId: state.activeTaskId,
+      }),
     }
-
-    if (!effectiveUserId) return;
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('settings')
-      .eq('id', effectiveUserId)
-      .single();
-
-    if (!error && data?.settings?.timer) {
-      const dbSettings = data.settings.timer as TimerSettings;
-      const { sessionType, status } = get();
-      const newTotal = getSessionDuration(sessionType, dbSettings);
-      
-      set({ 
-        settings: dbSettings,
-        totalSeconds: status === 'idle' ? newTotal : get().totalSeconds,
-        remainingSeconds: status === 'idle' ? newTotal : get().remainingSeconds
-      });
-    } else if (error && error.code !== 'PGRST116') {
-      // PGRST116 is 'no rows found', which is fine for brand new users
-      console.error('Failed to fetch timer settings:', error.message || error);
-    }
-  },
-
-  clearStore: () => set({
-    settings: DEFAULT_SETTINGS,
-    status: 'idle',
-    sessionType: 'focus',
-    remainingSeconds: DEFAULT_SETTINGS.focusDuration * 60,
-    totalSeconds: DEFAULT_SETTINGS.focusDuration * 60,
-    currentCycle: 1,
-  }),
-
-  updateSettings: async (updates) => {
-    const currentSettings = get().settings;
-    const newSettings = { ...currentSettings, ...updates };
-    
-    // Optimistic Update
-    set({ settings: newSettings });
-
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      // Get current profile data since we store settings in a jsonb column
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('settings')
-        .eq('id', user.id)
-        .single();
-
-      const updatedFullSettings = {
-        ...(profile?.settings || {}),
-        timer: newSettings
-      };
-
-      await supabase
-        .from('profiles')
-        .update({ settings: updatedFullSettings })
-        .eq('id', user.id);
-    }
-
-    const { sessionType, status } = get();
-    if (status === 'idle') {
-      const newTotal = getSessionDuration(sessionType, newSettings);
-      set({ totalSeconds: newTotal, remainingSeconds: newTotal });
-    }
-  },
-
-  setStatus: (status) => set({ status, lastUpdatedAt: Date.now() }),
-  setRemaining: (remainingSeconds) => set({ remainingSeconds, lastUpdatedAt: Date.now() }),
-  setSessionType: (sessionType) => set({ sessionType }),
-  setCurrentCycle: (currentCycle) => set({ currentCycle }),
-  setTotalSeconds: (totalSeconds) => set({ totalSeconds }),
-  setActiveTask: (activeTaskId) => set({ activeTaskId }),
-  incrementCompletedSessions: () => 
-    set((s) => ({ completedFocusSessions: s.completedFocusSessions + 1 })),
-}));
+  )
+);

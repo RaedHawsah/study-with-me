@@ -48,15 +48,21 @@ export function useSupabaseAuth() {
   }, []);
 
   const signInWithGoogle = async () => {
+    // Determine the redirect URL dynamically based on the current environment
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const redirectTo = `${origin}/`;
+    // Ensure we don't have trailing slashes or other artifacts that might confuse Supabase whitelist
+    const redirectTo = `${origin.replace(/\/$/, '')}/ar/settings`;
     
-    console.log('[Auth] Signing in with Google, redirecting to:', redirectTo);
+    console.log('[Auth] Initiating Google Sign-in. Redirect Target:', redirectTo);
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
     if (error) {

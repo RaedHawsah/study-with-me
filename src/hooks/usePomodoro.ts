@@ -4,11 +4,9 @@
  * usePomodoro — owns the Web Worker lifecycle and co-ordinates between
  * useTimerStore and useTaskStore.
  *
- * Re-hydration: on mount it checks whether the timer was running when the
- * component last unmounted (tab switch / navigation) by comparing
- * lastUpdatedAt with Date.now() and adjusting remainingSeconds accordingly.
+ * Re-hydration: uses syncTimerWithReality for wall-clock accuracy.
  *
- * Completion: plays a short ding, sends a browser notification (if granted),
+ * Completion: plays a short ding, sends an audible browser notification,
  * advances to the next session, and awards a Pomodoro to the active task.
  */
 import { useEffect, useRef, useCallback } from 'react';
@@ -19,8 +17,9 @@ import {
 } from '@/store/useTimerStore';
 import { useTaskStore } from '@/store/useTaskStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
+import { AmbientSoundEngine } from '@/lib/audioEngine';
 
-// ─── Session colors (shared with UI components) ────────────────────────────────
+// ─── Session colors ───────────────────────────────────────────────────────────
 
 export const SESSION_COLORS: Record<SessionType, string> = {
   focus:      'var(--primary)',
@@ -31,25 +30,8 @@ export const SESSION_COLORS: Record<SessionType, string> = {
 // ─── Audio feedback ───────────────────────────────────────────────────────────
 
 function playDing() {
-  try {
-    const ctx = new AudioContext();
-    const notes = [660, 880, 1100];
-    notes.forEach((freq, i) => {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = freq;
-      osc.type = 'sine';
-      const t0 = ctx.currentTime + i * 0.14;
-      gain.gain.setValueAtTime(0.22, t0);
-      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
-      osc.start(t0);
-      osc.stop(t0 + 0.4);
-    });
-  } catch {
-    // AudioContext not available (SSR / some browsers)
-  }
+  // Use the professional engine for punctual background delivery
+  AmbientSoundEngine.getInstance().schedulePomodoroAlarm(0);
 }
 
 // ─── Browser notification ─────────────────────────────────────────────────────
@@ -64,13 +46,40 @@ async function sendNotification(type: SessionType) {
   const isBreak = type !== 'focus';
   new Notification(isBreak ? '🎉 Focus session done!' : '⏰ Break is over!', {
     body: isBreak ? 'Great work — take a well-deserved break.' : 'Time to focus!',
-    silent: true,
+    silent: false, // Ensure system sound fires
   });
 }
 
 let globalWorker: Worker | null = null;
 let completing = false;
 let initialized = false;
+
+// ── Session Sync (re-calculates remaining based on wall-clock) ───────────────
+function syncTimerWithReality() {
+  const { status, remainingSeconds, lastUpdatedAt, sessionType } = useTimerStore.getState();
+  if (status === 'running') {
+    const elapsed = (Date.now() - lastUpdatedAt) / 1000;
+    const actualRemaining = Math.max(0, remainingSeconds - elapsed);
+
+    if (actualRemaining <= 0) {
+      if (!completing) {
+        completing = true;
+        playDing();
+        sendNotification(sessionType);
+        advanceSession(sessionType);
+        setTimeout(() => { completing = false; }, 600);
+      }
+    } else {
+      const rounded = Math.floor(actualRemaining);
+      // We DONT use setRemaining here because it would update lastUpdatedAt to NOW
+      // Instead we use a silent update or just let the worker handle it
+      // Actually, updating the store is fine as long as we also update the worker and alarm
+      useTimerStore.getState().setRemaining(rounded);
+      globalWorker?.postMessage({ type: 'START', totalSeconds: rounded });
+      AmbientSoundEngine.getInstance().schedulePomodoroAlarm(rounded);
+    }
+  }
+}
 
 // ── Session advance (also called on skip, but then skipped=true) ─────────────
 function advanceSession(completedType: SessionType, skipped = false) {
@@ -120,6 +129,9 @@ function advanceSession(completedType: SessionType, skipped = false) {
 
   if (autoStart && globalWorker) {
     globalWorker.postMessage({ type: 'START', totalSeconds: newTotal });
+    AmbientSoundEngine.getInstance().schedulePomodoroAlarm(newTotal);
+  } else {
+    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
   }
 }
 
@@ -148,25 +160,17 @@ export function initGlobalTimer() {
     }
   };
 
-  // ── Re-hydrate on startup ──
-  const { status, remainingSeconds, lastUpdatedAt, sessionType } = useTimerStore.getState();
+  // ── Sync Listeners ──
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') syncTimerWithReality();
+  });
+  window.addEventListener('focus', syncTimerWithReality);
 
-  if (status === 'running') {
-    const elapsed = (Date.now() - lastUpdatedAt) / 1000;
-    const actualRemaining = Math.max(0, remainingSeconds - elapsed);
-
-    if (actualRemaining <= 0) {
-      playDing();
-      sendNotification(sessionType);
-      advanceSession(sessionType);
-    } else {
-      useTimerStore.getState().setRemaining(Math.floor(actualRemaining));
-      worker.postMessage({ type: 'START', totalSeconds: Math.floor(actualRemaining) });
-    }
-  }
+  // ── Initial Sync ──
+  syncTimerWithReality();
 }
 
-// ── Initializer Component (place in layout or NavShell) ──────────────────────
+// ── Initializer Component ────────────────────────────────────────────────────
 export function GlobalTimerInitializer() {
   useEffect(() => {
     initGlobalTimer();
@@ -178,33 +182,37 @@ export function GlobalTimerInitializer() {
 export function usePomodoro() {
   const store = useTimerStore();
 
-  // ── Public controls ───────────────────────────────────────────────────────────
-
   const start = useCallback(() => {
     if (!globalWorker) return;
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
+    const currentRemaining = useTimerStore.getState().remainingSeconds;
     globalWorker.postMessage({
       type: 'START',
-      totalSeconds: useTimerStore.getState().remainingSeconds,
+      totalSeconds: currentRemaining,
     });
+    AmbientSoundEngine.getInstance().schedulePomodoroAlarm(currentRemaining);
     store.setStatus('running');
   }, [store]);
 
   const pause = useCallback(() => {
     globalWorker?.postMessage({ type: 'PAUSE' });
+    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
     store.setStatus('paused');
   }, [store]);
 
   const resume = useCallback(() => {
     if (!globalWorker) return;
+    const currentRemaining = useTimerStore.getState().remainingSeconds;
     globalWorker.postMessage({ type: 'RESUME' });
+    AmbientSoundEngine.getInstance().schedulePomodoroAlarm(currentRemaining);
     store.setStatus('running');
   }, [store]);
 
   const reset = useCallback(() => {
     globalWorker?.postMessage({ type: 'STOP' });
+    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
     const { sessionType, settings } = useTimerStore.getState();
     const total = getSessionDuration(sessionType, settings);
     store.setStatus('idle');
@@ -214,11 +222,13 @@ export function usePomodoro() {
 
   const skip = useCallback(() => {
     globalWorker?.postMessage({ type: 'STOP' });
+    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
     advanceSession(useTimerStore.getState().sessionType, true);
   }, []);
 
   const switchSession = useCallback((type: SessionType) => {
     globalWorker?.postMessage({ type: 'STOP' });
+    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
     const { settings } = useTimerStore.getState();
     const total = getSessionDuration(type, settings);
     store.setStatus('idle');
