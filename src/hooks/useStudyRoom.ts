@@ -162,6 +162,13 @@ export function useStudyRoom() {
 
   const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string) => {
     try {
+      // Ensure any existing channel is removed before joining a new one to avoid terminal CLOSED states
+      if (channelRef.current) {
+        console.log('[Room] Cleaning up existing channel before join attempt');
+        await supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+
       resetRoom();
       setStatus('joining');
       setMyName(name);
@@ -256,8 +263,22 @@ export function useStudyRoom() {
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           clearTimeout(timeout);
           console.error(`[Room] Failed to join: ${status}`);
-          setError(`Failed to join: ${status}`);
+          
+          let friendlyError = `Failed to join: ${status}`;
+          if (status === 'CLOSED') {
+            friendlyError = 'Connection closed. If this persists, please ensure Realtime is enabled in your Supabase dashboard or check your project quotas.';
+          } else if (status === 'CHANNEL_ERROR') {
+            friendlyError = 'Channel error. This often happens if the API key is incorrect or Realtime is restricted for your project.';
+          }
+          
+          setError(friendlyError);
           setStatus('error');
+          
+          // Attempt to remove the broken channel from client cache
+          if (channelRef.current) {
+            supabase.removeChannel(channelRef.current);
+            channelRef.current = null;
+          }
         }
       }); 
 
