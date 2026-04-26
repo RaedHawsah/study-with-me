@@ -60,6 +60,11 @@ const CHARACTERS = [
     id: 'deep_focus',
     name: 'Deep Focus',
     src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb241bjN0bGo4YTM0M2o5MnU0M2JjczJybWltbGU1YjQ4aHM0Nnk4MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/apbJBFaw5rDt1rQ4T9/giphy.gif'
+  },
+  {
+    id: 'chill_vibes',
+    name: 'Chill Vibes',
+    src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcnVkcDRkNDlpeTJ0bWEzMHdiaTV0cDhzY2IwN3puenl1d25teWpldSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/h2MouomJFCpMfWVfUj/giphy.gif'
   }
 ];
 
