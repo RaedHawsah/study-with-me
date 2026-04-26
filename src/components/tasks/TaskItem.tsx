@@ -44,11 +44,11 @@ export function TaskItem({
     <li
       className="
         group relative flex items-center gap-3 px-3 py-2.5 rounded-xl
-        border transition-all duration-200
+        border transition-all duration-200 backdrop-blur-md shadow-sm
       "
       style={{
-        background:   isActive ? 'color-mix(in srgb, var(--primary) 8%, transparent)' : 'transparent',
-        borderColor:  isActive ? 'color-mix(in srgb, var(--primary) 25%, transparent)' : 'transparent',
+        background:   isActive ? 'color-mix(in srgb, var(--primary) 15%, rgba(0,0,0,0.4))' : 'rgba(0,0,0,0.25)',
+        borderColor:  isActive ? 'color-mix(in srgb, var(--primary) 40%, transparent)' : 'rgba(255,255,255,0.1)',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

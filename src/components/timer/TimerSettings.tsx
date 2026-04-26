@@ -37,25 +37,25 @@ function Stepper({
   };
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <span className="text-xs font-medium text-muted-foreground text-center leading-tight">
+    <div className="flex flex-col items-center gap-2">
+      <span className="text-sm font-semibold text-foreground/90 text-center leading-tight">
         {label}
       </span>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => onChange(Math.max(min, value - 1))}
           aria-label={`Decrease ${label}`}
           className="
-            w-7 h-7 rounded-lg bg-muted text-foreground
+            w-8 h-8 rounded-lg bg-muted text-foreground
             hover:bg-muted/70 transition-colors flex items-center justify-center
-            font-bold text-base leading-none
+            font-bold text-lg leading-none
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-            shrink-0
+            shrink-0 shadow-sm
           "
         >
           −
         </button>
-        <div className="relative flex items-center justify-center w-10">
+        <div className="relative flex items-center justify-center min-w-[3.5rem] h-8 bg-black/10 dark:bg-white/5 rounded-md px-1">
           <input
             type="text"
             inputMode="numeric"
@@ -67,10 +67,10 @@ function Stepper({
                 handleBlur();
               }
             }}
-            className="w-full text-center bg-transparent border-b border-transparent focus:border-primary/50 focus:outline-none text-sm font-bold tabular-nums text-foreground appearance-none m-0 p-0 transition-colors"
+            className="w-7 text-center bg-transparent border-none focus:outline-none text-base font-bold tabular-nums text-foreground appearance-none m-0 p-0 transition-colors"
           />
           {suffix && (
-            <span className="absolute -end-3 text-[10px] font-bold text-muted-foreground pointer-events-none">
+            <span className="text-sm font-bold text-muted-foreground select-none pointer-events-none">
               {suffix}
             </span>
           )}
@@ -79,11 +79,11 @@ function Stepper({
           onClick={() => onChange(Math.min(max, value + 1))}
           aria-label={`Increase ${label}`}
           className="
-            w-7 h-7 rounded-lg bg-muted text-foreground
+            w-8 h-8 rounded-lg bg-muted text-foreground
             hover:bg-muted/70 transition-colors flex items-center justify-center
-            font-bold text-base leading-none
+            font-bold text-lg leading-none
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-            shrink-0
+            shrink-0 shadow-sm
           "
         >
           +
@@ -106,21 +106,21 @@ function Toggle({
 }) {
   return (
     <label className="flex items-center justify-between gap-4 select-none cursor-pointer">
-      <span className="text-xs font-medium text-foreground">{label}</span>
+      <span className="text-sm font-semibold text-foreground">{label}</span>
       <button
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`
-          relative w-9 h-5 rounded-full transition-colors duration-200
+          relative w-11 h-6 rounded-full transition-colors duration-200 shadow-inner
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
           ${checked ? 'bg-primary' : 'bg-muted-foreground/30'}
         `}
         style={{ direction: 'ltr' }}
       >
         <span
-          className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform duration-200"
-          style={{ transform: checked ? 'translateX(16px)' : 'translateX(0)' }}
+          className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200"
+          style={{ transform: checked ? 'translateX(20px)' : 'translateX(0)' }}
         />
       </button>
     </label>
@@ -174,7 +174,7 @@ export function TimerSettings() {
 
       {/* Collapsible settings panel */}
       {open && (
-        <div className="w-full p-5 rounded-2xl border border-border bg-card/60 backdrop-blur-md shadow-2xl flex flex-col gap-5">
+        <div className="w-full p-6 rounded-3xl border border-white/10 bg-card/85 backdrop-blur-2xl shadow-2xl flex flex-col gap-6">
           {/* Duration steppers */}
           <div className="grid grid-cols-3 gap-4 place-items-center">
             <Stepper
