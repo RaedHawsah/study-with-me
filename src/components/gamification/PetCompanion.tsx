@@ -45,6 +45,11 @@ const CHARACTERS = [
     id: 'focus_room',
     name: 'Focus Room',
     src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ3F3aW02N3g2cDM5djBjZW5pbjZqa3ZoaXNjd2l0bmU5dmQ4Y3ZiMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/O3iQdGPDD1Oc9Q71HG/giphy.gif'
+  },
+  {
+    id: 'work_mode',
+    name: 'Work Mode',
+    src: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExampwZzRpcXV5NThtcXF3YzczMGo2bWI1N3NiMzY1eDRpbjJ4ZmtsayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/QOguv4N5fMuQ9YLHZl/giphy.gif'
   }
 ];
 
