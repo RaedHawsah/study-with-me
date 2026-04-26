@@ -31,10 +31,11 @@ const CHARACTERS = [
     name: 'Cozy Night',
     src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGhubnNkODY0bnI0aDR1NjR2cTk2ZjE2eThoYjB4ZHUyNTdocGUxMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/Zs92908g88ppxzp84u/giphy.gif'
   },
-  { id: 'DOG', name: 'Max', src: '/cute-dog.mp4' },
-  { id: 'FALCON', name: 'Sky', src: '/cute-falcon.mp4' },
-  { id: 'EGG', name: 'Eggy', src: '/egg.mp4' },
-  { id: 'CAT', name: 'Kitty', src: '/cute-cat.mp4' },
+  {
+    id: 'CAT',
+    name: 'Kitty',
+    src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExemo2NnlleGhoNTVwcjBlamFrbTNpYThxeWRtbTR4djIwNGU4OHp3aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/sIo7BCXxPDPNDfS3dE/giphy.gif'
+  }
 ];
 
 export function PetCompanion() {
@@ -50,10 +51,7 @@ export function PetCompanion() {
     if (found) return found.src;
     // Fallback if not found
     switch (activePetType) {
-      case 'DOG': return '/cute-dog.mp4';
-      case 'FALCON': return '/cute-falcon.mp4';
-      case 'EGG': return '/egg.mp4';
-      default: return CHARACTERS[1].src; // Sleepy Cat
+      default: return CHARACTERS[1].src; // Luna
     }
   }, [activePetType]);
 
@@ -63,7 +61,7 @@ export function PetCompanion() {
     <div className="w-full flex justify-center py-4 relative">
       {/* إطار السايبر: إطار بحدود نيون مشعة */}
       <div
-        className="relative w-full max-w-[320px] aspect-square bg-card/40 backdrop-blur-xl rounded-[2.5rem] border-2 overflow-hidden flex flex-col items-center"
+        className="relative w-full max-w-[320px] aspect-square bg-card/60 backdrop-blur-md rounded-[2.5rem] border-2 overflow-hidden flex flex-col items-center"
         style={{
           borderColor: 'color-mix(in srgb, var(--primary) 50%, transparent)',
           boxShadow: '0 0 20px color-mix(in srgb, var(--primary) 30%, transparent)',
@@ -135,10 +133,10 @@ export function PetCompanion() {
 
       {/* Character Selector Modal */}
       {selectorOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-card/60 backdrop-blur-md border border-white/10 rounded-3xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[80vh]">
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-white/10 bg-black/20">
+            <div className="flex items-center justify-between p-5 border-b border-white/10 bg-transparent">
               <h2 className="text-xl font-bold text-foreground">
                 {i18n.language === 'ar' ? 'اختار شخصيتك' : 'Choose Your Character'}
               </h2>
@@ -162,13 +160,13 @@ export function PetCompanion() {
                       setActivePet(char.id, char.name);
                       setSelectorOpen(false);
                     }}
-                    className={`relative flex flex-col items-center gap-2 p-2 rounded-2xl border-2 transition-all overflow-hidden group ${
+                    className={`relative flex flex-col items-center gap-2 p-2 rounded-2xl border transition-all overflow-hidden group ${
                       isActive 
-                        ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20 scale-105' 
-                        : 'border-transparent bg-black/20 hover:bg-black/40 hover:border-white/10 hover:scale-105'
+                        ? 'border-primary bg-primary/20 shadow-lg shadow-primary/20 scale-105' 
+                        : 'border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20 hover:scale-105'
                     }`}
                   >
-                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-black">
+                    <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-black/40">
                       {isItemGif ? (
                         <img src={char.src} alt={char.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       ) : (
