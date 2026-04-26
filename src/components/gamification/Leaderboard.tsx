@@ -119,7 +119,7 @@ export function Leaderboard() {
       </div>
 
       {/* Ranks list */}
-      <div className="w-full bg-card/85 backdrop-blur-2xl border border-white/10 rounded-3xl p-2 shadow-2xl flex flex-col gap-2">
+      <div className="w-full glass rounded-3xl p-2 shadow-2xl flex flex-col gap-2">
         {users.length === 0 ? (
           <div className="p-10 text-center text-muted-foreground italic">
             No entries found yet. Start studying to be the first!

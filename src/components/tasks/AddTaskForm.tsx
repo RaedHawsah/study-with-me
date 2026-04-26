@@ -35,7 +35,7 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
       <div
         className="
           flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border
-          bg-card/85 backdrop-blur-2xl shadow-lg transition-colors duration-200
+          glass shadow-lg transition-colors duration-200
           hover:border-primary/40 focus-within:border-primary border-white/10
         "
         style={{ borderColor: 'var(--border)' }}

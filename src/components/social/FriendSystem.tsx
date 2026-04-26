@@ -103,7 +103,7 @@ export function FriendSystem() {
 
   return (
     <div className="w-full max-w-xl mx-auto flex flex-col gap-6 mt-10">
-      <div className="bg-card/85 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl space-y-6">
+      <div className="glass rounded-3xl p-6 shadow-2xl space-y-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-xl text-primary">
             <UserPlus size={24} />
