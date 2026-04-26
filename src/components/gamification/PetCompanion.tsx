@@ -35,6 +35,11 @@ const CHARACTERS = [
     id: 'CAT',
     name: 'Kitty',
     src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdiNXppcm0zNjBrejh5YnU1eWJzeXY5N2tlbmZpaDVtYmR5N3BuZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/rht3WT0AuF9tU93WHN/giphy.gif'
+  },
+  {
+    id: 'study_buddy',
+    name: 'Study Buddy',
+    src: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExenc1ZXZobWZpN2ttZDVnMmRqbmxtN3ZleHV6d3g1bWRucnFjczNiaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/SJx3txxLd2DZjfZPs7/giphy.gif'
   }
 ];
 
