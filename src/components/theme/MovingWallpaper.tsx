@@ -418,10 +418,17 @@ export function MovingWallpaper() {
         />
       )}
 
-      {/* Dark overlay — ensures text is always legible over background media */}
+      {/* Glassmorphism overlay — warm frosted glass feel instead of plain black */}
       <div
         className="fixed inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: -1, background: isCustom ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.55)' }}
+        style={{
+          zIndex: -1,
+          backdropFilter: 'blur(3px) saturate(1.3) brightness(0.82)',
+          WebkitBackdropFilter: 'blur(3px) saturate(1.3) brightness(0.82)',
+          background: isCustom
+            ? 'rgba(8, 6, 18, 0.38)'   /* custom video/image — cozy dark violet tint */
+            : 'rgba(6, 5, 15, 0.45)',  /* particle canvas — slightly more opaque */
+        }}
       />
     </>
   );
