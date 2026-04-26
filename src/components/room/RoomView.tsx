@@ -26,12 +26,25 @@ export function RoomView() {
   }, []);
 
   const [name, setName] = useState('');
-  const [roomType, setJoinType] = useState<'random' | 'private'>('random');
+  const [roomType, setRoomType] = useState<'random' | 'private'>('random');
+  const [privateMode, setPrivateMode] = useState<'join' | 'create'>('join');
   const [code, setCode] = useState('');
 
-  const handleJoin = (e?: React.FormEvent) => {
+  const { joinRoom, createRoom, leaveRoom } = useStudyRoom();
+
+  const handleAction = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (name.trim()) joinRoom(name.trim(), roomType, code, user?.id);
+    if (!name.trim()) return;
+
+    if (roomType === 'random') {
+      joinRoom(name.trim(), 'random', '', user?.id);
+    } else {
+      if (privateMode === 'join') {
+        joinRoom(name.trim(), 'private', code, user?.id);
+      } else {
+        createRoom(name.trim(), user?.id || crypto.randomUUID());
+      }
+    }
   };
 
   // ─── JOIN SCREEN ───────────────────────────────────────────────────────────
@@ -47,7 +60,7 @@ export function RoomView() {
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {t('room.title')}
           </h1>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-muted-foreground mb-8 text-sm">
             {t('room.description')}
           </p>
 
@@ -56,17 +69,11 @@ export function RoomView() {
               <div className="w-full p-3 bg-red-500/10 text-red-500 text-sm rounded-xl border border-red-500/20">
                 {errorMessage}
               </div>
-              <button 
-                onClick={() => handleJoin()}
-                className="text-xs font-bold text-primary hover:underline"
-              >
-                {t('common.retry', 'Retry Connection')}
-              </button>
             </div>
           )}
 
-          <form onSubmit={handleJoin} className="w-full flex flex-col gap-6">
-            <div className="flex flex-col text-start gap-4">
+          <form onSubmit={handleAction} className="w-full flex flex-col gap-6">
+            <div className="flex flex-col text-start gap-5">
               {/* Display Name */}
               <div className="space-y-1.5">
                 <label htmlFor="join-name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ms-1">
@@ -91,51 +98,84 @@ export function RoomView() {
               <div className="flex p-1 bg-background/40 border border-border rounded-2xl">
                 <button
                   type="button"
-                  onClick={() => setJoinType('random')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-                    roomType === 'random' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
+                  onClick={() => setRoomType('random')}
+                  className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${
+                    roomType === 'random' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-white/5'
                   }`}
                 >
                   {i18n.language === 'ar' ? 'مجموعة عشوائية' : 'Random Group'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setJoinType('private')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-                    roomType === 'private' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
+                  onClick={() => setRoomType('private')}
+                  className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${
+                    roomType === 'private' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-white/5'
                   }`}
                 >
                   {i18n.language === 'ar' ? 'غرفة خاصة' : 'Private Room'}
                 </button>
               </div>
 
-              {/* Private Code Input */}
+              {/* Private Mode Sub-Selector */}
               {roomType === 'private' && (
-                <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label htmlFor="room-code" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ms-1">
-                    {i18n.language === 'ar' ? 'رمز الغرفة' : 'Room Code'}
-                  </label>
-                  <input
-                    id="room-code"
-                    type="text"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder={i18n.language === 'ar' ? 'أدخل الرمز (مثل a1b2c3d4)' : 'Enter Code (e.g. a1b2c3d4)'}
-                    className="w-full bg-background/50 border border-border focus:border-primary px-5 py-3.5 rounded-2xl outline-none transition-all font-mono"
-                    style={{ direction: 'ltr' }}
-                  />
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/5">
+                    <button
+                      type="button"
+                      onClick={() => setPrivateMode('join')}
+                      className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
+                        privateMode === 'join' ? 'bg-white/10 text-foreground' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {t('room.joinExisting')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPrivateMode('create')}
+                      className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
+                        privateMode === 'create' ? 'bg-white/10 text-foreground' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {t('room.createNew')}
+                    </button>
+                  </div>
+
+                  {privateMode === 'join' && (
+                    <div className="space-y-1.5 animate-in zoom-in-95 duration-200">
+                      <label htmlFor="room-code" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ms-1">
+                        {t('room.codeLabel', 'Room Code')}
+                      </label>
+                      <input
+                        id="room-code"
+                        type="text"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        placeholder={t('room.codePlaceholder', 'Enter Code (e.g. a1b2c3d4)')}
+                        className="w-full bg-background/50 border border-border focus:border-primary px-5 py-3.5 rounded-2xl outline-none transition-all font-mono text-center"
+                        style={{ direction: 'ltr' }}
+                      />
+                    </div>
+                  )}
+                  
+                  {privateMode === 'create' && (
+                    <p className="text-center text-[11px] text-muted-foreground px-4">
+                      {t('room.createPrompt')}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
             
             <button
               type="submit"
-              disabled={!name.trim() || (roomType === 'private' && !code.trim())}
+              disabled={!name.trim() || (roomType === 'private' && privateMode === 'join' && !code.trim())}
               className="w-full py-4 rounded-2xl font-bold bg-primary text-primary-foreground disabled:opacity-30 hover:bg-primary-hover transition-all shadow-xl shadow-primary/20 active:scale-95 text-sm"
             >
               {roomType === 'random' 
-                ? (i18n.language === 'ar' ? 'البحث عن مجموعة' : 'Find a Group') 
-                : (i18n.language === 'ar' ? 'انضمام للغرفة الخاصة' : 'Join Private Room')}
+                ? (t('room.findGroup', 'Find a Group')) 
+                : privateMode === 'join'
+                  ? (t('room.joinPrivate', 'Join Private Room'))
+                  : (t('room.createButton'))}
             </button>
           </form>
 

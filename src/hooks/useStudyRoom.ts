@@ -160,6 +160,40 @@ export function useStudyRoom() {
     });
   }, [useRoomStore.getState().cameraOn, useRoomStore.getState().screenOn, syncPresence]);
 
+  const createRoom = useCallback(async (name: string, userId: string) => {
+    try {
+      setStatus('joining');
+      const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+      
+      const roomId = crypto.randomUUID();
+      const { data: newRoom, error: createError } = await supabase
+        .from('rooms')
+        .insert({
+          id: roomId,
+          name: `Private Room: ${code}`,
+          code,
+          room_type: 'private',
+          leader_id: userId,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('[Room] Create failed:', createError);
+        setError('Failed to create room. Please try again.');
+        setStatus('error');
+        return;
+      }
+
+      await joinRoom(name, 'private', code, userId);
+    } catch (err: any) {
+      console.error('[Room] Create exception:', err);
+      setError('An unexpected error occurred while creating the room.');
+      setStatus('error');
+    }
+  }, [supabase, setStatus, setError, joinRoom]);
+
   const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string) => {
     try {
       // Ensure any existing channel is removed before joining a new one to avoid terminal CLOSED states
@@ -198,6 +232,7 @@ export function useStudyRoom() {
 
       setRoomId(targetRoomId);
       setRoomCode(targetCode);
+      useRoomStore.getState().setRoomType(type);
 
       const channel = supabase.channel(`room:${targetRoomId}`, { config: { presence: { key: myId } } });
       channelRef.current = channel;
@@ -320,5 +355,5 @@ export function useStudyRoom() {
     await supabase.from('room_messages').insert({ room_id: roomId, user_id: myId, content: text });
   }, [supabase]);
 
-  return { joinRoom, leaveRoom, sendMessage };
+  return { joinRoom, createRoom, leaveRoom, sendMessage };
 }
