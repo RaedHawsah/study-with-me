@@ -75,6 +75,11 @@ const CHARACTERS = [
     id: 'typing_cat',
     name: 'Typing Cat',
     src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXR5YmR0dGh3Y3hkdzB3dWZlZmh1bHBkZjFxcTA3ZnJzMnBzOTFlcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/woBxnEPUoxWIGF0YuQ/giphy.gif'
+  },
+  {
+    id: 'reading_time',
+    name: 'Reading Time',
+    src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaTE4YjNmOXBuZngzZ3R1N2Nka3FmZnE5cm1tempmdHpkb3V4d2kzMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/p0Ac5EAhR9pm8uLMlQ/giphy.gif'
   }
 ];
 
