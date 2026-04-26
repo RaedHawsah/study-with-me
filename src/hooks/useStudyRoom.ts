@@ -247,22 +247,25 @@ export function useStudyRoom() {
       const channel = supabase.channel(`room:${targetRoomId}`, { config: { presence: { key: myId } } });
       channelRef.current = channel;
 
+      let hasJoined = false;
+
       channel
         .on('presence', { event: 'sync' }, () => {
           const newState = channel.presenceState();
-          
-          // DYNAMIC SCALING: If this is a random room and it's full (>6), move to next
-          if (type === 'random') {
-            const count = Object.keys(newState).length;
-            if (count > 6) {
-              console.log(`[Room] Room ${targetRoomId} is full (${count}/6). Finding another...`);
-              joinRoom(name, 'random', '', myId, retryCount + 1);
-              return;
-            }
+          const presenceKeys = Object.keys(newState);
+          const count = presenceKeys.length;
+
+          // DYNAMIC SCALING: Only the person who JUST joined checks if they should move
+          if (!hasJoined && type === 'random' && count > 6) {
+            console.log(`[Room] Room ${targetRoomId} is full (${count}/6). Moving to next...`);
+            joinRoom(name, 'random', '', myId, retryCount + 1);
+            return;
           }
+          
+          hasJoined = true;
 
           const newPeers: Record<string, RoomPeer> = {};
-          Object.keys(newState).forEach((key) => {
+          presenceKeys.forEach((key) => {
             if (key === myId) return;
             const userState = newState[key][0] as any;
             newPeers[key] = {
@@ -281,20 +284,14 @@ export function useStudyRoom() {
 
           useRoomStore.setState({ peers: newPeers });
         })
-        .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-          console.log('[Room] Peer joined:', key);
-        })
-        .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-          console.log('[Room] Peer left:', key);
-          // Cleanup WebRTC for the peer who left
+        .on('presence', { event: 'leave' }, ({ key }) => {
+          // Immediate WebRTC cleanup when someone leaves
           if (pcs.current[key]) {
             pcs.current[key].close();
             delete pcs.current[key];
             delete makingOffer.current[key];
             delete ignoreOffer.current[key];
           }
-          // Remove from store
-          useRoomStore.getState().removePeer(key);
         })
         .on('broadcast', { event: 'webrtc_signal' }, handleSignal)
         .on('broadcast', { event: 'timer_sync' }, ({ payload }) => {
