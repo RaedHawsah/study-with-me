@@ -50,6 +50,11 @@ const CHARACTERS = [
     id: 'work_mode',
     name: 'Work Mode',
     src: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExampwZzRpcXV5NThtcXF3YzczMGo2bWI1N3NiMzY1eDRpbjJ4ZmtsayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/QOguv4N5fMuQ9YLHZl/giphy.gif'
+  },
+  {
+    id: 'late_night',
+    name: 'Late Night',
+    src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExdHhoZGpmbXU0dmc3bDQzbGcxdHBqMzltcmdnbm1qZ3Y0NHdoNjBqZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/1ncrtDcmiBiGbi711e/giphy.gif'
   }
 ];
 
