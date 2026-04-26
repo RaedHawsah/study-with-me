@@ -51,7 +51,7 @@ export function PetCompanion() {
         </div>
 
         {/* Pet Stats UI Bar */}
-        <div className="w-full bg-card/80 backdrop-blur-lg border-t border-white/10 p-5 z-10 flex flex-col gap-2 rounded-b-[2.5rem]">
+        <div className="w-full bg-card/85 backdrop-blur-2xl border-t border-white/10 p-5 z-10 flex flex-col gap-2 rounded-b-[2.5rem]">
           <div className="flex justify-between items-end w-full px-1">
             <div>
               <h3 className="font-bold text-foreground text-lg leading-tight">{activePetName || 'Luna'}</h3>

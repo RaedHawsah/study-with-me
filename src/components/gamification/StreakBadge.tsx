@@ -8,7 +8,7 @@ export function StreakBadge() {
   const level = getLevelFromXp(totalXp);
 
   return (
-    <div className="flex items-center gap-3 bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-xl hover:scale-[1.02] transition-all cursor-default group">
+    <div className="flex items-center gap-3 bg-card/85 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl hover:scale-[1.02] transition-all cursor-default group">
       {/* Streak Part */}
       <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 rounded-xl border border-orange-500/20">
         <div className="relative">
