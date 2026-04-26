@@ -121,7 +121,7 @@ export function PetCompanion() {
               key={petMediaSrc}
               src={petMediaSrc}
               alt={activePetName || 'Character'}
-              className="absolute inset-0 w-full h-full object-contain"
+              className={`absolute inset-0 w-full h-full ${activePetType === 'chill_vibes' ? 'object-contain' : 'object-cover'}`}
             />
           ) : (
             <video
@@ -130,7 +130,7 @@ export function PetCompanion() {
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-contain"
+              className={`absolute inset-0 w-full h-full ${activePetType === 'chill_vibes' ? 'object-contain' : 'object-cover'}`}
               src={petMediaSrc}
             />
           )}
@@ -215,9 +215,9 @@ export function PetCompanion() {
                   >
                     <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-black/40">
                       {isItemGif ? (
-                        <img src={char.src} alt={char.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                        <img src={char.src} alt={char.name} className={`w-full h-full ${char.id === 'chill_vibes' ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-500`} />
                       ) : (
-                        <video src={char.src} muted loop autoPlay playsInline className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                        <video src={char.src} muted loop autoPlay playsInline className={`w-full h-full ${char.id === 'chill_vibes' ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-500`} />
                       )}
                       <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none" />
                       
