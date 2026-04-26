@@ -25,7 +25,7 @@ export function PetCompanion() {
     return (
       <div className="w-full flex justify-center py-4">
         {/* إطار السايبر: إطار بحدود نيون مشعة */}
-        <div className="relative w-full max-w-[320px] aspect-square bg-card/40 backdrop-blur-xl rounded-[2.5rem] border-2 border-cyan-400/50 shadow-[0_0_20px_rgba(0,229,255,0.3)] min-[100px]:animate-[pulse_4s_ease-in-out_infinite] overflow-hidden flex flex-col items-center">
+        <div className="relative w-full max-w-[320px] aspect-square bg-card/40 backdrop-blur-xl rounded-[2.5rem] border-2 border-cyan-400/50 shadow-[0_0_20px_rgba(0,229,255,0.3)] overflow-hidden flex flex-col items-center">
   
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-background -z-10" />
   

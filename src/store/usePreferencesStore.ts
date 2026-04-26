@@ -172,23 +172,29 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
       backgroundValue: newValue 
     });
 
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
-      const updated = { 
-        ...profile?.settings, 
-        theme: id, 
-        backgroundType: 'custom', 
-        backgroundValue: newValue 
-      };
-      await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
+        const updated = { 
+          ...profile?.settings, 
+          theme: id, 
+          backgroundType: 'custom', 
+          backgroundValue: newValue 
+        };
+        await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+      }
+    } catch (e) {
+      console.warn('[setColorPreset] sync skipped:', e);
     }
   },
 
   uploadGlobalBackground: async (themeId: string, file: File) => {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     
     if (user?.email !== ADMIN_EMAIL) {
       alert('Access Denied: Only admin can manage official backgrounds.');
@@ -243,12 +249,17 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
 
   setBackground: async (type, value) => {
     set({ backgroundType: type, backgroundValue: value });
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
-      const updated = { ...profile?.settings, backgroundType: type, backgroundValue: value };
-      await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
+        const updated = { ...profile?.settings, backgroundType: type, backgroundValue: value };
+        await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+      }
+    } catch (e) {
+      console.warn('[setBackground] sync skipped:', e);
     }
   },
 
@@ -280,13 +291,18 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
       },
     }));
 
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
-      const volumes = { ...(profile?.settings?.audio?.volumes || {}), [id]: { volume, isPlaying: false } };
-      const updated = { ...profile?.settings, audio: { ...profile?.settings?.audio, volumes } };
-      await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
+        const volumes = { ...(profile?.settings?.audio?.volumes || {}), [id]: { volume, isPlaying: false } };
+        const updated = { ...profile?.settings, audio: { ...profile?.settings?.audio, volumes } };
+        await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+      }
+    } catch (e) {
+      console.warn('[setSoundVolume] sync skipped:', e);
     }
   },
 
@@ -295,12 +311,17 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   
   setShowFloatingAudioDock: async (show) => {
     set({ showFloatingAudioDock: show });
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
-      const updated = { ...profile?.settings, audio: { ...profile?.settings?.audio, showDock: show } };
-      await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
+        const updated = { ...profile?.settings, audio: { ...profile?.settings?.audio, showDock: show } };
+        await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+      }
+    } catch (e) {
+      console.warn('[setShowFloatingAudioDock] sync skipped:', e);
     }
   },
 
