@@ -13,7 +13,7 @@ import { ChatPanel } from './ChatPanel';
 export function RoomView() {
   const { t, i18n } = useTranslation('common');
   const { status, errorMessage, chatOpen, setError } = useRoomStore();
-  const { joinRoom, leaveRoom } = useStudyRoom();
+  const { joinRoom, createRoom, leaveRoom } = useStudyRoom();
   const { user } = useSupabaseAuth();
   const leaveRoomRef = useRef(leaveRoom);
   leaveRoomRef.current = leaveRoom;
@@ -30,7 +30,7 @@ export function RoomView() {
   const [privateMode, setPrivateMode] = useState<'join' | 'create'>('join');
   const [code, setCode] = useState('');
 
-  const { joinRoom, createRoom, leaveRoom } = useStudyRoom();
+
 
   const handleAction = (e?: React.FormEvent) => {
     e?.preventDefault();
