@@ -65,6 +65,11 @@ const CHARACTERS = [
     id: 'chill_vibes',
     name: 'Chill Vibes',
     src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcnVkcDRkNDlpeTJ0bWEzMHdiaTV0cDhzY2IwN3puenl1d25teWpldSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/h2MouomJFCpMfWVfUj/giphy.gif'
+  },
+  {
+    id: 'pixel_room',
+    name: 'Pixel Room',
+    src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGgxZXVpbG5kNXB4Y3F5aTl1aW9pbHJ4aDd0YnhkNjNlNjZ1Zml5eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/CpAoNQKJRLAIDhGKST/giphy.gif'
   }
 ];
 
