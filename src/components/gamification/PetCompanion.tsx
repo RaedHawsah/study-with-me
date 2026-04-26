@@ -14,7 +14,7 @@ const CHARACTERS = [
   {
     id: 'sleepy_cat',
     name: 'Luna',
-    src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExemo2NnlleGhoNTVwcjBlamFrbTNpYThxeWRtbTR4djIwNGU4OHp3aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/sIo7BCXxPDPNDfS3dE/giphy.gif'
+    src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm40cHpmYWlvOHdzaGcwenI0dG43MDJ5aWJlcG5pcHJ6b3Jncjh0YyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/7MDDWiok76ZqlXxXUO/giphy.gif'
   },
   {
     id: 'lofi_girl',
