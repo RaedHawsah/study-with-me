@@ -61,7 +61,7 @@ export default function HomePage() {
         <div
           className="
             flex flex-col gap-3 p-5
-            bg-card rounded-lg border border-border
+            bg-card/60 backdrop-blur-md rounded-lg border border-white/10
             shadow-[var(--shadow-sm)]
             transition-theme
           "
@@ -89,7 +89,7 @@ export default function HomePage() {
         <div
           className="
             flex flex-col gap-3 p-5
-            bg-card rounded-lg border border-border
+            bg-card/60 backdrop-blur-md rounded-lg border border-white/10
             shadow-[var(--shadow-sm)]
             transition-theme
           "

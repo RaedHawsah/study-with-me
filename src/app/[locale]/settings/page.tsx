@@ -30,7 +30,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
         aria-labelledby="appearance-heading"
         className="
           flex flex-col gap-6 p-6
-          glass rounded-3xl border border-white/10
+          bg-card/60 backdrop-blur-md rounded-3xl border border-white/10
           shadow-2xl
         "
       >
@@ -56,7 +56,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
         aria-labelledby="mixer-heading"
         className="
           flex flex-col gap-6 p-6
-          glass rounded-3xl border border-white/10
+          bg-card/60 backdrop-blur-md rounded-3xl border border-white/10
           shadow-2xl
         "
       >
