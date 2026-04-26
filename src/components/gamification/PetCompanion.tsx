@@ -34,7 +34,7 @@ const CHARACTERS = [
   {
     id: 'CAT',
     name: 'Kitty',
-    src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExemo2NnlleGhoNTVwcjBlamFrbTNpYThxeWRtbTR4djIwNGU4OHp3aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/sIo7BCXxPDPNDfS3dE/giphy.gif'
+    src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdiNXppcm0zNjBrejh5YnU1eWJzeXY5N2tlbmZpaDVtYmR5N3BuZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/rht3WT0AuF9tU93WHN/giphy.gif'
   }
 ];
 
