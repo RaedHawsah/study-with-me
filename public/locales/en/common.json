@@ -190,20 +190,20 @@
     "guestWarning": "Sign in to save your study progress, XP, and notes to the cloud."
   },
   "pets": {
-    "lofi_boy": "Study Legend",
-    "sleepy_cat": "Nap King",
-    "lofi_girl": "Smarty Slay",
-    "anime_room": "Vibe Bot",
-    "cozy_night": "Brain Candy",
-    "CAT": "Finals Warrior",
-    "study_buddy": "Plant Buddy",
-    "focus_room": "Minty Focus",
-    "work_mode": "Grind Master",
-    "late_night": "Night Crawler",
-    "deep_focus": "Galaxy Scholar",
-    "chill_vibes": "Flip Master",
-    "pixel_room": "Logic Boss",
-    "typing_cat": "Type Ninja",
-    "reading_time": "Book Guru"
+    "lofi_boy": "Inspire",
+    "sleepy_cat": "Serenity",
+    "lofi_girl": "Passion",
+    "anime_room": "Clarity",
+    "cozy_night": "Delight",
+    "CAT": "Companion",
+    "study_buddy": "Growth",
+    "focus_room": "Chill",
+    "work_mode": "Mastery",
+    "late_night": "Ethereal",
+    "deep_focus": "Horizons",
+    "chill_vibes": "Balance",
+    "pixel_room": "Logic",
+    "typing_cat": "Creative",
+    "reading_time": "Intellect"
   }
 }
