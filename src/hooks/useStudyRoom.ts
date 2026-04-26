@@ -281,6 +281,21 @@ export function useStudyRoom() {
 
           useRoomStore.setState({ peers: newPeers });
         })
+        .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+          console.log('[Room] Peer joined:', key);
+        })
+        .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+          console.log('[Room] Peer left:', key);
+          // Cleanup WebRTC for the peer who left
+          if (pcs.current[key]) {
+            pcs.current[key].close();
+            delete pcs.current[key];
+            delete makingOffer.current[key];
+            delete ignoreOffer.current[key];
+          }
+          // Remove from store
+          useRoomStore.getState().removePeer(key);
+        })
         .on('broadcast', { event: 'webrtc_signal' }, handleSignal)
         .on('broadcast', { event: 'timer_sync' }, ({ payload }) => {
           const roomStore = useRoomStore.getState();
