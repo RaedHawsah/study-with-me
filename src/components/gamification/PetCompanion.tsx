@@ -13,14 +13,16 @@ export function PetCompanion() {
     const currentLvl = getLevelFromXp(totalXp);
     const { currentLevelXp, nextLevelXp, progressPercent } = useMemo(() => getProgressToNextLevel(totalXp), [totalXp]);
   
-    const petVideoSrc = useMemo(() => {
+    const petMediaSrc = useMemo(() => {
       switch (activePetType) {
         case 'DOG': return '/cute-dog.mp4';
         case 'FALCON': return '/cute-falcon.mp4';
         case 'EGG': return '/egg.mp4';
-        default: return '/cute-cat.mp4';
+        default: return 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdiNXppcm0zNjBrejh5YnU1eWJzeXY5N2tlbmZpaDVtYmR5N3BuZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/rht3WT0AuF9tU93WHN/giphy.gif';
       }
     }, [activePetType]);
+
+    const isGif = petMediaSrc.includes('.gif');
 
     return (
       <div className="w-full flex justify-center py-4">
@@ -35,17 +37,26 @@ export function PetCompanion() {
   
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-background -z-10" />
   
-          {/* Video Editor  */}
+          {/* Media Container  */}
           <div className="w-full flex-1 relative min-h-[180px]">
-            <video
-              key={petVideoSrc}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              src={petVideoSrc}
-            />
+            {isGif ? (
+              <img
+                key={petMediaSrc}
+                src={petMediaSrc}
+                alt={activePetName || 'Luna'}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <video
+                key={petMediaSrc}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+                src={petMediaSrc}
+              />
+            )}
           {/* تأثير حواف مظللة قليلاً لدمج الفيديو مع الإطار */}
           <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.6)] pointer-events-none" />
         </div>
