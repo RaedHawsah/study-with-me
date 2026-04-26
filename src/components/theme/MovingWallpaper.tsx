@@ -418,10 +418,10 @@ export function MovingWallpaper() {
         />
       )}
 
-      {/* Dark overlay — reduced from black/55 for better visuals */}
+      {/* Dark overlay — ensures text is always legible over background media */}
       <div
         className="fixed inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: -1, background: isCustom ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.48)' }}
+        style={{ zIndex: -1, background: isCustom ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.55)' }}
       />
     </>
   );
