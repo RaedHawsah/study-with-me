@@ -8,77 +8,77 @@ import { Settings2, X, Check } from 'lucide-react';
 const CHARACTERS = [
   {
     id: 'lofi_boy',
-    name: 'Lofi Boy',
+    name: 'Smarty Pants',
     src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXQyZHF4dmNtMXBjM2tyMW1zZHZxNmxtZnFpZG94aDB6OHBoaG82NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/j0yDs1uIaBD8LrlwId/giphy.gif'
   },
   {
     id: 'sleepy_cat',
-    name: 'Luna',
+    name: 'Nap Master',
     src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm40cHpmYWlvOHdzaGcwenI0dG43MDJ5aWJlcG5pcHJ6b3Jncjh0YyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/7MDDWiok76ZqlXxXUO/giphy.gif'
   },
   {
     id: 'lofi_girl',
-    name: 'Lofi Girl',
+    name: 'A+ Student',
     src: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbndvajEwdW92dHk4N2l3aXM0MW84OWNlYXE3NjE1aThhbDhlOGJ6bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/2DMN31jEeBLVJQGXz6/giphy.gif'
   },
   {
     id: 'anime_room',
-    name: 'Chill Anime',
+    name: 'Zen Bot',
     src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzdhdGd5em41djg0MW9tNndubjVvaTVtOHNucDRjcmdvM3RwcGs4cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/pLtxNjlBzFHaSqfTSk/giphy.gif'
   },
   {
     id: 'cozy_night',
-    name: 'Cozy Night',
+    name: 'Brain Fuel',
     src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGhubnNkODY0bnI0aDR1NjR2cTk2ZjE2eThoYjB4ZHUyNTdocGUxMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/Zs92908g88ppxzp84u/giphy.gif'
   },
   {
     id: 'CAT',
-    name: 'Kitty',
+    name: 'Focus Feline',
     src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGdiNXppcm0zNjBrejh5YnU1eWJzeXY5N2tlbmZpaDVtYmR5N3BuZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/rht3WT0AuF9tU93WHN/giphy.gif'
   },
   {
     id: 'study_buddy',
-    name: 'Study Buddy',
+    name: 'Plant Pal',
     src: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExenc1ZXZobWZpN2ttZDVnMmRqbmxtN3ZleHV6d3g1bWRucnFjczNiaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/SJx3txxLd2DZjfZPs7/giphy.gif'
   },
   {
     id: 'focus_room',
-    name: 'Focus Room',
+    name: 'Caffeine Rush',
     src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ3F3aW02N3g2cDM5djBjZW5pbjZqa3ZoaXNjd2l0bmU5dmQ4Y3ZiMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/O3iQdGPDD1Oc9Q71HG/giphy.gif'
   },
   {
     id: 'work_mode',
-    name: 'Work Mode',
+    name: 'Homework Hero',
     src: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExampwZzRpcXV5NThtcXF3YzczMGo2bWI1N3NiMzY1eDRpbjJ4ZmtsayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/QOguv4N5fMuQ9YLHZl/giphy.gif'
   },
   {
     id: 'late_night',
-    name: 'Late Night',
+    name: 'Sleepy Scholar',
     src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExdHhoZGpmbXU0dmc3bDQzbGcxdHBqMzltcmdnbm1qZ3Y0NHdoNjBqZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/1ncrtDcmiBiGbi711e/giphy.gif'
   },
   {
     id: 'deep_focus',
-    name: 'Deep Focus',
+    name: 'Space Cadet',
     src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb241bjN0bGo4YTM0M2o5MnU0M2JjczJybWltbGU1YjQ4aHM0Nnk4MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/apbJBFaw5rDt1rQ4T9/giphy.gif'
   },
   {
     id: 'chill_vibes',
-    name: 'Chill Vibes',
+    name: 'Spidey Sense',
     src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcnVkcDRkNDlpeTJ0bWEzMHdiaTV0cDhzY2IwN3puenl1d25teWpldSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/h2MouomJFCpMfWVfUj/giphy.gif'
   },
   {
     id: 'pixel_room',
-    name: 'Pixel Room',
+    name: 'Logic Lord',
     src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGgxZXVpbG5kNXB4Y3F5aTl1aW9pbHJ4aDd0YnhkNjNlNjZ1Zml5eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/CpAoNQKJRLAIDhGKST/giphy.gif'
   },
   {
     id: 'typing_cat',
-    name: 'Typing Cat',
+    name: 'Code Crusader',
     src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXR5YmR0dGh3Y3hkdzB3dWZlZmh1bHBkZjFxcTA3ZnJzMnBzOTFlcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/woBxnEPUoxWIGF0YuQ/giphy.gif'
   },
   {
     id: 'reading_time',
-    name: 'Reading Time',
+    name: 'Bibliophile',
     src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaTE4YjNmOXBuZngzZ3R1N2Nka3FmZnE5cm1tempmdHpkb3V4d2kzMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/p0Ac5EAhR9pm8uLMlQ/giphy.gif'
   }
 ];
@@ -121,7 +121,7 @@ export function PetCompanion() {
               key={petMediaSrc}
               src={petMediaSrc}
               alt={activePetName || 'Character'}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-contain"
             />
           ) : (
             <video
@@ -130,7 +130,7 @@ export function PetCompanion() {
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-contain"
               src={petMediaSrc}
             />
           )}
@@ -213,9 +213,9 @@ export function PetCompanion() {
                   >
                     <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-black/40">
                       {isItemGif ? (
-                        <img src={char.src} alt={char.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <img src={char.src} alt={char.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                       ) : (
-                        <video src={char.src} muted loop autoPlay playsInline className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <video src={char.src} muted loop autoPlay playsInline className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                       )}
                       <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none" />
                       
