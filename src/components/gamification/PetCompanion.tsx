@@ -70,6 +70,11 @@ const CHARACTERS = [
     id: 'pixel_room',
     name: 'Pixel Room',
     src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGgxZXVpbG5kNXB4Y3F5aTl1aW9pbHJ4aDd0YnhkNjNlNjZ1Zml5eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/CpAoNQKJRLAIDhGKST/giphy.gif'
+  },
+  {
+    id: 'typing_cat',
+    name: 'Typing Cat',
+    src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXR5YmR0dGh3Y3hkdzB3dWZlZmh1bHBkZjFxcTA3ZnJzMnBzOTFlcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/woBxnEPUoxWIGF0YuQ/giphy.gif'
   }
 ];
 
