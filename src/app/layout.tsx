@@ -91,9 +91,15 @@ export default async function RootLayout({
           id="theme-init"
           dangerouslySetInnerHTML={{ __html: themeScript }}
         />
-        {/* Google Fonts — preconnect first (non-blocking), then load stylesheet */}
+        {/* Google Fonts — preconnect first, then preload critical weights */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Preload the two most critical font weights (400 = regular, 600 = semibold) */}
+        <link
+          rel="preload"
+          as="style"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+        />
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"

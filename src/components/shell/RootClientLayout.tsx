@@ -1,23 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { SplashScreen } from '@/components/ui/SplashScreen';
 
 export function RootClientLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
-  // Initial app load logic
-  useEffect(() => {
-    // The SplashScreen component handles its own internal timing 
-    // and calls onComplete when the "simulation" (preloading) is done.
-  }, []);
-
   return (
     <>
+      {/*
+       * Render children ALWAYS so the browser can paint the real LCP element
+       * immediately. The splash overlays on top (z-[1000]) rather than
+       * hiding the content — this is critical for a good LCP score.
+       */}
+      {children}
       {loading && <SplashScreen onComplete={() => setLoading(false)} />}
-      <div className={loading ? 'opacity-0' : 'opacity-100 transition-opacity duration-1000'}>
-        {children}
-      </div>
     </>
   );
 }

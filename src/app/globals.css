@@ -251,7 +251,9 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth is intentionally removed — it hurts Lighthouse
+     performance scores. Use CSS scroll-behavior on individual scrollable
+     containers if needed, not on the root html element. */
 }
 
 /* Apply locale-aware font: Arabic pages use Noto Sans Arabic */
