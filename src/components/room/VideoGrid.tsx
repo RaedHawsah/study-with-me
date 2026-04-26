@@ -65,16 +65,26 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             {isScreen ? 'Screen' : `LVL ${peer.level || 1}`}
           </div>
           
-          {/* Fullscreen Button - Only shows when video exists and on hover */}
-          {peer.stream && (
-            <button
-              onClick={handleFullscreen}
-              className="group/fs p-2 rounded-xl bg-black/40 hover:bg-primary/80 backdrop-blur-md border border-white/10 text-white transition-all duration-300 opacity-0 group-hover:opacity-100 translate-x-[-10px] group-hover:translate-x-0 shadow-lg"
-              title="Fullscreen"
-            >
-              <Maximize2 size={14} className="group-hover/fs:scale-110 transition-transform" />
-            </button>
-          )}
+      {/* Fullscreen Button - Only shows when video exists and on hover */}
+      {peer.stream && (
+        <div className="absolute top-4 right-4 z-20 flex gap-2">
+          <button
+            onClick={handleFullscreen}
+            className="p-3 rounded-2xl bg-black/60 hover:bg-primary backdrop-blur-xl border border-white/20 text-white transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-2xl flex items-center gap-2"
+          >
+            <Maximize2 size={18} />
+            {isScreen && <span className="text-xs font-bold uppercase tracking-tight">Full Screen</span>}
+          </button>
+        </div>
+      )}
+
+      {/* Header: Level & Status Icon */}
+      <div className="flex justify-between items-start z-10">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest text-white shadow-inner w-fit">
+            {isScreen ? <Monitor size={12} className="text-primary" /> : <Zap size={12} className="text-primary" fill="currentColor" />}
+            {isScreen ? 'Screen Share' : `LVL ${peer.level || 1}`}
+          </div>
         </div>
 
         <div className={`

@@ -158,7 +158,7 @@ export function useStudyRoom() {
       if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
       if (screenStream) screenStream.getTracks().forEach(t => pc.addTrack(t, screenStream));
     });
-  }, [useRoomStore.getState().cameraOn, useRoomStore.getState().screenOn, syncPresence]);
+  }, [useRoomStore.getState().cameraOn, useRoomStore.getState().screenOn, useRoomStore.getState().localStream, useRoomStore.getState().screenStream, syncPresence]);
 
   // Broadcast Timer State (Only if Leader & Sync is ON)
   useEffect(() => {
