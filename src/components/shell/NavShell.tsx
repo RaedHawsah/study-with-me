@@ -27,6 +27,7 @@ import {
   ChevronRight,
   BookMarked,
   Users,
+  UserPlus,
   type LucideIcon,
 } from 'lucide-react';
 import { LocaleSwitcher } from './LocaleSwitcher';
@@ -52,6 +53,7 @@ function buildNavItems(locale: Locale): NavItem[] {
     { key: 'group',    href: `${base}/group`,     icon: Users,     labelKey: 'nav.group' },
     { key: 'notes',    href: `${base}/notes`,     icon: BookOpen,  labelKey: 'nav.notes' },
     { key: 'stats',    href: `${base}/stats`,     icon: BarChart2, labelKey: 'nav.stats' },
+    { key: 'friends',  href: `${base}/friends`,   icon: UserPlus,  labelKey: 'nav.friends' },
     { key: 'settings', href: `${base}/settings`,  icon: Settings,  labelKey: 'nav.settings' },
   ];
 }
