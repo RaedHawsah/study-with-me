@@ -163,6 +163,7 @@
     "codePlaceholder": "Enter Code (e.g. a1b2c3d4)",
     "findGroup": "Find a Group",
     "joinPrivate": "Join Private Room",
+    "syncLabel": "Sync",
     "invalidCode": "Invalid or missing room code.",
     "cameraOn": "Turn on camera",
     "cameraOff": "Turn off camera",

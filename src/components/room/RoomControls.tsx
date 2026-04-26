@@ -86,7 +86,7 @@ export function RoomControls() {
             title={timerSync ? 'Sync On' : 'Sync Off'}
           >
             <Clock size={18} />
-            <span className="text-[7px] font-black uppercase leading-none">Sync</span>
+            <span className="text-[7px] font-black uppercase leading-none">{t('room.syncLabel', 'Sync')}</span>
           </button>
         )}
 
