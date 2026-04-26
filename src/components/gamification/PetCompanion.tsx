@@ -40,6 +40,11 @@ const CHARACTERS = [
     id: 'study_buddy',
     name: 'Study Buddy',
     src: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExenc1ZXZobWZpN2ttZDVnMmRqbmxtN3ZleHV6d3g1bWRucnFjczNiaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/SJx3txxLd2DZjfZPs7/giphy.gif'
+  },
+  {
+    id: 'focus_room',
+    name: 'Focus Room',
+    src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ3F3aW02N3g2cDM5djBjZW5pbjZqa3ZoaXNjd2l0bmU5dmQ4Y3ZiMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/O3iQdGPDD1Oc9Q71HG/giphy.gif'
   }
 ];
 
