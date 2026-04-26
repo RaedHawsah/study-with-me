@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { createClient } from '@/utils/supabase/client';
 import { UserPlus, Users, Copy, Check, Search, Loader2, User as UserIcon } from 'lucide-react';
 
 export function FriendSystem() {
+  const { t } = useTranslation('common');
   const { user, profile } = useSupabaseAuth();
   const [friendCode, setFriendCode] = useState('');
   const [friends, setFriends] = useState<any[]>([]);
@@ -61,13 +63,13 @@ export function FriendSystem() {
       .single();
 
     if (findError || !friendProfile) {
-      setMessage({ text: 'Friend code not found.', type: 'error' });
+      setMessage({ text: t('social.errorNotFound', { defaultValue: 'Friend code not found.' }), type: 'error' });
       setAdding(false);
       return;
     }
 
     if (friendProfile.id === user?.id) {
-      setMessage({ text: "You can't add yourself!", type: 'error' });
+      setMessage({ text: t('social.errorSelf', { defaultValue: "You can't add yourself!" }), type: 'error' });
       setAdding(false);
       return;
     }
@@ -83,12 +85,12 @@ export function FriendSystem() {
 
     if (addError) {
       if (addError.code === '23505') {
-        setMessage({ text: 'Already friends!', type: 'error' });
+        setMessage({ text: t('social.errorAlreadyFriends', { defaultValue: 'Already friends!' }), type: 'error' });
       } else {
-        setMessage({ text: 'Error adding friend.', type: 'error' });
+        setMessage({ text: t('social.errorAdd', { defaultValue: 'Error adding friend.' }), type: 'error' });
       }
     } else {
-      setMessage({ text: `Success! Added ${friendProfile.full_name}`, type: 'success' });
+      setMessage({ text: t('social.successAdd', { name: friendProfile.full_name, defaultValue: `Success! Added ${friendProfile.full_name}` }), type: 'success' });
       setFriendCode('');
       fetchFriends();
     }
@@ -105,15 +107,15 @@ export function FriendSystem() {
             <UserPlus size={24} />
           </div>
           <div>
-            <h3 className="text-xl font-bold">Add Friends</h3>
-            <p className="text-sm text-muted-foreground">Compete and study together.</p>
+            <h3 className="text-xl font-bold">{t('social.addFriends', { defaultValue: 'Add Friends' })}</h3>
+            <p className="text-sm text-muted-foreground">{t('social.competeDesc', { defaultValue: 'Compete and study together.' })}</p>
           </div>
         </div>
 
         {/* My Code Section */}
         <div className="bg-muted/30 p-4 rounded-2xl flex items-center justify-between border border-border/50">
           <div>
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">My Friend Code</p>
+            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">{t('social.myFriendCode', { defaultValue: 'My Friend Code' })}</p>
             <p className="text-lg font-mono font-bold tracking-tighter text-foreground">{profile?.friend_code || '------'}</p>
           </div>
           <button 
@@ -129,7 +131,7 @@ export function FriendSystem() {
           <div className="relative">
             <input 
               type="text" 
-              placeholder="Enter Friend Code (e.g. a1b2c3d4)"
+              placeholder={t('social.enterFriendCode', { defaultValue: 'Enter Friend Code (e.g. a1b2c3d4)' })}
               value={friendCode}
               onChange={(e) => setFriendCode(e.target.value)}
               className="w-full bg-background border border-border rounded-2xl px-5 py-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-mono"
@@ -138,6 +140,7 @@ export function FriendSystem() {
               onClick={addFriend}
               disabled={adding || !friendCode}
               className="absolute right-2 top-2 p-2.5 rounded-xl bg-primary text-primary-foreground disabled:opacity-50 disabled:grayscale transition-all hover:shadow-lg hover:shadow-primary/20"
+              style={{ direction: 'ltr' }}
             >
               {adding ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
             </button>
@@ -154,16 +157,16 @@ export function FriendSystem() {
           <div className="flex items-center justify-between mb-4">
             <h4 className="font-bold flex items-center gap-2">
               <Users size={16} className="text-primary" />
-              Friend List
+              {t('social.friendList', { defaultValue: 'Friend List' })}
             </h4>
-            <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full font-bold">{friends.length} Friends</span>
+            <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full font-bold">{t('social.friendsCount', { count: friends.length, defaultValue: `${friends.length} Friends` })}</span>
           </div>
 
           <div className="space-y-2">
             {loading ? (
               <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary/40" /></div>
             ) : friends.length === 0 ? (
-              <p className="text-center py-8 text-sm text-muted-foreground italic">No friends added yet. Share your code!</p>
+              <p className="text-center py-8 text-sm text-muted-foreground italic">{t('social.noFriends', { defaultValue: 'No friends added yet. Share your code!' })}</p>
             ) : (
               friends.map((friend) => (
                 <div key={friend.id} className="flex items-center gap-3 p-3 bg-muted/20 rounded-2xl border border-transparent hover:border-border transition-all">
