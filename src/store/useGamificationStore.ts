@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createClient } from '@/utils/supabase/client';
 
-export type PetType = 'CAT' | 'DOG' | 'FALCON' | 'EGG';
+export type PetType = string;
 
 interface GamificationState {
   // Global stats
