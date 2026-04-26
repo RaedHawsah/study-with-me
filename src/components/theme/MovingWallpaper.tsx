@@ -423,10 +423,10 @@ export function MovingWallpaper() {
         className="fixed inset-0 w-full h-full pointer-events-none"
         style={{
           zIndex: -1,
-          backdropFilter: isCustom ? 'none' : 'blur(2px) saturate(1.3) brightness(0.7)',
-          WebkitBackdropFilter: isCustom ? 'none' : 'blur(2px) saturate(1.3) brightness(0.7)',
+          backdropFilter: isCustom ? 'blur(4px) saturate(1.2)' : 'blur(2px) saturate(1.3) brightness(0.5)',
+          WebkitBackdropFilter: isCustom ? 'blur(4px) saturate(1.2)' : 'blur(2px) saturate(1.3) brightness(0.5)',
           background: isCustom
-            ? 'rgba(0, 0, 0, 0.15)'    /* Custom video: No blur, very light transparent tint just for text */
+            ? 'rgba(0, 0, 0, 0.5)'    /* Custom video: Added blur and increased darkness */
             : 'rgba(6, 5, 15, 0.45)',  /* Default particles: Original styling */
         }}
       />
