@@ -96,7 +96,7 @@ export function RoomView() {
                     roomType === 'random' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
                   }`}
                 >
-                  Random Group
+                  {t('room_join.randomGroup', { defaultValue: 'Random Group' })}
                 </button>
                 <button
                   type="button"
@@ -105,7 +105,7 @@ export function RoomView() {
                     roomType === 'private' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
                   }`}
                 >
-                  Private Room
+                  {t('room_join.privateRoom', { defaultValue: 'Private Room' })}
                 </button>
               </div>
 
@@ -113,15 +113,16 @@ export function RoomView() {
               {roomType === 'private' && (
                 <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label htmlFor="room-code" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ms-1">
-                    Room Code
+                    {t('room_join.roomCode', { defaultValue: 'Room Code' })}
                   </label>
                   <input
                     id="room-code"
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    placeholder="Enter Code (e.g. a1b2c3d4)"
+                    placeholder={t('room_join.enterRoomCode', { defaultValue: 'Enter Code (e.g. a1b2c3d4)' })}
                     className="w-full bg-background/50 border border-border focus:border-primary px-5 py-3.5 rounded-2xl outline-none transition-all font-mono"
+                    style={{ direction: 'ltr' }}
                   />
                 </div>
               )}
@@ -132,7 +133,7 @@ export function RoomView() {
               disabled={!name.trim() || (roomType === 'private' && !code.trim())}
               className="w-full py-4 rounded-2xl font-bold bg-primary text-primary-foreground disabled:opacity-30 hover:bg-primary-hover transition-all shadow-xl shadow-primary/20 active:scale-95 text-sm"
             >
-              {roomType === 'random' ? 'Find a Group' : 'Join Private Room'}
+              {roomType === 'random' ? t('room_join.findGroup', { defaultValue: 'Find a Group' }) : t('room_join.joinPrivateRoom', { defaultValue: 'Join Private Room' })}
             </button>
           </form>
 
