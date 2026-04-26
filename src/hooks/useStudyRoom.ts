@@ -194,18 +194,25 @@ export function useStudyRoom() {
     }
   }, [supabase, setStatus, setError, joinRoom]);
 
-  const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string) => {
+  const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string, retryCount = 1) => {
     try {
-      // Ensure any existing channel is removed before joining a new one to avoid terminal CLOSED states
+      if (retryCount > 20) {
+        setError('All global rooms are full. Please try again later.');
+        setStatus('error');
+        return;
+      }
+
+      // Ensure any existing channel is removed before joining a new one
       if (channelRef.current) {
-        console.log('[Room] Cleaning up existing channel before join attempt');
         await supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
 
-      resetRoom();
-      setStatus('joining');
-      setMyName(name);
+      if (retryCount === 1) {
+        resetRoom();
+        setStatus('joining');
+        setMyName(name);
+      }
 
       let myId = userId;
       if (!myId) {
@@ -218,12 +225,24 @@ export function useStudyRoom() {
       let targetCode = code || '';
 
       if (type === 'random') {
-        targetRoomId = 'global-random-1';
+        targetRoomId = `global-random-${retryCount}`;
         setLeaderId(null);
+        
+        // Ensure the dynamic random room exists in the DB
+        const { data: existing } = await supabase.from('rooms').select('id').eq('id', targetRoomId).single();
+        if (!existing) {
+          await supabase.from('rooms').insert({
+            id: targetRoomId,
+            name: `Global Room ${retryCount}`,
+            room_type: 'random',
+            created_at: new Date().toISOString()
+          });
+        }
       } else {
         const { data: roomData, error: roomError } = await supabase.from('rooms').select('*').eq('code', targetCode).single();
         if (roomError || !roomData) {
           setError('Room not found.');
+          setStatus('error');
           return;
         }
         targetRoomId = roomData.id;
@@ -240,8 +259,18 @@ export function useStudyRoom() {
       channel
         .on('presence', { event: 'sync' }, () => {
           const newState = channel.presenceState();
-          const newPeers: Record<string, RoomPeer> = {};
           
+          // DYNAMIC SCALING: If this is a random room and it's full (>6), move to next
+          if (type === 'random') {
+            const count = Object.keys(newState).length;
+            if (count > 6) {
+              console.log(`[Room] Room ${targetRoomId} is full (${count}/6). Finding another...`);
+              joinRoom(name, 'random', '', myId, retryCount + 1);
+              return;
+            }
+          }
+
+          const newPeers: Record<string, RoomPeer> = {};
           Object.keys(newState).forEach((key) => {
             if (key === myId) return;
             const userState = newState[key][0] as any;
