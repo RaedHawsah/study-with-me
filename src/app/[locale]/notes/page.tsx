@@ -1,26 +1,36 @@
+import type { Metadata } from 'next';
+import type { Locale } from '@/i18n/config';
+import { getTranslations } from '@/i18n/server';
 import { NotesManager } from '@/components/notes/NotesManager';
-import { Locale } from '@/i18n/config';
 
-export default function NotesPage({
-  params: { locale },
-}: {
-  params: { locale: Locale };
-}) {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const { t } = await getTranslations(locale as Locale);
+  return {
+    title: `${t('nav.notes')} — ${t('app.name')}`,
+  };
+}
+
+export default async function NotesPage({ params }: Props) {
+  const { locale } = await params;
+  const { t } = await getTranslations(locale as Locale);
+
   return (
     <div className="w-full flex flex-col gap-6 animate-fade-in-up">
-      {/* Header section (optional depending on taste, NotesManager is mostly self-contained) */}
       <div className="flex flex-col gap-1 px-2">
         <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-sm">
-          {locale === 'ar' ? 'ملاحظاتي' : 'My Notes'}
+          {t('notes.page_title')}
         </h1>
         <p className="text-muted-foreground">
-          {locale === 'ar' 
-            ? 'احفظ أفكارك، ملخصات دراستك، وملاحظاتك الهامة.' 
-            : 'Save your thoughts, study summaries, and important notes.'}
+          {t('notes.page_subtitle')}
         </p>
       </div>
 
-      <NotesManager locale={locale} />
+      <NotesManager locale={locale as Locale} />
     </div>
   );
 }

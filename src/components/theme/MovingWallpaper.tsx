@@ -423,8 +423,8 @@ export function MovingWallpaper() {
         className="fixed inset-0 w-full h-full pointer-events-none"
         style={{
           zIndex: -1,
-          backdropFilter: 'blur(2px) saturate(1.3) brightness(0.75)',
-          WebkitBackdropFilter: 'blur(2px) saturate(1.3) brightness(0.75)',
+          backdropFilter: 'blur(2px) saturate(1.3) brightness(0.7)',
+          WebkitBackdropFilter: 'blur(2px) saturate(1.3) brightness(0.7)',
           background: isCustom
             ? 'rgba(8, 6, 18, 0.38)'   /* custom video/image — cozy dark violet tint */
             : 'rgba(6, 5, 15, 0.45)',  /* particle canvas — slightly more opaque */

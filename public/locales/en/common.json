@@ -181,7 +181,9 @@
     "select_prompt": "Select a note",
     "select_desc": "Choose a note from the list on the left, or create a new one to get started.",
     "last_edited": "Last edited",
-    "start_typing": "Start typing your note here..."
+    "start_typing": "Start typing your note here...",
+    "page_title": "My Notes",
+    "page_subtitle": "Save your thoughts, study summaries, and important notes."
   },
   "auth": {
     "guestWarning": "Sign in to save your study progress, XP, and notes to the cloud."
