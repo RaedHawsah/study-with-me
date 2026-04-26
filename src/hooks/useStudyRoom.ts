@@ -160,6 +160,31 @@ export function useStudyRoom() {
     });
   }, [useRoomStore.getState().cameraOn, useRoomStore.getState().screenOn, syncPresence]);
 
+  // Broadcast Timer State (Only if Leader & Sync is ON)
+  useEffect(() => {
+    const roomStore = useRoomStore.getState();
+    const timer = useTimerStore.getState();
+
+    if (
+      channelRef.current && 
+      roomStore.roomType === 'private' && 
+      roomStore.myId === roomStore.leaderId && 
+      roomStore.timerSync
+    ) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'timer_sync',
+        payload: {
+          action: 'sync',
+          status: timer.status,
+          sessionType: timer.sessionType,
+          remainingSeconds: timer.remainingSeconds,
+          timestamp: Date.now()
+        }
+      });
+    }
+  }, [timerStore.status, timerStore.sessionType, useRoomStore.getState().timerSync]);
+
   const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string, retryCount = 1) => {
     try {
       if (retryCount > 20) {
@@ -257,6 +282,21 @@ export function useStudyRoom() {
           useRoomStore.setState({ peers: newPeers });
         })
         .on('broadcast', { event: 'webrtc_signal' }, handleSignal)
+        .on('broadcast', { event: 'timer_sync' }, ({ payload }) => {
+          const roomStore = useRoomStore.getState();
+          const timerStore = useTimerStore.getState();
+          
+          // Only sync if I'm NOT the leader (followers follow the leader)
+          if (roomStore.myId !== roomStore.leaderId) {
+            console.log('[Room] Received timer sync:', payload);
+            
+            if (payload.action === 'sync') {
+              timerStore.setSessionType(payload.sessionType);
+              timerStore.setStatus(payload.status);
+              timerStore.setRemaining(payload.remainingSeconds);
+            }
+          }
+        })
         .on('postgres_changes', { 
           event: 'INSERT', 
           schema: 'public', 
