@@ -423,8 +423,8 @@ export function MovingWallpaper() {
         className="fixed inset-0 w-full h-full pointer-events-none"
         style={{
           zIndex: -1,
-          backdropFilter: isCustom ? 'blur(1.5px) saturate(1.1) brightness(0.9)' : 'blur(2px) saturate(1.3) brightness(0.5)',
-          WebkitBackdropFilter: isCustom ? 'blur(1.5px) saturate(1.1) brightness(0.9)' : 'blur(2px) saturate(1.3) brightness(0.5)',
+          backdropFilter: isCustom ? 'blur(1.5px) saturate(1.1) brightness(6.5)' : 'blur(2px) saturate(1.3) brightness(0.5)',
+          WebkitBackdropFilter: isCustom ? 'blur(1.5px) saturate(1.1) brightness(6.5)' : 'blur(2px) saturate(1.3) brightness(0.5)',
           background: isCustom
             ? 'rgba(6, 4, 12, 0.35)'    /* Custom video: balanced cinematic ratio for readability */
             : 'rgba(6, 5, 15, 0.45)',  /* Default particles */
