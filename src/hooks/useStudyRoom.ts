@@ -330,18 +330,34 @@ export function useStudyRoom() {
   }, [addMessage, resetRoom, setMyId, setMyName, setRoomCode, setRoomId, setStatus, syncPresence, supabase, createPeerConnection, handleSignal]);
 
   const leaveRoom = useCallback(async () => {
-    const { localStream, screenStream, setLocalStream, setScreenStream, setCameraOn, setScreenOn } = useRoomStore.getState();
+    const { roomId, roomType, localStream, screenStream, setLocalStream, setScreenStream, setCameraOn, setScreenOn } = useRoomStore.getState();
+    
+    // 1. Cleanup media tracks
     [localStream, screenStream].forEach(stream => stream?.getTracks().forEach(track => track.stop()));
     setLocalStream(null);
     setScreenStream(null);
     setCameraOn(false);
     setScreenOn(false);
-
+    
+    // 2. Close WebRTC connections
     Object.values(pcs.current).forEach(pc => { try { pc.close(); } catch(e) {} });
     pcs.current = {};
     makingOffer.current = {};
     ignoreOffer.current = {};
+    
+    // 3. Optional: Delete room if I'm the last one (Private Rooms only)
+    if (roomId && roomType === 'private' && channelRef.current) {
+      const presence = channelRef.current.presenceState();
+      const count = Object.keys(presence).length;
+      
+      // If count is 1 or less, I am the last person leaving
+      if (count <= 1) {
+        console.log(`[Room] Deleting empty private room: ${roomId}`);
+        await supabase.from('rooms').delete().eq('id', roomId);
+      }
+    }
 
+    // 4. Remove channel and reset store
     if (channelRef.current) {
       await supabase.removeChannel(channelRef.current);
       channelRef.current = null;
