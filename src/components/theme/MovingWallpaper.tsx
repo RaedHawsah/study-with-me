@@ -303,11 +303,11 @@ const THEME_ANIMATIONS: Record<ColorPresetId, {
   init: (canvas: HTMLCanvasElement) => Particle[];
   draw: DrawFn;
 }> = {
-  coffee:   { init: coffeeInit,   draw: (ctx, p, c)    => coffeeDraw(ctx, p, c) },
-  matcha:   { init: matchaInit,   draw: (ctx, p, c)    => matchaDraw(ctx, p, c) },
+  coffee: { init: coffeeInit, draw: (ctx, p, c) => coffeeDraw(ctx, p, c) },
+  matcha: { init: matchaInit, draw: (ctx, p, c) => matchaDraw(ctx, p, c) },
   midnight: { init: midnightInit, draw: (ctx, p, c, f) => midnightDraw(ctx, p, c, f) },
-  lofi:     { init: lofiInit,     draw: (ctx, p, c)    => lofiDraw(ctx, p, c) },
-  cyber:    { init: cyberInit,    draw: (ctx, p, c, f) => cyberDraw(ctx, p, c, f) },
+  lofi: { init: lofiInit, draw: (ctx, p, c) => lofiDraw(ctx, p, c) },
+  cyber: { init: cyberInit, draw: (ctx, p, c, f) => cyberDraw(ctx, p, c, f) },
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -375,17 +375,17 @@ export function MovingWallpaper() {
 
   const isCustom = backgroundType === 'custom' && backgroundValue;
   const isVideo = isCustom && /\.(mp4|webm)(\?.*)?$/i.test(backgroundValue);
-  
+
   // Resolve path: if it starts with http, it's a Supabase URL, otherwise it's local
-  const resolvedSrc = isCustom && (backgroundValue.startsWith('http') 
-    ? backgroundValue 
+  const resolvedSrc = isCustom && (backgroundValue.startsWith('http')
+    ? backgroundValue
     : `/backgrounds/${backgroundValue}`);
 
   return (
     <>
       {/* Custom Background (Video or Image) */}
       {isCustom && resolvedSrc && (
-        <div 
+        <div
           className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden"
           style={{ zIndex: -2 }}
         >
@@ -423,8 +423,8 @@ export function MovingWallpaper() {
         className="fixed inset-0 w-full h-full pointer-events-none"
         style={{
           zIndex: -1,
-          backdropFilter: 'blur(3px) saturate(1.3) brightness(0.82)',
-          WebkitBackdropFilter: 'blur(3px) saturate(1.3) brightness(0.82)',
+          backdropFilter: 'blur(2px) saturate(1.3) brightness(0.75)',
+          WebkitBackdropFilter: 'blur(2px) saturate(1.3) brightness(0.75)',
           background: isCustom
             ? 'rgba(8, 6, 18, 0.38)'   /* custom video/image — cozy dark violet tint */
             : 'rgba(6, 5, 15, 0.45)',  /* particle canvas — slightly more opaque */

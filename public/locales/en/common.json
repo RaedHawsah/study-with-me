@@ -20,7 +20,8 @@
     "todayGoal": "Today's Goal",
     "minutesStudied": "minutes studied",
     "streakDays": "day streak",
-    "noSessions": "No sessions yet today. Let's get started!"
+    "noSessions": "No sessions yet today. Let's get started!",
+    "keepGoing": "Keep up the great work!"
   },
   "timer": {
     "focus": "Focus",
@@ -97,7 +98,10 @@
     "play": "Play",
     "stop": "Stop",
     "tapToPlay": "Tap a sound to begin",
-    "notSupported": "Web Audio API is not supported in this browser."
+    "notSupported": "Web Audio API is not supported in this browser.",
+    "loading": "…",
+    "stopAll": "Stop all",
+    "addSound": "Add sound"
   },
   "bg": {
     "default": "Default",
@@ -137,7 +141,10 @@
     "search": "Search...",
     "add": "Add",
     "delete": "Delete",
-    "no_results": "No results found"
+    "no_results": "No results found",
+    "info": "Guest Mode",
+    "signIn": "Sign In",
+    "uploading": "Uploading…"
   },
   "room": {
     "title": "Group Study Room",
@@ -170,6 +177,13 @@
     "untitled": "Untitled Note",
     "no_content": "No content",
     "placeholder_title": "Note title...",
-    "placeholder_content": "Type your thoughts here..."
+    "placeholder_content": "Type your thoughts here...",
+    "select_prompt": "Select a note",
+    "select_desc": "Choose a note from the list on the left, or create a new one to get started.",
+    "last_edited": "Last edited",
+    "start_typing": "Start typing your note here..."
+  },
+  "auth": {
+    "guestWarning": "Sign in to save your study progress, XP, and notes to the cloud."
   }
 }
