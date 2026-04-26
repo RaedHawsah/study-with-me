@@ -96,7 +96,7 @@ export function ColorPresetPicker() {
               ) : (
                 <>
                   {globalBackgrounds[colorPresetId] ? (
-                    <div className="absolute inset-0 w-full h-full opacity-40 group-hover:opacity-60 transition-opacity">
+                    <div className="absolute inset-0 w-full h-full">
                       {/\.(mp4|webm)(\?.*)?$/i.test(globalBackgrounds[colorPresetId]) ? (
                         <video src={globalBackgrounds[colorPresetId]} muted className="w-full h-full object-cover" />
                       ) : (
