@@ -26,9 +26,8 @@ export function useStudyRoom() {
   const syncPresence = useCallback(() => {
     if (!channelRef.current) return;
     
-    const state = useTimerStore.getState();
+    const timer = useTimerStore.getState();
     const roomStore = useRoomStore.getState();
-    const myStatus = state.status === 'running' ? state.sessionType : 'idle';
     const myLevel = Math.max(1, Math.floor((totalXp || 0) / 500) + 1);
     
     channelRef.current.track({
@@ -37,7 +36,12 @@ export function useStudyRoom() {
       xp: totalXp || 0,
       level: myLevel,
       streak: currentStreak || 0,
-      status: myStatus,
+      status: timer.status === 'running' ? timer.sessionType : 'idle',
+      // New Timer Metadata
+      timerStatus: timer.status,
+      remainingSeconds: timer.remainingSeconds,
+      sessionType: timer.sessionType,
+      timerLastUpdated: Date.now(),
       cameraOn: roomStore.cameraOn,
       screenOn: roomStore.screenOn,
       cameraStreamId: roomStore.localStream?.id || null,
@@ -159,6 +163,11 @@ export function useStudyRoom() {
       if (screenStream) screenStream.getTracks().forEach(t => pc.addTrack(t, screenStream));
     });
   }, [useRoomStore.getState().cameraOn, useRoomStore.getState().screenOn, useRoomStore.getState().localStream, useRoomStore.getState().screenStream, syncPresence]);
+
+  // Sync Presence when Timer changes
+  useEffect(() => {
+    syncPresence();
+  }, [timerStore.status, timerStore.sessionType, syncPresence]);
 
   // Broadcast Timer State (Only if Leader & Sync is ON)
   useEffect(() => {
@@ -284,7 +293,7 @@ export function useStudyRoom() {
 
           useRoomStore.setState({ peers: newPeers });
         })
-        .on('presence', { event: 'leave' }, ({ key }) => {
+        .on('presence', { event: 'leave' }, ({ key }: { key: string }) => {
           // Immediate WebRTC cleanup when someone leaves
           if (pcs.current[key]) {
             pcs.current[key].close();

@@ -1,19 +1,48 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
-import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2 } from 'lucide-react';
+import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'lucide-react';
 
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
   const isFocus = peer.status === 'focus';
   const isBreak = peer.status === 'shortBreak' || peer.status === 'longBreak';
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [displaySeconds, setDisplaySeconds] = useState(peer.remainingSeconds || 0);
+
+  const { roomType, timerSync, leaderId } = useRoomStore();
 
   useEffect(() => {
     if (videoRef.current && peer.stream) {
       videoRef.current.srcObject = peer.stream;
     }
   }, [peer.stream]);
+
+  // Timer Countdown Logic
+  useEffect(() => {
+    let initialSeconds = peer.remainingSeconds || 0;
+    
+    // Adjust for time elapsed since the last update
+    if (peer.timerStatus === 'running' && peer.timerLastUpdated) {
+      const elapsed = Math.floor((Date.now() - peer.timerLastUpdated) / 1000);
+      initialSeconds = Math.max(0, initialSeconds - elapsed);
+    }
+    
+    setDisplaySeconds(initialSeconds);
+
+    if (peer.timerStatus === 'running') {
+      const interval = setInterval(() => {
+        setDisplaySeconds(prev => Math.max(0, prev - 1));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [peer.timerStatus, peer.remainingSeconds, peer.timerLastUpdated]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
   
   const handleFullscreen = () => {
     if (videoRef.current) {
@@ -57,14 +86,6 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         `} />
       )}
 
-      {/* Header: Level & Status Icon & Fullscreen Button */}
-      <div className="flex justify-between items-start z-10">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white shadow-inner w-fit">
-            {isScreen ? <Monitor size={10} className="text-primary" /> : <Zap size={10} className="text-primary" fill="currentColor" />}
-            {isScreen ? 'Screen' : `LVL ${peer.level || 1}`}
-          </div>
-          
       {/* Fullscreen Button - Only shows when video exists and on hover */}
       {peer.stream && (
         <div className="absolute top-4 right-4 z-20 flex gap-2">
@@ -85,6 +106,14 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             {isScreen ? <Monitor size={12} className="text-primary" /> : <Zap size={12} className="text-primary" fill="currentColor" />}
             {isScreen ? 'Screen Share' : `LVL ${peer.level || 1}`}
           </div>
+          
+          {/* Real-time Timer Badge */}
+          {peer.timerStatus === 'running' && (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary/20 backdrop-blur-md border border-primary/30 text-[12px] font-black font-mono text-primary shadow-lg animate-in fade-in zoom-in duration-300">
+              <Clock size={12} className="animate-pulse" />
+              {formatTime(displaySeconds)}
+            </div>
+          )}
         </div>
 
         <div className={`
