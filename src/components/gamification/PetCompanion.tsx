@@ -151,7 +151,9 @@ export function PetCompanion() {
         <div className="w-full bg-card/60 backdrop-blur-md border-t border-white/10 p-5 z-10 flex flex-col gap-2 rounded-b-[2.5rem]">
           <div className="flex justify-between items-end w-full px-1">
             <div>
-              <h3 className="font-bold text-foreground text-lg leading-tight">{activePetName || 'Luna'}</h3>
+              <h3 className="font-bold text-foreground text-lg leading-tight">
+                {activePetType ? t(`pets.${activePetType}`, { defaultValue: activePetName }) : (i18n.language === 'ar' ? 'خبير القيلولة' : 'Nap Master')}
+              </h3>
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                 {t('gami.level', { defaultValue: 'Level' })} {currentLvl}
               </p>
@@ -226,7 +228,7 @@ export function PetCompanion() {
                       )}
                     </div>
                     <span className={`text-xs font-bold ${isActive ? 'text-primary' : 'text-foreground'}`}>
-                      {char.name}
+                      {t(`pets.${char.id}`, { defaultValue: char.name })}
                     </span>
                   </button>
                 );
