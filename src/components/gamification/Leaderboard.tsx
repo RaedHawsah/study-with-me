@@ -18,12 +18,13 @@ interface LeaderboardUser {
 
 export function Leaderboard() {
   const { t } = useTranslation('common');
-  const [tab, setTab] = useState<'global' | 'friends' | 'group'>('global');
+  const [tab, setTab] = useState<'global' | 'friends'>('global');
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const { user: authUser } = useSupabaseAuth();
   const currentUserId = authUser?.id;
   const { totalXp } = useGamificationStore();
+  const { i18n } = useTranslation('common');
 
   useEffect(() => {
     async function fetchLeaderboard() {
@@ -32,11 +33,34 @@ export function Leaderboard() {
       
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-      let query = supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url, xp, level')
-        .order('xp', { ascending: false })
-        .limit(20);
+      let query;
+
+      if (tab === 'friends' && currentUser) {
+        // Fetch friend IDs
+        const { data: friendships } = await supabase
+          .from('friendships')
+          .select('friend_id')
+          .eq('user_id', currentUser.id)
+          .eq('status', 'accepted');
+          
+        const friendIds = friendships?.map(f => f.friend_id) || [];
+        // Add self to the leaderboard
+        friendIds.push(currentUser.id);
+
+        query = supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, xp, level')
+          .in('id', friendIds)
+          .order('xp', { ascending: false })
+          .limit(20);
+      } else {
+        // Global
+        query = supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, xp, level')
+          .order('xp', { ascending: false })
+          .limit(20);
+      }
 
       const { data, error } = await query;
 
@@ -66,10 +90,10 @@ export function Leaderboard() {
         <div>
           <h2 className="text-3xl font-bold flex items-center gap-3">
             <Trophy className="text-yellow-500" size={32} />
-            {t('gami.leaderboard', { defaultValue: 'Leaderboard' })}
+            {i18n.language === 'ar' ? 'لوحة الصدارة' : t('gami.leaderboard', { defaultValue: 'Leaderboard' })}
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            {t('gami.rankDesc', { defaultValue: 'Ranked by total Study XP.' })}
+            {i18n.language === 'ar' ? 'الترتيب حسب إجمالي وقت الدراسة وكفاءة التركيز.' : t('gami.rankDesc', { defaultValue: 'Ranked by total Study XP.' })}
           </p>
         </div>
       </div>
@@ -82,15 +106,15 @@ export function Leaderboard() {
             tab === 'global' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
           }`}
         >
-          {t('gami.global', { defaultValue: 'Global' })}
+          {i18n.language === 'ar' ? 'عالمي' : t('gami.global', { defaultValue: 'Global' })}
         </button>
         <button
-          onClick={() => setTab('group')}
+          onClick={() => setTab('friends')}
           className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-            tab === 'group' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
+            tab === 'friends' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted/50'
           }`}
         >
-          {t('gami.university', { defaultValue: 'My University' })}
+          {i18n.language === 'ar' ? 'الأصدقاء' : 'Friends'}
         </button>
       </div>
 
