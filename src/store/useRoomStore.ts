@@ -13,6 +13,9 @@ export interface RoomPeer {
   status: 'focus' | 'shortBreak' | 'longBreak' | 'idle';
   stream?: MediaStream | null;
   screenStream?: MediaStream | null;
+  remainingSeconds?: number;
+  timerStatus?: 'running' | 'paused' | 'idle';
+  timerLastUpdated?: number;
 }
 
 export interface ChatMessage {

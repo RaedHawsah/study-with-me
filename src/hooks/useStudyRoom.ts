@@ -5,6 +5,7 @@ import { createClient as createSupabaseClient } from '@/utils/supabase/client';
 import { useRoomStore, type RoomPeer } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export function useStudyRoom() {
   const supabase = createSupabaseClient();
@@ -16,7 +17,7 @@ export function useStudyRoom() {
   
   const timerStore = useTimerStore();
   const { totalXp, currentStreak } = useGamificationStore();
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
   
   // WebRTC Refs
   const pcs = useRef<Record<string, RTCPeerConnection>>({});
@@ -89,7 +90,7 @@ export function useStudyRoom() {
       if (!stream) return;
 
       // Identify stream based on Presence metadata
-      const peerState = channelRef.current?.presenceState()[peerId]?.[0];
+      const peerState = (channelRef.current?.presenceState()[peerId]?.[0]) as any;
       if (peerState) {
         if (stream.id === peerState.cameraStreamId) {
           useRoomStore.getState().setPeerStream(peerId, stream);
@@ -282,7 +283,16 @@ export function useStudyRoom() {
           const newPeers: Record<string, RoomPeer> = {};
           presenceKeys.forEach((key) => {
             if (key === myId) return;
-            const userState = newState[key][0] as any;
+            const userState = newState[key][0] as unknown as {
+              name: string;
+              status: RoomPeer['status'];
+              xp: number;
+              streak: number;
+              level: number;
+              remainingSeconds?: number;
+              timerStatus?: string;
+              timerLastUpdated?: number;
+            };
             newPeers[key] = {
               id: key,
               name: userState.name,
@@ -290,6 +300,9 @@ export function useStudyRoom() {
               xp: userState.xp,
               streak: userState.streak,
               level: userState.level,
+              remainingSeconds: userState.remainingSeconds,
+              timerStatus: userState.timerStatus as RoomPeer['timerStatus'],
+              timerLastUpdated: userState.timerLastUpdated,
               stream: useRoomStore.getState().peers[key]?.stream || null,
               screenStream: useRoomStore.getState().peers[key]?.screenStream || null
             };
@@ -308,7 +321,7 @@ export function useStudyRoom() {
             delete ignoreOffer.current[key];
           }
         })
-        .on('broadcast', { event: 'webrtc_signal' }, (payload) => {
+        .on('broadcast', { event: 'webrtc_signal' }, (payload: any) => {
           if (useRoomStore.getState().roomId !== targetRoomId) return;
           handleSignal(payload);
         })
@@ -395,8 +408,9 @@ export function useStudyRoom() {
     }
   }, [addMessage, resetRoom, setMyId, setMyName, setRoomCode, setRoomId, setStatus, syncPresence, supabase, createPeerConnection, handleSignal]);
 
-  const createRoom = useCallback(async (name: string, userId: string) => {
+  const createRoom = useCallback(async (name: string, userId?: string) => {
     try {
+      const finalUserId = userId || crypto.randomUUID();
       setStatus('joining');
       const code = Math.random().toString(36).substring(2, 10).toUpperCase();
       
@@ -408,7 +422,7 @@ export function useStudyRoom() {
           name: `Private Room: ${code}`,
           code,
           room_type: 'private',
-          leader_id: userId,
+          leader_id: finalUserId,
           created_at: new Date().toISOString()
         })
         .select()
