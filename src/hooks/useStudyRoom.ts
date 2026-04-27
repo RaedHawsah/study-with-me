@@ -252,6 +252,9 @@ export function useStudyRoom() {
       setRoomId(targetRoomId);
       setRoomCode(targetCode);
       useRoomStore.getState().setRoomType(type);
+      
+      // Clear peers immediately when trying a new room
+      useRoomStore.setState({ peers: {} });
 
       const channel = supabase.channel(`room:${targetRoomId}`, { config: { presence: { key: myId } } });
       channelRef.current = channel;
@@ -260,6 +263,9 @@ export function useStudyRoom() {
 
       channel
         .on('presence', { event: 'sync' }, () => {
+          // IMPORTANT: Ignore events from old rooms if we've already moved on
+          if (useRoomStore.getState().roomId !== targetRoomId) return;
+
           const newState = channel.presenceState();
           const presenceKeys = Object.keys(newState);
           const count = presenceKeys.length;
@@ -302,8 +308,12 @@ export function useStudyRoom() {
             delete ignoreOffer.current[key];
           }
         })
-        .on('broadcast', { event: 'webrtc_signal' }, handleSignal)
+        .on('broadcast', { event: 'webrtc_signal' }, (payload) => {
+          if (useRoomStore.getState().roomId !== targetRoomId) return;
+          handleSignal(payload);
+        })
         .on('broadcast', { event: 'timer_sync' }, ({ payload }: { payload: any }) => {
+          if (useRoomStore.getState().roomId !== targetRoomId) return;
           const roomStore = useRoomStore.getState();
           const timerStore = useTimerStore.getState();
           
