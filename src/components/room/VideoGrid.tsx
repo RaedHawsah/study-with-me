@@ -32,7 +32,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
 
     if (peer.timerStatus === 'running') {
       const interval = setInterval(() => {
-        setDisplaySeconds(prev => Math.max(0, prev - 1));
+        setDisplaySeconds((prev: number) => Math.max(0, prev - 1));
       }, 1000);
       return () => clearInterval(interval);
     }

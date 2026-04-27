@@ -303,7 +303,7 @@ export function useStudyRoom() {
           }
         })
         .on('broadcast', { event: 'webrtc_signal' }, handleSignal)
-        .on('broadcast', { event: 'timer_sync' }, ({ payload }) => {
+        .on('broadcast', { event: 'timer_sync' }, ({ payload }: { payload: any }) => {
           const roomStore = useRoomStore.getState();
           const timerStore = useTimerStore.getState();
           
