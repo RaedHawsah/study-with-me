@@ -12,37 +12,25 @@ import { ChatPanel } from './ChatPanel';
 
 export function RoomView() {
   const { t, i18n } = useTranslation('common');
-  const { status, errorMessage, chatOpen, setError } = useRoomStore();
-  const { joinRoom, createRoom, leaveRoom } = useStudyRoom();
+  const { status, errorMessage, chatOpen, setError, actions } = useRoomStore();
   const { user } = useSupabaseAuth();
-  const leaveRoomRef = useRef(leaveRoom);
-  leaveRoomRef.current = leaveRoom;
-
-  // Only the top-level RoomView cleans up the room when destroyed
-  useEffect(() => {
-    return () => {
-      leaveRoomRef.current();
-    };
-  }, []);
 
   const [name, setName] = useState('');
   const [roomType, setRoomType] = useState<'random' | 'private'>('random');
   const [privateMode, setPrivateMode] = useState<'join' | 'create'>('join');
   const [code, setCode] = useState('');
 
-
-
   const handleAction = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !actions) return;
 
     if (roomType === 'random') {
-      joinRoom(name.trim(), 'random', '', user?.id);
+      actions.joinRoom(name.trim(), 'random', '', user?.id);
     } else {
       if (privateMode === 'join') {
-        joinRoom(name.trim(), 'private', code, user?.id);
+        actions.joinRoom(name.trim(), 'private', code, user?.id);
       } else {
-        createRoom(name.trim(), user?.id || crypto.randomUUID());
+        actions.createRoom(name.trim(), user?.id || crypto.randomUUID());
       }
     }
   };

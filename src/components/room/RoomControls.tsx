@@ -21,7 +21,6 @@ import { useMediaStream } from '@/hooks/useMediaStream';
 
 export function RoomControls() {
   const { t } = useTranslation('common');
-  const { leaveRoom } = useStudyRoom();
   const { toggleCamera, toggleScreenShare } = useMediaStream();
   const { 
     roomCode, 
@@ -35,7 +34,8 @@ export function RoomControls() {
     myId,
     leaderId,
     cameraOn,
-    screenOn
+    screenOn,
+    actions
   } = useRoomStore();
   
   const [copied, setCopied] = useState(false);
@@ -139,7 +139,7 @@ export function RoomControls() {
 
         {/* Leave Room */}
         <button
-          onClick={leaveRoom}
+          onClick={() => actions?.leaveRoom()}
           className="group pl-4 pr-6 h-14 rounded-full flex items-center gap-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-all shadow-lg hover:shadow-red-500/20 active:scale-95"
         >
           <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">

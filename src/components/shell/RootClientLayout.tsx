@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { SplashScreen } from '@/components/ui/SplashScreen';
+import { RoomSessionManager } from '@/components/room/RoomSessionManager';
 
 export function RootClientLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -14,6 +15,7 @@ export function RootClientLayout({ children }: { children: React.ReactNode }) {
        * hiding the content — this is critical for a good LCP score.
        */}
       {children}
+      <RoomSessionManager />
       {loading && <SplashScreen onComplete={() => setLoading(false)} />}
     </>
   );

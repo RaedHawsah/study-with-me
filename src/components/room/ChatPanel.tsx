@@ -8,8 +8,7 @@ import { useStudyRoom } from '@/hooks/useStudyRoom';
 
 export function ChatPanel() {
   const { t } = useTranslation('common');
-  const { chatOpen, toggleChat, messages } = useRoomStore();
-  const { sendMessage } = useStudyRoom();
+  const { chatOpen, toggleChat, messages, actions } = useRoomStore();
   const [text, setText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +24,7 @@ export function ChatPanel() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    sendMessage(text.trim());
+    actions?.sendMessage(text.trim());
     setText('');
   };
 
