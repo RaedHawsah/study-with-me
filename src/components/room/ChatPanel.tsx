@@ -81,13 +81,19 @@ export function ChatPanel() {
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit(e);
+            }
+          }}
           placeholder={t('room.chatPlaceholder')}
           maxLength={500}
           className="flex-1 bg-transparent border border-muted-foreground/30 focus:border-primary px-3 py-2 rounded-xl text-sm outline-none transition-colors"
         />
         <button 
           type="submit" 
-          disabled={!text.trim()}
+          disabled={!text.trim() || !actions}
           className="flex-none p-2 rounded-xl bg-primary text-primary-foreground disabled:opacity-50 transition-colors"
         >
           <Send size={16} className="rtl:rotate-180" />

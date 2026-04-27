@@ -341,22 +341,9 @@ export function useStudyRoom() {
             }
           }
         })
-        .on('postgres_changes', { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'room_messages',
-          filter: `room_id=eq.${targetRoomId}`
-        }, async (payload: { new: any }) => {
-          const msg = payload.new;
-          const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', msg.user_id).single();
-          addMessage({
-            id: msg.id,
-            fromId: msg.user_id,
-            fromName: profile?.full_name || 'Anonymous',
-            text: msg.content,
-            timestamp: new Date(msg.created_at).getTime(),
-            isOwn: msg.user_id === myId
-          });
+        .on('broadcast', { event: 'chat_msg' }, ({ payload }: { payload: any }) => {
+          if (useRoomStore.getState().roomId !== targetRoomId) return;
+          addMessage(payload);
         })
         .on('system', { event: '*' }, (payload: any) => {
           console.log('[Room] System event:', payload);
@@ -480,10 +467,28 @@ export function useStudyRoom() {
   }, [resetRoom, supabase]);
 
   const sendMessage = useCallback(async (text: string) => {
-    const { roomId, myId } = useRoomStore.getState();
-    if (!roomId || !myId) return;
-    await supabase.from('room_messages').insert({ room_id: roomId, user_id: myId, content: text });
-  }, [supabase]);
+    const { roomId, myId, myName, addMessage } = useRoomStore.getState();
+    if (!roomId || !myId || !channelRef.current) return;
+
+    const msg = {
+      id: crypto.randomUUID(),
+      fromId: myId,
+      fromName: myName || 'Anonymous',
+      text,
+      timestamp: Date.now(),
+      isOwn: true
+    };
+
+    // 1. Add locally for instant feedback
+    addMessage(msg);
+
+    // 2. Broadcast to others
+    channelRef.current.send({
+      type: 'broadcast',
+      event: 'chat_msg',
+      payload: { ...msg, isOwn: false } // Receivers should see it as NOT their own
+    });
+  }, []);
 
   return { joinRoom, createRoom, leaveRoom, sendMessage };
 }
