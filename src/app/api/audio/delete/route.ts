@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
+
+export const runtime = 'edge';
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,19 +18,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No filename provided' }, { status: 400 });
     }
 
-    // Safety: prevent path traversal
-    const safeName = path.basename(fileName);
-    const filePath = path.join(process.cwd(), 'public', 'audio', 'custom', safeName);
-    
-    // Check if file exists. If it doesn't, consider it successfully deleted to clear frontend ghost states.
-    try {
-      await fs.access(filePath);
-    } catch {
-      return NextResponse.json({ success: true });
+    // Safety: strip any path traversal attempts
+    const safeName = fileName.split('/').pop()?.replace(/[^a-z0-9._-]/gi, '') ?? '';
+    if (!safeName) {
+      return NextResponse.json({ error: 'Invalid filename' }, { status: 400 });
     }
 
-    // Delete file
-    await fs.unlink(filePath);
+    const supabase = getSupabase();
+    const { error } = await supabase.storage
+      .from('audio')
+      .remove([`custom/${safeName}`]);
+
+    if (error && !error.message.includes('Not Found')) {
+      console.error('Storage delete error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

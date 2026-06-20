@@ -11,7 +11,7 @@
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import { getDir, type Locale } from '@/i18n/config';
-import { SpeedInsights } from '@vercel/speed-insights/next';
+// Google AdSense — fill NEXT_PUBLIC_ADSENSE_ID in your Cloudflare env vars after approval
 import './globals.css';
 
 import Script from 'next/script';
@@ -104,12 +104,20 @@ export default async function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
         />
+        {/* Google AdSense — active once NEXT_PUBLIC_ADSENSE_ID is set */}
+        {process.env.NEXT_PUBLIC_ADSENSE_ID && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_ID}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
       </head>
       <body className="min-h-screen bg-[#050505] text-foreground transition-theme overflow-x-hidden">
         <RootClientLayout>
           {children}
         </RootClientLayout>
-        <SpeedInsights />
       </body>
     </html>
   );

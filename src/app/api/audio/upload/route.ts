@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
+
+export const runtime = 'edge';
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,16 +19,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    // Safe filename: remove spaces and special chars
     const fileName = file.name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
-    const publicDir = path.join(process.cwd(), 'public', 'audio', 'custom');
-    
-    // Ensure dir exists
-    await fs.mkdir(publicDir, { recursive: true });
-    
-    const filePath = path.join(publicDir, fileName);
-    await fs.writeFile(filePath, buffer);
+    const buffer = await file.arrayBuffer();
+    const supabase = getSupabase();
+
+    const { error } = await supabase.storage
+      .from('audio')
+      .upload(`custom/${fileName}`, buffer, {
+        contentType: file.type || 'audio/mpeg',
+        upsert: true,
+      });
+
+    if (error) {
+      console.error('Storage upload error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, fileName });
   } catch (error: any) {
