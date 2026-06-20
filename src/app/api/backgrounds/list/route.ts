@@ -1,32 +1,36 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 export const runtime = 'edge';
 
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+function getS3Client() {
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    },
+  });
 }
 
 export async function GET() {
   try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase.storage
-      .from('backgrounds')
-      .list('', { limit: 200, sortBy: { column: 'name', order: 'asc' } });
+    const s3 = getS3Client();
+    const command = new ListObjectsV2Command({
+      Bucket: process.env.R2_BACKGROUNDS_BUCKET_NAME || 'backgrounds',
+    });
 
-    if (error) {
-      return NextResponse.json({ files: [] });
-    }
+    const data = await s3.send(command);
+    const contents = data.Contents || [];
 
-    const mediaFiles = (data || [])
-      .map((f) => f.name)
-      .filter((name) => /\.(mp4|webm|gif|jpg|jpeg|png|webp)$/i.test(name));
+    const mediaFiles = contents
+      .map((item) => item.Key || '')
+      .filter((name) => name && /\.(mp4|webm|gif|jpg|jpeg|png|webp)$/i.test(name));
 
     return NextResponse.json({ files: mediaFiles });
   } catch (error: any) {
+    console.error('List backgrounds error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

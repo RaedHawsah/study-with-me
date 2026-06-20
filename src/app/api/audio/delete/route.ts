@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 export const runtime = 'edge';
 
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+function getS3Client() {
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    },
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -24,15 +28,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid filename' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
-    const { error } = await supabase.storage
-      .from('audio')
-      .remove([`custom/${safeName}`]);
+    const s3 = getS3Client();
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME || 'audio',
+      Key: `custom/${safeName}`,
+    });
 
-    if (error && !error.message.includes('Not Found')) {
-      console.error('Storage delete error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    await s3.send(command);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 export const runtime = 'edge';
 
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+function getS3Client() {
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    },
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -21,19 +25,16 @@ export async function POST(req: NextRequest) {
 
     const fileName = file.name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
     const buffer = await file.arrayBuffer();
-    const supabase = getSupabase();
+    const s3 = getS3Client();
 
-    const { error } = await supabase.storage
-      .from('audio')
-      .upload(`custom/${fileName}`, buffer, {
-        contentType: file.type || 'audio/mpeg',
-        upsert: true,
-      });
+    const command = new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME || 'audio',
+      Key: `custom/${fileName}`,
+      Body: new Uint8Array(buffer),
+      ContentType: file.type || 'audio/mpeg',
+    });
 
-    if (error) {
-      console.error('Storage upload error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    await s3.send(command);
 
     return NextResponse.json({ success: true, fileName });
   } catch (error: any) {
