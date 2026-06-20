@@ -21,7 +21,6 @@ model User {
   settings           Json?    // Stores timer and theme preferences
   
   // Relations
-  pets               Pet[]
   studySessions      StudySession[]
   tasks              Task[]
   notes              Note[]
