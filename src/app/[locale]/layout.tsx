@@ -20,8 +20,6 @@ import { NavShell } from '@/components/shell/NavShell';
 import { LocaleSyncClient } from '@/components/LocaleSyncClient';
 import { AudioPreloader } from '@/components/audio/AudioPreloader';
 
-export const runtime = 'edge';
-
 // Pre-load all translation files so they're bundled correctly
 import enMessages from '../../../public/locales/en/common.json';
 import arMessages from '../../../public/locales/ar/common.json';
