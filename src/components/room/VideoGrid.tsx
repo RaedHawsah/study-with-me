@@ -7,6 +7,7 @@ import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'l
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
   const isFocus = peer.status === 'focus';
   const isBreak = peer.status === 'shortBreak' || peer.status === 'longBreak';
+  const isPaused = peer.timerStatus === 'paused';
   const videoRef = useRef<HTMLVideoElement>(null);
   const [displaySeconds, setDisplaySeconds] = useState(peer.remainingSeconds || 0);
 
@@ -82,7 +83,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       {!peer.stream && (
         <div className={`
           absolute -inset-10 opacity-10 blur-3xl transition-opacity duration-1000
-          ${isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted'}
+          ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
         `} />
       )}
 
@@ -108,17 +109,26 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
           </div>
           
           {/* Real-time Timer Badge */}
-          {peer.timerStatus === 'running' && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary/20 backdrop-blur-md border border-primary/30 text-[12px] font-black font-mono text-primary shadow-lg animate-in fade-in zoom-in duration-300">
-              <Clock size={12} className="animate-pulse" />
+          {(peer.timerStatus === 'running' || isPaused) && (
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl border text-[12px] font-black font-mono shadow-lg animate-in fade-in zoom-in duration-300 ${
+              isPaused
+                ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-500'
+                : 'bg-primary/20 border-primary/30 text-primary'
+            }`}>
+              {isPaused ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse shrink-0" />
+              ) : (
+                <Clock size={12} className="animate-pulse" />
+              )}
               {formatTime(displaySeconds)}
             </div>
           )}
         </div>
 
         <div className={`
-          p-2 rounded-2xl shadow-lg backdrop-blur-md
-          ${isFocus ? 'bg-primary/80 text-primary-foreground animate-pulse' : 
+          p-2 rounded-2xl shadow-lg backdrop-blur-md transition-colors duration-300
+          ${isPaused ? 'bg-yellow-500/80 text-white' :
+            isFocus ? 'bg-primary/80 text-primary-foreground animate-pulse' : 
             isBreak ? 'bg-green-500/80 text-white' : 'bg-black/40 text-white'}
         `}>
           {isFocus ? <BookOpen size={18} /> : isBreak ? <Coffee size={18} /> : <User size={18} />}
@@ -139,8 +149,8 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             )}
             {/* Status Indicator Dot */}
             <div className={`
-              absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-card/60
-              ${isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted'}
+              absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-card/60 transition-colors duration-300
+              ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
             `} />
           </div>
         </div>
@@ -153,8 +163,12 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             {peer.name || 'Anonymous'}
             {isMe && <span className="ml-1 opacity-70 text-[10px] uppercase">(You)</span>}
           </h4>
-          <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md ${isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60'}`}>
-            {isFocus ? 'Focus Mode' : isBreak ? 'On Break' : 'Chilling'}
+          <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
+            isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
+          }`}>
+            {isPaused 
+              ? (isFocus ? 'Focus (Paused)' : 'On Break (Paused)') 
+              : (isFocus ? 'Focus Mode' : isBreak ? 'On Break' : 'Chilling')}
           </p>
         </div>
 
@@ -180,8 +194,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
 export function VideoGrid() {
   const { peers, myId, myName, localStream, screenStream } = useRoomStore();
   const { totalXp, currentStreak } = useGamificationStore();
-  const timerStatus = useTimerStore(s => s.status);
-  const sessionType = useTimerStore(s => s.sessionType);
+  const timerStore = useTimerStore();
 
   const myPeer = {
     id: myId,
@@ -189,7 +202,10 @@ export function VideoGrid() {
     xp: totalXp,
     level: Math.max(1, Math.floor((totalXp || 0) / 500) + 1),
     streak: currentStreak,
-    status: timerStatus === 'running' ? sessionType : 'idle',
+    status: timerStore.status === 'idle' ? 'idle' : timerStore.sessionType,
+    timerStatus: timerStore.status,
+    remainingSeconds: timerStore.remainingSeconds,
+    timerLastUpdated: timerStore.lastUpdatedAt,
     stream: localStream
   };
 

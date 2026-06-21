@@ -38,7 +38,7 @@ export function useStudyRoom() {
       xp: totalXp || 0,
       level: myLevel,
       streak: currentStreak || 0,
-      status: timer.status === 'running' ? timer.sessionType : 'idle',
+      status: timer.status === 'idle' ? 'idle' : timer.sessionType,
       // New Timer Metadata
       timerStatus: timer.status,
       remainingSeconds: timer.remainingSeconds,
