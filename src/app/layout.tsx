@@ -17,6 +17,8 @@ import './globals.css';
 import Script from 'next/script';
 import { RootClientLayout } from '@/components/shell/RootClientLayout';
 
+export const runtime = 'edge';
+
 export const metadata: Metadata = {
   title: {
     default: 'Study With Me | Your Ultimate Productivity Partner',
