@@ -199,9 +199,26 @@ export function useStudyRoom() {
     });
   }, [cameraOn, screenOn, localStream, screenStream, syncPresence]);
 
-  // Sync Presence when Timer changes
+  // Sync Presence + fast broadcast when Timer changes
   useEffect(() => {
     syncPresence();
+
+    // Broadcast instantly so other clients update without waiting for presence sync
+    if (channelRef.current) {
+      const timer = useTimerStore.getState();
+      const roomStore = useRoomStore.getState();
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'peer_timer_update',
+        payload: {
+          id: roomStore.myId,
+          timerStatus: timer.status,
+          status: timer.status === 'idle' ? 'idle' : timer.sessionType,
+          remainingSeconds: timer.remainingSeconds,
+          timerLastUpdated: Date.now()
+        }
+      });
+    }
   }, [timerStore.status, timerStore.sessionType, syncPresence]);
 
   // Broadcast Timer State (Only if Leader & Sync is ON)
@@ -404,6 +421,26 @@ export function useStudyRoom() {
               timerStore.setStatus(payload.status);
               timerStore.setRemaining(payload.remainingSeconds);
             }
+          }
+        })
+        .on('broadcast', { event: 'peer_timer_update' }, ({ payload }: { payload: any }) => {
+          if (useRoomStore.getState().roomId !== targetRoomId) return;
+          if (!payload?.id) return;
+          // Instantly patch this peer's timer state — no presence round-trip needed
+          const { peers } = useRoomStore.getState();
+          if (peers[payload.id]) {
+            useRoomStore.setState({
+              peers: {
+                ...peers,
+                [payload.id]: {
+                  ...peers[payload.id],
+                  timerStatus: payload.timerStatus,
+                  status: payload.status,
+                  remainingSeconds: payload.remainingSeconds,
+                  timerLastUpdated: payload.timerLastUpdated
+                }
+              }
+            });
           }
         })
         .on('broadcast', { event: 'chat_msg' }, ({ payload }: { payload: any }) => {
