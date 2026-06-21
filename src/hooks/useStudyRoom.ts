@@ -13,7 +13,7 @@ export function useStudyRoom() {
     setStatus, setRoomId, setRoomCode, setMyId, setMyName, 
     addPeer, removePeer, addMessage, setError, resetRoom, 
     status, roomId, peers, setLeaderId,
-    localStream, screenStream
+    localStream, screenStream, cameraOn, screenOn, timerSync
   } = useRoomStore();
   
   const timerStore = useTimerStore();
@@ -105,6 +105,13 @@ export function useStudyRoom() {
       const stream = event.streams[0];
       if (!stream) return;
 
+      // Cache the stream on the peer connection object
+      const customPc = pc as any;
+      customPc.remoteStreams = customPc.remoteStreams || [];
+      if (!customPc.remoteStreams.some((s: MediaStream) => s.id === stream.id)) {
+        customPc.remoteStreams.push(stream);
+      }
+
       // Identify stream based on Presence metadata
       const peerState = (channelRef.current?.presenceState()[peerId]?.[0]) as any;
       if (peerState) {
@@ -113,8 +120,14 @@ export function useStudyRoom() {
         } else if (stream.id === peerState.screenStreamId) {
           useRoomStore.getState().setPeerScreenStream(peerId, stream);
         } else {
-          // Fallback if IDs don't match exactly yet
-          useRoomStore.getState().setPeerStream(peerId, stream);
+          // Logical fallback based on status flags
+          if (peerState.cameraOn && !peerState.screenOn) {
+            useRoomStore.getState().setPeerStream(peerId, stream);
+          } else if (peerState.screenOn && !peerState.cameraOn) {
+            useRoomStore.getState().setPeerScreenStream(peerId, stream);
+          } else {
+            useRoomStore.getState().setPeerStream(peerId, stream);
+          }
         }
       } else {
         useRoomStore.getState().setPeerStream(peerId, stream);
@@ -169,17 +182,22 @@ export function useStudyRoom() {
 
   // Force renegotiation on all PCs when local streams change
   useEffect(() => {
-    const { localStream, screenStream } = useRoomStore.getState();
     syncPresence();
 
     Object.values(pcs.current).forEach((pc) => {
       const senders = pc.getSenders();
-      senders.forEach(s => pc.removeTrack(s));
+      senders.forEach(s => {
+        try {
+          pc.removeTrack(s);
+        } catch (e) {
+          console.error('Failed to remove track:', e);
+        }
+      });
       
       if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
       if (screenStream) screenStream.getTracks().forEach(t => pc.addTrack(t, screenStream));
     });
-  }, [useRoomStore.getState().cameraOn, useRoomStore.getState().screenOn, useRoomStore.getState().localStream, useRoomStore.getState().screenStream, syncPresence]);
+  }, [cameraOn, screenOn, localStream, screenStream, syncPresence]);
 
   // Sync Presence when Timer changes
   useEffect(() => {
@@ -195,7 +213,7 @@ export function useStudyRoom() {
       channelRef.current && 
       roomStore.roomType === 'private' && 
       roomStore.myId === roomStore.leaderId && 
-      roomStore.timerSync
+      timerSync
     ) {
       channelRef.current.send({
         type: 'broadcast',
@@ -209,7 +227,7 @@ export function useStudyRoom() {
         }
       });
     }
-  }, [timerStore.status, timerStore.sessionType, useRoomStore.getState().timerSync]);
+  }, [timerStore.status, timerStore.sessionType, timerSync]);
 
   const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string, retryCount = 1) => {
     try {
@@ -305,10 +323,41 @@ export function useStudyRoom() {
               xp: number;
               streak: number;
               level: number;
+              cameraOn?: boolean;
+              screenOn?: boolean;
+              cameraStreamId?: string | null;
+              screenStreamId?: string | null;
               remainingSeconds?: number;
               timerStatus?: string;
               timerLastUpdated?: number;
             };
+
+            // Resolve streams from peer connection cache
+            const peerPc = pcs.current[key] as any;
+            let stream = useRoomStore.getState().peers[key]?.stream || null;
+            let screenStream = useRoomStore.getState().peers[key]?.screenStream || null;
+
+            if (peerPc && peerPc.remoteStreams && peerPc.remoteStreams.length > 0) {
+              const remoteStreams = peerPc.remoteStreams as MediaStream[];
+              
+              // 1. Try matching by stream ID
+              const matchedCamera = remoteStreams.find(s => s.id === userState.cameraStreamId);
+              const matchedScreen = remoteStreams.find(s => s.id === userState.screenStreamId);
+              
+              if (matchedCamera) stream = matchedCamera;
+              if (matchedScreen) screenStream = matchedScreen;
+
+              // 2. Logical fallback for unmatched streams
+              if (!matchedCamera && userState.cameraOn) {
+                const candidate = remoteStreams.find(s => s.id !== userState.screenStreamId);
+                if (candidate) stream = candidate;
+              }
+              if (!matchedScreen && userState.screenOn) {
+                const candidate = remoteStreams.find(s => s.id !== userState.cameraStreamId);
+                if (candidate) screenStream = candidate;
+              }
+            }
+
             newPeers[key] = {
               id: key,
               name: userState.name,
@@ -319,8 +368,8 @@ export function useStudyRoom() {
               remainingSeconds: userState.remainingSeconds,
               timerStatus: userState.timerStatus as RoomPeer['timerStatus'],
               timerLastUpdated: userState.timerLastUpdated,
-              stream: useRoomStore.getState().peers[key]?.stream || null,
-              screenStream: useRoomStore.getState().peers[key]?.screenStream || null
+              stream: userState.cameraOn ? stream : null,
+              screenStream: userState.screenOn ? screenStream : null
             };
 
             if (!pcs.current[key]) createPeerConnection(key);
