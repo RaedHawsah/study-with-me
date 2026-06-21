@@ -29,7 +29,7 @@ function detectLocale(request: NextRequest): Locale {
   return defaultLocale;
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip Next.js internals, static files, and API routes
