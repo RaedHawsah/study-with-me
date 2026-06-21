@@ -48,6 +48,8 @@ export const viewport: Viewport = {
   ],
 };
 
+export const runtime = 'edge';
+
 // Anti-FOUC theme script — runs synchronously before first paint.
 // Must be a string literal (no template literals with backtick) for
 // browsers that don't support certain ES features in inline scripts.
