@@ -7,7 +7,7 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 export default function HomePage() {
   const { t } = useTranslation('common');
-  const { user } = useSupabaseAuth();
+  const { user, signInWithGoogle } = useSupabaseAuth();
   const { weeklyStudyMinutes, currentStreak } = useGamificationStore();
 
   return (
@@ -18,7 +18,7 @@ export default function HomePage() {
             <strong>{t('common.info', { defaultValue: 'Guest Mode' })}:</strong> {t('auth.guestWarning', { defaultValue: 'Sign in to save your study progress, XP, and notes to the cloud.' })}
           </p>
           <button 
-            onClick={() => (document.getElementById('nav-settings') as HTMLElement)?.click()}
+            onClick={signInWithGoogle}
             className="px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-bold hover:bg-blue-600 transition-colors shrink-0"
           >
             {t('common.signIn', { defaultValue: 'Sign In' })}
