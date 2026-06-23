@@ -31,6 +31,20 @@ export function useStudyRoom() {
   const intentionalLeaveRef = useRef(false);
   const lastJoinParamsRef = useRef<{ name: string; type: 'random' | 'private'; code?: string; userId?: string } | null>(null);
 
+  useEffect(() => {
+    // Cleanup on unmount (e.g. Fast Refresh, Strict Mode)
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current).catch(console.error);
+        channelRef.current = null;
+      }
+      if (pcs.current) {
+        Object.values(pcs.current).forEach(pc => { try { pc.close(); } catch(e) {} });
+        pcs.current = {};
+      }
+    };
+  }, [supabase]);
+
   const syncPresence = useCallback(() => {
     if (!channelRef.current) return;
     
