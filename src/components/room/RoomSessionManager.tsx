@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStudyRoom } from '@/hooks/useStudyRoom';
 import { useRoomStore } from '@/store/useRoomStore';
 
@@ -12,29 +12,33 @@ import { useRoomStore } from '@/store/useRoomStore';
 export function RoomSessionManager() {
   const { joinRoom, createRoom, leaveRoom, sendMessage } = useStudyRoom();
 
+  // Keep latest functions in a ref so we can use them inside stable wrapper functions
+  const actionsRef = useRef({ joinRoom, createRoom, leaveRoom, sendMessage });
+  actionsRef.current = { joinRoom, createRoom, leaveRoom, sendMessage };
+
   // 1. Reconnect on mount if we have a persisted session
   useEffect(() => {
     const { status, roomId, myName, roomType, roomCode, myId } = useRoomStore.getState();
     
     if (status === 'joined' && roomId) {
       console.log('[Room] Reconnecting to persistent session:', roomId);
-      joinRoom(myName, roomType, roomCode || '', myId || undefined);
+      actionsRef.current.joinRoom(myName, roomType, roomCode || '', myId || undefined);
     }
   }, []); // Only once on app load
 
-  // 2. Inject actions into the store
+  // 2. Inject stable wrapper actions into the store ONLY ONCE to avoid infinite loops
   useEffect(() => {
     useRoomStore.setState({
       actions: {
-        joinRoom,
-        createRoom,
+        joinRoom: (...args) => actionsRef.current.joinRoom(...args),
+        createRoom: (...args) => actionsRef.current.createRoom(...args),
         leaveRoom: async () => {
-          await leaveRoom();
+          await actionsRef.current.leaveRoom();
         },
-        sendMessage
+        sendMessage: (...args) => actionsRef.current.sendMessage(...args)
       }
     });
-  }, [joinRoom, createRoom, leaveRoom, sendMessage]);
+  }, []);
 
   return null;
 }
