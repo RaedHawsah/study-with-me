@@ -178,7 +178,16 @@ export function RoomView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh]">
         <Loader2 size={48} className="animate-spin text-primary mb-4" />
-        <p className="text-lg font-medium text-foreground">{t('room.connecting')}</p>
+        <p className="text-lg font-medium text-foreground mb-6">{t('room.connecting')}</p>
+        <button 
+          onClick={() => {
+            if (actions?.leaveRoom) actions.leaveRoom();
+            else useRoomStore.getState().resetRoom();
+          }}
+          className="px-6 py-2 text-sm font-bold rounded-xl bg-muted/50 hover:bg-muted text-muted-foreground transition-all"
+        >
+          {i18n.language === 'ar' ? 'إلغاء' : 'Cancel'}
+        </button>
       </div>
     );
   }

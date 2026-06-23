@@ -23,6 +23,9 @@ export function RoomSessionManager() {
     if (status === 'joined' && roomId) {
       console.log('[Room] Reconnecting to persistent session:', roomId);
       actionsRef.current.joinRoom(myName, roomType, roomCode || '', myId || undefined);
+    } else if (status === 'joining' || status === 'error') {
+      // If the user refreshed the page while connecting or in an error state, reset to avoid getting stuck
+      useRoomStore.getState().resetRoom();
     }
   }, []); // Only once on app load
 
