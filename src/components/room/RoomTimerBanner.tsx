@@ -27,29 +27,7 @@ const SESSION_LABELS: Record<string, string> = {
   idle:       'في الانتظار',
 };
 
-// ─── Big arc ring (sync mode) ────────────────────────────────────────────────
-
-function BigRing({
-  progress, color, size = 180, stroke = 10, children,
-}: { progress: number; color: string; size?: number; stroke?: number; children?: React.ReactNode }) {
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - Math.max(0, Math.min(1, progress)));
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }} aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} opacity={0.3} />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-          strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 0.8s linear, stroke 0.4s ease' }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">{children}</div>
-    </div>
-  );
-}
-
-// ─── Synced Big Timer (private room, sync ON) ─────────────────────────────────
+// ─── Synced Compact Timer (private room, sync ON) ─────────────────────────────────
 
 function SyncedBigTimer() {
   const { myId, leaderId, syncedTimerState } = useRoomStore();
@@ -88,81 +66,70 @@ function SyncedBigTimer() {
   const isPaused  = timerStatus === 'paused';
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {/* LIVE badge */}
-      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/30 border border-white/10 text-[10px] font-black uppercase tracking-widest">
-        <Radio size={10} className="text-red-500 animate-pulse" />
-        <span className="text-red-400">مزامنة مباشرة</span>
-        {!isLeader && <span className="text-muted-foreground">· {SESSION_LABELS[sessionType]}</span>}
-      </div>
-
-      {/* Big ring — smaller on mobile */}
-      <div className="block md:hidden">
-        <BigRing progress={progress} color={color} size={140} stroke={8}>
-          <div className="flex flex-col items-center gap-1 select-none">
-            <span className="text-3xl font-black font-mono tabular-nums tracking-tighter"
-              style={{ color: timerStatus === 'idle' ? 'var(--foreground)' : color }}>
-              {formatTime(remaining)}
-            </span>
-            <div className="flex items-center gap-1" style={{ color }}>
-              <SessionIcon type={sessionType} size={10} />
-              <span className="text-[9px] font-bold uppercase tracking-widest">{SESSION_LABELS[sessionType]}</span>
-            </div>
-          </div>
-        </BigRing>
-      </div>
-      <div className="hidden md:block">
-        <BigRing progress={progress} color={color} size={200} stroke={12}>
-          <div className="flex flex-col items-center gap-1 select-none">
-            <span className="text-5xl font-black font-mono tabular-nums tracking-tighter"
-              style={{ color: timerStatus === 'idle' ? 'var(--foreground)' : color }}>
-              {formatTime(remaining)}
-            </span>
-            <div className="flex items-center gap-1.5" style={{ color }}>
-              <SessionIcon type={sessionType} size={13} />
-              <span className="text-xs font-bold uppercase tracking-widest">{SESSION_LABELS[sessionType]}</span>
-            </div>
-          </div>
-        </BigRing>
-      </div>
-
-      {/* Leader controls */}
-      {isLeader && (
-        <div className="flex items-center gap-3">
-          <button onClick={reset}
-            className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-            title="إعادة تعيين">
-            <RotateCcw size={14} />
-          </button>
-          {timerStatus === 'idle' && (
-            <button onClick={start}
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-black shadow-2xl transition-all hover:scale-110 active:scale-95"
-              style={{ background: color, color: '#fff', boxShadow: `0 8px 32px ${color}50` }}>
-              <Play size={20} fill="white" />
-            </button>
-          )}
-          {timerStatus === 'running' && (
-            <button onClick={pause}
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-black shadow-2xl transition-all hover:scale-110 active:scale-95"
-              style={{ background: color, color: '#fff', boxShadow: `0 8px 32px ${color}50` }}>
-              <Pause size={20} fill="white" />
-            </button>
-          )}
-          {timerStatus === 'paused' && (
-            <button onClick={resume}
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-black shadow-2xl transition-all hover:scale-110 active:scale-95"
-              style={{ background: color, color: '#fff', boxShadow: `0 8px 32px ${color}50` }}>
-              <Play size={20} fill="white" />
-            </button>
-          )}
+    <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 px-2 md:px-4">
+      {/* Left side: Status and Type */}
+      <div className="flex items-center justify-center md:justify-start gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-black/30 border border-white/10 text-[9px] md:text-[10px] font-black uppercase tracking-widest">
+          <Radio size={12} className="text-red-500 animate-pulse" />
+          <span className="text-red-400">مزامنة مباشرة</span>
         </div>
-      )}
+        <div className="flex items-center gap-1.5 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/5 border border-white/10" style={{ color }}>
+          <SessionIcon type={sessionType} size={14} />
+          <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-widest">{SESSION_LABELS[sessionType]}</span>
+        </div>
+      </div>
 
-      {!isLeader && (
-        <p className="text-[11px] text-muted-foreground font-medium">
-          {isRunning ? '⏱ يتم التزامن مع الأدمن' : isPaused ? '⏸ الأدمن أوقف مؤقتًا' : '⏹ في انتظار الأدمن'}
-        </p>
-      )}
+      {/* Center: The Timer and Progress Bar */}
+      <div className="flex-1 w-full max-w-md flex flex-col items-center gap-1">
+        <span className="text-3xl md:text-4xl font-black font-mono tabular-nums tracking-tighter leading-none"
+          style={{ color: timerStatus === 'idle' ? 'var(--foreground)' : color }}>
+          {formatTime(remaining)}
+        </span>
+        <div className="w-full max-w-[200px] md:max-w-[300px] h-1 md:h-1.5 bg-black/20 rounded-full overflow-hidden mt-1">
+          <div 
+            className="h-full rounded-full transition-all duration-1000 ease-linear"
+            style={{ width: `${Math.max(0, Math.min(100, progress * 100))}%`, backgroundColor: color }}
+          />
+        </div>
+      </div>
+
+      {/* Right side: Controls (if leader) or status (if follower) */}
+      <div className="flex items-center justify-center md:justify-end gap-3 w-full md:w-auto min-w-[120px]">
+        {isLeader ? (
+          <div className="flex items-center gap-2">
+            <button onClick={reset}
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+              title="إعادة تعيين">
+              <RotateCcw size={14} />
+            </button>
+            {timerStatus === 'idle' && (
+              <button onClick={start}
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black shadow-lg transition-all hover:scale-110 active:scale-95"
+                style={{ background: color, color: '#fff', boxShadow: `0 4px 20px ${color}40` }}>
+                <Play size={18} fill="white" className="ml-1" />
+              </button>
+            )}
+            {timerStatus === 'running' && (
+              <button onClick={pause}
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black shadow-lg transition-all hover:scale-110 active:scale-95"
+                style={{ background: color, color: '#fff', boxShadow: `0 4px 20px ${color}40` }}>
+                <Pause size={18} fill="white" />
+              </button>
+            )}
+            {timerStatus === 'paused' && (
+              <button onClick={resume}
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black shadow-lg transition-all hover:scale-110 active:scale-95"
+                style={{ background: color, color: '#fff', boxShadow: `0 4px 20px ${color}40` }}>
+                <Play size={18} fill="white" className="ml-1" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="text-[10px] md:text-xs text-muted-foreground font-medium text-center">
+            {isRunning ? '⏱ يتم التزامن مع الأدمن' : isPaused ? '⏸ الأدمن أوقف مؤقتاً' : '⏹ في انتظار الأدمن'}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

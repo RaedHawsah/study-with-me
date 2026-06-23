@@ -287,12 +287,12 @@ export function useStudyRoom() {
         channelRef.current = null;
       }
 
-      if (retryCount === 1) {
+      const isReconnect = reconnectAttemptsRef.current > 0;
+
+      if (retryCount === 1 && !isReconnect) {
         resetRoom();
-        reconnectAttemptsRef.current = 0;
         setStatus('joining');
         setMyName(name);
-        // Store params so we can auto-reconnect if the channel drops later
         lastJoinParamsRef.current = { name, type, code, userId };
       }
 
@@ -306,37 +306,45 @@ export function useStudyRoom() {
       let targetRoomId = '';
       let targetCode = (code || '').trim().toUpperCase();
 
-      if (type === 'random') {
-        targetRoomId = `global-random-${retryCount}`;
-        setLeaderId(null);
-        
-        // Ensure the dynamic random room exists in the DB
-        const { data: existing } = await supabase.from('rooms').select('id').eq('id', targetRoomId).single();
-        if (!existing) {
-          await supabase.from('rooms').insert({
-            id: targetRoomId,
-            name: `Global Room ${retryCount}`,
-            room_type: 'random',
-            created_at: new Date().toISOString()
-          });
-        }
+      // If it's a reconnect, ALWAYS reuse the exact same room ID we were already in!
+      if (isReconnect && useRoomStore.getState().roomId) {
+        targetRoomId = useRoomStore.getState().roomId!;
+        targetCode = useRoomStore.getState().roomCode || '';
       } else {
-        const { data: roomData, error: roomError } = await supabase.from('rooms').select('*').eq('code', targetCode).single();
-        if (roomError || !roomData) {
-          setError('Room not found.');
-          setStatus('error');
-          return;
+        // Fresh Join Logic
+        if (type === 'random') {
+          targetRoomId = `global-random-${retryCount}`;
+          setLeaderId(null);
+          
+          const { data: existing } = await supabase.from('rooms').select('id').eq('id', targetRoomId).single();
+          if (!existing) {
+            await supabase.from('rooms').insert({
+              id: targetRoomId,
+              name: `Global Room ${retryCount}`,
+              room_type: 'random',
+              created_at: new Date().toISOString()
+            });
+          }
+        } else {
+          const { data: roomData, error: roomError } = await supabase.from('rooms').select('*').eq('code', targetCode).single();
+          if (roomError || !roomData) {
+            setError('Room not found.');
+            setStatus('error');
+            return;
+          }
+          targetRoomId = roomData.id;
+          setLeaderId(roomData.leader_id);
         }
-        targetRoomId = roomData.id;
-        setLeaderId(roomData.leader_id);
       }
 
       setRoomId(targetRoomId);
       setRoomCode(targetCode);
       useRoomStore.getState().setRoomType(type);
       
-      // Clear peers immediately when trying a new room
-      useRoomStore.setState({ peers: {} });
+      // Clear peers immediately ONLY if it's a fresh join to a new room
+      if (!isReconnect) {
+        useRoomStore.setState({ peers: {} });
+      }
 
       const channel = supabase.channel(`room:${targetRoomId}`, { config: { presence: { key: myId } } });
       channelRef.current = channel;
@@ -531,12 +539,15 @@ export function useStudyRoom() {
             // Exponential backoff: 2s, 4s, 8s, 16s, 32s
             const delay = Math.min(2000 * Math.pow(2, attempt), 32000);
             console.log(`[Room] Reconnecting in ${delay}ms (attempt ${attempt + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
-            setError(`Connection dropped. Reconnecting in ${Math.round(delay / 1000)}s... (${attempt + 1}/${MAX_RECONNECT_ATTEMPTS})`);
-            setStatus('joining');
+            
+            // Note: We DO NOT call setStatus('joining') or setError() here.
+            // Calling them would wipe the UI and cause a jarring "refresh" experience.
+            // Instead, we let the UI remain in 'joined' state while it reconnects in the background.
 
             reconnectTimerRef.current = setTimeout(() => {
               const params = lastJoinParamsRef.current;
               if (params && !intentionalLeaveRef.current) {
+                // Pass retryCount=1 (default) but isReconnect will be true internally
                 joinRoom(params.name, params.type, params.code, params.userId);
               }
             }, delay);
@@ -544,9 +555,9 @@ export function useStudyRoom() {
             // Exhausted retries — surface a clear, persistent error
             let friendlyError = `Connection lost after ${MAX_RECONNECT_ATTEMPTS} reconnect attempts.`;
             if (status === 'CLOSED') {
-              friendlyError = 'Connection closed. Please ensure Realtime is enabled in your Supabase dashboard or check your project quotas.';
+              friendlyError = 'Connection closed. Please check your internet or Supabase project quotas.';
             } else if (status === 'CHANNEL_ERROR') {
-              friendlyError = 'Channel error. Check that your API key is correct and Realtime is enabled for your project.';
+              friendlyError = 'Channel error. Check that Realtime is enabled for your project.';
             }
             setError(friendlyError);
             setStatus('error');
