@@ -1,10 +1,9 @@
 import type { NextConfig } from 'next';
-import { setupDevPlatform } from '@cloudflare/next-on-pages/next-dev';
 
-// Enable Cloudflare dev platform bindings in local dev
-if (process.env.NODE_ENV === 'development') {
-  await setupDevPlatform();
-}
+// NOTE: setupDevPlatform() from @cloudflare/next-on-pages is intentionally
+// disabled — it causes a native Miniflare crash on Windows (access violation).
+// It is only needed when using Cloudflare D1/KV bindings, which this app does not use.
+
 
 const nextConfig: NextConfig = {
   // Skip pre-existing lint/type errors during CI/CD builds

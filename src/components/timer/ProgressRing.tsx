@@ -12,6 +12,7 @@ interface ProgressRingProps {
   color: string;
   trackColor?: string;
   children?: React.ReactNode;
+  className?: string;
 }
 
 export function ProgressRing({
@@ -21,6 +22,7 @@ export function ProgressRing({
   color,
   trackColor = 'var(--border)',
   children,
+  className = '',
 }: ProgressRingProps) {
   const r            = (size - strokeWidth) / 2;
   const cx           = size / 2;
@@ -29,7 +31,7 @@ export function ProgressRing({
   const offset       = circumference * (1 - clamped);
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div className={`relative ${className}`} style={{ width: size, height: size }}>
       {/* SVG ring */}
       <svg
         width={size}

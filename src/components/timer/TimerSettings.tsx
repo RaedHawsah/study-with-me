@@ -174,9 +174,9 @@ export function TimerSettings() {
 
       {/* Collapsible settings panel */}
       {open && (
-        <div className="w-full p-6 rounded-3xl border border-white/10 bg-card/85 backdrop-blur-2xl shadow-2xl flex flex-col gap-6">
+        <div className="w-full p-4 sm:p-6 rounded-3xl border border-white/10 bg-card/85 backdrop-blur-2xl shadow-2xl flex flex-col gap-5 sm:gap-6">
           {/* Duration steppers */}
-          <div className="grid grid-cols-3 gap-4 place-items-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 place-items-center">
             <Stepper
               label={t('timer.focusDuration')}
               value={settings.focusDuration}

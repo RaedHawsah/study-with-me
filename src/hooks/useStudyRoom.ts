@@ -25,6 +25,12 @@ export function useStudyRoom() {
   const makingOffer = useRef<Record<string, boolean>>({});
   const ignoreOffer = useRef<Record<string, boolean>>({});
 
+  // Reconnect state
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const intentionalLeaveRef = useRef(false);
+  const lastJoinParamsRef = useRef<{ name: string; type: 'random' | 'private'; code?: string; userId?: string } | null>(null);
+
   const syncPresence = useCallback(() => {
     if (!channelRef.current) return;
     
@@ -240,13 +246,20 @@ export function useStudyRoom() {
           status: timer.status,
           sessionType: timer.sessionType,
           remainingSeconds: timer.remainingSeconds,
+          totalSeconds: timer.totalSeconds,
           timestamp: Date.now()
         }
       });
     }
-  }, [timerStore.status, timerStore.sessionType, timerSync]);
+  }, [timerStore.status, timerStore.sessionType, timerStore.remainingSeconds, timerSync]);
 
   const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string, retryCount = 1) => {
+    // Clear any pending reconnect timer
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    intentionalLeaveRef.current = false;
     try {
       if (retryCount > 20) {
         setError('All global rooms are full. Please try again later.');
@@ -262,8 +275,11 @@ export function useStudyRoom() {
 
       if (retryCount === 1) {
         resetRoom();
+        reconnectAttemptsRef.current = 0;
         setStatus('joining');
         setMyName(name);
+        // Store params so we can auto-reconnect if the channel drops later
+        lastJoinParamsRef.current = { name, type, code, userId };
       }
 
       let myId = userId;
@@ -412,14 +428,23 @@ export function useStudyRoom() {
           const roomStore = useRoomStore.getState();
           const timerStore = useTimerStore.getState();
           
-          // Only sync if I'm NOT the leader (followers follow the leader)
-          if (roomStore.myId !== roomStore.leaderId) {
-            console.log('[Room] Received timer sync:', payload);
-            
-            if (payload.action === 'sync') {
+          if (payload.action === 'sync') {
+            // Always update the synced display state for the banner (leader + followers see it)
+            roomStore.setSyncedTimerState({
+              remainingSeconds: payload.remainingSeconds,
+              totalSeconds: payload.totalSeconds ?? payload.remainingSeconds,
+              sessionType: payload.sessionType,
+              timerStatus: payload.status,
+              timestamp: payload.timestamp ?? Date.now()
+            });
+
+            // Only sync local timer if I'm NOT the leader
+            if (roomStore.myId !== roomStore.leaderId) {
+              console.log('[Room] Received timer sync:', payload);
               timerStore.setSessionType(payload.sessionType);
               timerStore.setStatus(payload.status);
               timerStore.setRemaining(payload.remainingSeconds);
+              if (payload.totalSeconds) timerStore.setTotalSeconds(payload.totalSeconds);
             }
           }
         })
@@ -467,26 +492,50 @@ export function useStudyRoom() {
         
         if (status === 'SUBSCRIBED') {
           clearTimeout(timeout);
+          // Successful connection — reset reconnect counter
+          reconnectAttemptsRef.current = 0;
           setStatus('joined');
           syncPresence();
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           clearTimeout(timeout);
-          console.error(`[Room] Failed to join: ${status}`);
-          
-          let friendlyError = `Failed to join: ${status}`;
-          if (status === 'CLOSED') {
-            friendlyError = 'Connection closed. If this persists, please ensure Realtime is enabled in your Supabase dashboard or check your project quotas.';
-          } else if (status === 'CHANNEL_ERROR') {
-            friendlyError = 'Channel error. This often happens if the API key is incorrect or Realtime is restricted for your project.';
-          }
-          
-          setError(friendlyError);
-          setStatus('error');
+          console.error(`[Room] Channel dropped: ${status}`);
           
           // Attempt to remove the broken channel from client cache
           if (channelRef.current) {
             supabase.removeChannel(channelRef.current);
             channelRef.current = null;
+          }
+
+          // Don't reconnect if the user intentionally left
+          if (intentionalLeaveRef.current) return;
+
+          const MAX_RECONNECT_ATTEMPTS = 5;
+          const attempt = reconnectAttemptsRef.current;
+
+          if (attempt < MAX_RECONNECT_ATTEMPTS && lastJoinParamsRef.current) {
+            reconnectAttemptsRef.current += 1;
+            // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+            const delay = Math.min(2000 * Math.pow(2, attempt), 32000);
+            console.log(`[Room] Reconnecting in ${delay}ms (attempt ${attempt + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
+            setError(`Connection dropped. Reconnecting in ${Math.round(delay / 1000)}s... (${attempt + 1}/${MAX_RECONNECT_ATTEMPTS})`);
+            setStatus('joining');
+
+            reconnectTimerRef.current = setTimeout(() => {
+              const params = lastJoinParamsRef.current;
+              if (params && !intentionalLeaveRef.current) {
+                joinRoom(params.name, params.type, params.code, params.userId);
+              }
+            }, delay);
+          } else {
+            // Exhausted retries — surface a clear, persistent error
+            let friendlyError = `Connection lost after ${MAX_RECONNECT_ATTEMPTS} reconnect attempts.`;
+            if (status === 'CLOSED') {
+              friendlyError = 'Connection closed. Please ensure Realtime is enabled in your Supabase dashboard or check your project quotas.';
+            } else if (status === 'CHANNEL_ERROR') {
+              friendlyError = 'Channel error. Check that your API key is correct and Realtime is enabled for your project.';
+            }
+            setError(friendlyError);
+            setStatus('error');
           }
         }
       }); 
@@ -533,6 +582,16 @@ export function useStudyRoom() {
   }, [supabase, setStatus, setError, joinRoom]);
 
   const leaveRoom = useCallback(async () => {
+    // Mark as intentional so the reconnect logic doesn't fire
+    intentionalLeaveRef.current = true;
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    lastJoinParamsRef.current = null;
+    reconnectAttemptsRef.current = 0;
+    // Clear synced timer state
+    useRoomStore.getState().setSyncedTimerState(null);
     const { roomId, roomType, localStream, screenStream, setLocalStream, setScreenStream, setCameraOn, setScreenOn } = useRoomStore.getState();
     
     // 1. Cleanup media tracks

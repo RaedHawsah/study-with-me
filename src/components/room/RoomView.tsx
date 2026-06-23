@@ -9,6 +9,7 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { VideoGrid } from './VideoGrid';
 import { RoomControls } from './RoomControls';
 import { ChatPanel } from './ChatPanel';
+import { RoomTimerBanner } from './RoomTimerBanner';
 
 export function RoomView() {
   const { t, i18n } = useTranslation('common');
@@ -184,24 +185,29 @@ export function RoomView() {
 
   // ─── ACTIVE ROOM SCREEN ────────────────────────────────────────────────────
   return (
-    <div className="relative flex flex-col h-[calc(100vh-100px)] md:h-[calc(100vh-80px)] w-full overflow-hidden">
+    <div className="relative flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100vh-80px)] w-full overflow-hidden gap-2 md:gap-3">
       
+      {/* Timer Banner — always visible for all room types */}
+      <div className="shrink-0 px-0 md:px-1">
+        <RoomTimerBanner />
+      </div>
+
       {/* Main content area: Grid + Chat side-by-side */}
-      <div className="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden mb-4">
+      <div className="flex-1 flex flex-col md:flex-row gap-3 md:gap-4 overflow-hidden mb-16 md:mb-4">
         
         {/* Video Grid (takes remaining space) */}
-        <div className="flex-1 relative overflow-hidden rounded-3xl pb-16 md:pb-0">
+        <div className="flex-1 relative overflow-hidden rounded-2xl md:rounded-3xl">
           <VideoGrid />
         </div>
 
         {/* Floating/Docked Chat Panel */}
         <div 
           className={`
-            absolute inset-x-4 bottom-24 top-4 md:static md:bottom-auto md:top-auto
+            fixed inset-x-0 bottom-14 top-0 md:static md:bottom-auto md:top-auto md:inset-x-auto
             md:h-full z-40 transition-all duration-300 ease-in-out
             ${chatOpen 
               ? 'opacity-100 translate-y-0 pointer-events-auto' 
-              : 'opacity-0 translate-y-8 md:translate-y-0 md:translate-x-8 pointer-events-none w-0 h-0'}
+              : 'opacity-100 translate-y-full md:translate-y-0 md:translate-x-8 pointer-events-none md:w-0 md:h-0'}
           `}
         >
           <ChatPanel />
@@ -209,7 +215,7 @@ export function RoomView() {
       </div>
 
       {/* Absolute positioned control bar at the bottom */}
-      <div className="absolute bottom-4 left-0 right-0 z-50 flex justify-center pointer-events-none">
+      <div className="absolute bottom-0 md:bottom-4 left-0 right-0 z-50 flex justify-center pointer-events-none pb-1 md:pb-0">
         <div className="pointer-events-auto shadow-2xl rounded-3xl">
           <RoomControls />
         </div>

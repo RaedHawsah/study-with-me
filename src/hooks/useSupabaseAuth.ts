@@ -51,7 +51,7 @@ export function useSupabaseAuth() {
     // Determine the redirect URL dynamically based on the current environment
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     // Ensure we don't have trailing slashes or other artifacts that might confuse Supabase whitelist
-    const redirectTo = `${origin.replace(/\/$/, '')}/ar/settings`;
+    const redirectTo = `${origin.replace(/\/$/, '')}/ar/timer`;
     
     console.log('[Auth] Initiating Google Sign-in. Redirect Target:', redirectTo);
     

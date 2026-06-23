@@ -1,5 +1,14 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type { SessionType, TimerStatus } from '@/store/useTimerStore';
+
+export interface SyncedTimerState {
+  remainingSeconds: number;
+  totalSeconds: number;
+  sessionType: SessionType;
+  timerStatus: TimerStatus;
+  timestamp: number;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 // ... (types stay same)
@@ -42,6 +51,9 @@ const INITIAL_STATE = {
   timerSync:    false, // Only for private rooms
   leaderId:     null as string | null,
 
+  // Synced timer state (leader → followers via Realtime)
+  syncedTimerState: null as SyncedTimerState | null,
+
   // Local media
   localStream:  null as MediaStream | null,
   screenStream: null as MediaStream | null,
@@ -61,14 +73,15 @@ const INITIAL_STATE = {
 type RoomState = typeof INITIAL_STATE;
 
 export interface RoomStore extends RoomState {
-  setStatus:       (s: RoomStatus) => void;
-  setRoomType:     (t: 'random' | 'private') => void;
-  setRoomId:       (id: string)    => void;
-  setRoomCode:     (c: string)    => void;
-  setTimerSync:    (v: boolean)    => void;
-  setMyId:         (id: string)    => void;
-  setMyName:       (n: string)     => void;
-  setLeaderId:     (id: string | null) => void;
+  setStatus:          (s: RoomStatus) => void;
+  setRoomType:        (t: 'random' | 'private') => void;
+  setRoomId:          (id: string)    => void;
+  setRoomCode:        (c: string)    => void;
+  setTimerSync:       (v: boolean)    => void;
+  setMyId:            (id: string)    => void;
+  setMyName:          (n: string)     => void;
+  setLeaderId:        (id: string | null) => void;
+  setSyncedTimerState:(s: SyncedTimerState | null) => void;
 
   addPeer:         (peer: RoomPeer)                          => void;
   removePeer:      (id: string)                              => void;
@@ -100,14 +113,15 @@ export const useRoomStore = create<RoomStore>()(
       ...INITIAL_STATE,
       actions: null,
 
-      setStatus:   (status)  => set({ status }),
-      setRoomType: (roomType) => set({ roomType }),
-      setRoomId:   (roomId)  => set({ roomId }),
-      setRoomCode: (roomCode) => set({ roomCode }),
-      setTimerSync: (timerSync) => set({ timerSync }),
-      setMyId:     (myId)    => set({ myId }),
-      setMyName:   (myName)  => set({ myName }),
-      setLeaderId: (leaderId) => set({ leaderId }),
+      setStatus:           (status)           => set({ status }),
+      setRoomType:         (roomType)          => set({ roomType }),
+      setRoomId:           (roomId)            => set({ roomId }),
+      setRoomCode:         (roomCode)          => set({ roomCode }),
+      setTimerSync:        (timerSync)         => set({ timerSync }),
+      setMyId:             (myId)              => set({ myId }),
+      setMyName:           (myName)            => set({ myName }),
+      setLeaderId:         (leaderId)          => set({ leaderId }),
+      setSyncedTimerState: (syncedTimerState)  => set({ syncedTimerState }),
 
       addPeer: (peer) =>
         set((s) => ({ peers: { ...s.peers, [peer.id]: peer } })),

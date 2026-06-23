@@ -58,6 +58,9 @@ function buildNavItems(locale: Locale): NavItem[] {
   ];
 }
 
+// Items shown in the mobile bottom tab (max 5 for legibility)
+const MOBILE_TAB_KEYS = ['home', 'timer', 'group', 'notes', 'settings'];
+
 interface NavShellProps {
   locale: Locale;
   children: React.ReactNode;
@@ -214,7 +217,7 @@ export function NavShell({ locale, children }: NavShellProps) {
 
       {/* ── Mobile Layout ───────────────────────────────────────────────────── */}
       <div className="md:hidden flex flex-col min-h-[100dvh] overflow-hidden">
-        <main id="main-content-mobile" className="flex-1 overflow-x-hidden overflow-y-auto px-4 pt-6 pb-28">
+        <main id="main-content-mobile" className="flex-1 overflow-x-hidden overflow-y-auto px-3 pt-4 pb-20">
           {children}
         </main>
 
@@ -223,12 +226,12 @@ export function NavShell({ locale, children }: NavShellProps) {
           aria-label={t('nav.home')}
           className="
             fixed bottom-0 inset-x-0 z-[var(--z-sidebar)]
-            bg-sidebar border-t border-sidebar-border
+            bg-sidebar/95 backdrop-blur-xl border-t border-sidebar-border
             pb-safe
           "
         >
-          <div className="flex items-center justify-around h-16">
-            {navItems.map((item) => {
+          <div className="flex items-center justify-around h-14">
+            {navItems.filter(i => MOBILE_TAB_KEYS.includes(i.key)).map((item) => {
               const active = isActive(item.href);
               const Icon = item.icon;
               return (
@@ -237,9 +240,9 @@ export function NavShell({ locale, children }: NavShellProps) {
                   href={item.href}
                   id={`tab-${item.key}`}
                   className={`
-                    flex flex-col items-center justify-center gap-1
-                    flex-1 h-full text-xs font-medium
-                    transition-theme
+                    flex flex-col items-center justify-center gap-0.5
+                    flex-1 h-full text-[10px] font-semibold
+                    transition-theme px-1
                     ${
                       active
                         ? 'text-primary'
@@ -247,11 +250,15 @@ export function NavShell({ locale, children }: NavShellProps) {
                     }
                   `}
                 >
-                  <Icon
-                    size={22}
-                    strokeWidth={active ? 2.5 : 2}
-                    aria-hidden="true"
-                  />
+                  <div className={`p-1.5 rounded-xl transition-all duration-200 ${
+                    active ? 'bg-primary/15' : ''
+                  }`}>
+                    <Icon
+                      size={20}
+                      strokeWidth={active ? 2.5 : 2}
+                      aria-hidden="true"
+                    />
+                  </div>
                   <span className="leading-none">{t(item.labelKey)}</span>
                 </Link>
               );

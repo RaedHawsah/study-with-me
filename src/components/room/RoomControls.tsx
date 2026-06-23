@@ -51,101 +51,101 @@ export function RoomControls() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-3 md:gap-4">
       {/* Secondary Controls (Code & Stats) */}
-      <div className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2">
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-          <Users size={12} className="text-primary" />
+      <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2">
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+          <Users size={11} className="text-primary" />
           {peerCount} {peerCount === 6 ? 'Full' : 'Studying'}
         </div>
 
         {roomType === 'private' && roomCode && (
           <button 
             onClick={copyCode}
-            className="flex items-center gap-2 pl-3 pr-2 py-1 hover:bg-white/5 rounded-lg transition-all group border border-transparent hover:border-white/5"
+            className="flex items-center gap-1.5 pl-2 pr-1.5 py-1 hover:bg-white/5 rounded-lg transition-all group border border-transparent hover:border-white/5"
           >
-            <span className="text-[10px] font-bold text-muted-foreground uppercase">Room:</span>
-            <span className="text-xs font-mono font-bold text-foreground">{roomCode}</span>
-            {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} className="opacity-40 group-hover:opacity-100" />}
+            <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase">Room:</span>
+            <span className="text-[10px] md:text-xs font-mono font-bold text-foreground">{roomCode}</span>
+            {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} className="opacity-40 group-hover:opacity-100" />}
           </button>
         )}
       </div>
 
       {/* Main Control Bar */}
-      <div className="flex items-center justify-center gap-3 p-2 bg-card/60 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl ring-1 ring-white/10">
+      <div className="flex items-center justify-center gap-1.5 md:gap-3 p-1.5 md:p-2 bg-card/60 backdrop-blur-2xl border border-white/10 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl ring-1 ring-white/10">
         
         {/* Timer Sync Toggle (Only if Leader in Private Room) */}
         {roomType === 'private' && isLeader && (
           <button
             onClick={() => setTimerSync(!timerSync)}
-            className={`w-12 h-12 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all ${
+            className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all ${
               timerSync 
                 ? 'bg-orange-500/20 text-orange-500' 
                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
             }`}
             title={timerSync ? 'Sync On' : 'Sync Off'}
           >
-            <Clock size={18} />
-            <span className="text-[7px] font-black uppercase leading-none">{t('room.syncLabel', 'Sync')}</span>
+            <Clock size={15} />
+            <span className="text-[6px] md:text-[7px] font-black uppercase leading-none">{t('room.syncLabel', 'Sync')}</span>
           </button>
         )}
 
         {/* Camera Toggle */}
         <button
           onClick={toggleCamera}
-          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+          className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
             cameraOn 
               ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
               : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
           }`}
           title={cameraOn ? 'Turn Camera Off' : 'Turn Camera On'}
         >
-          {cameraOn ? <Video size={20} /> : <VideoOff size={20} />}
+          {cameraOn ? <Video size={17} /> : <VideoOff size={17} />}
         </button>
 
         {/* Screen Share Toggle */}
         <button
           onClick={toggleScreenShare}
-          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+          className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
             screenOn 
               ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
               : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
           }`}
           title={screenOn ? 'Stop Sharing' : 'Share Screen'}
         >
-          <Monitor size={20} />
+          <Monitor size={17} />
         </button>
 
-        <div className="w-px h-8 bg-white/10 mx-1" />
+        <div className="w-px h-7 bg-white/10 mx-0.5 md:mx-1" />
 
         {/* Chat Toggle */}
         <button
           onClick={toggleChat}
-          className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+          className={`relative w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all ${
             chatOpen
                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110' 
                : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
           }`}
         >
-          <MessageSquareText size={22} />
+          <MessageSquareText size={19} />
           {unreadCount > 0 && !chatOpen && (
-            <span className="absolute top-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white ring-4 ring-card">
+            <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white ring-2 ring-card">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </button>
 
-        <div className="w-px h-8 bg-white/10 mx-1" />
+        <div className="w-px h-7 bg-white/10 mx-0.5 md:mx-1" />
 
         {/* Leave Room */}
         <button
           onClick={() => actions?.leaveRoom()}
-          className="group pl-4 pr-6 h-14 rounded-full flex items-center gap-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-all shadow-lg hover:shadow-red-500/20 active:scale-95"
+          className="group pl-3 md:pl-4 pr-4 md:pr-6 h-11 md:h-14 rounded-full flex items-center gap-2 md:gap-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-all shadow-lg hover:shadow-red-500/20 active:scale-95"
         >
-          <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-            <LogOut size={20} />
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+            <LogOut size={16} />
           </div>
-          <span className="text-sm uppercase tracking-wider">{t('room.leave', 'Exit Room')}</span>
+          <span className="text-xs md:text-sm uppercase tracking-wider hidden sm:inline">{t('room.leave', 'Exit Room')}</span>
         </button>
         
       </div>

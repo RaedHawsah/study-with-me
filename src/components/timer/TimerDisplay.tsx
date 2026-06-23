@@ -29,24 +29,49 @@ function CircularTimer({ remainingSeconds, totalSeconds, sessionType, status }: 
   const progress = totalSeconds > 0 ? remainingSeconds / totalSeconds : 1;
 
   return (
-    <ProgressRing size={270} strokeWidth={10} progress={progress} color={color}>
-      <div className="flex flex-col items-center select-none">
-        <span
-          className="text-6xl font-bold tabular-nums tracking-tighter"
-          style={{ color: status === 'idle' ? 'var(--foreground)' : color }}
-          aria-live="polite"
-          aria-label={formatTime(remainingSeconds)}
-        >
-          {formatTime(remainingSeconds)}
-        </span>
-        <span
-          className="text-base md:text-lg font-bold uppercase tracking-widest mt-1.5"
-          style={{ color }}
-        >
-          {t(`timer.${sessionType}`)}
-        </span>
-      </div>
-    </ProgressRing>
+    <div className="flex justify-center">
+      {/* Mobile: 210px | Desktop: 270px */}
+      <ProgressRing size={210} strokeWidth={8} progress={progress} color={color}
+        className="md:hidden"
+      >
+        <div className="flex flex-col items-center select-none">
+          <span
+            className="text-5xl font-bold tabular-nums tracking-tighter"
+            style={{ color: status === 'idle' ? 'var(--foreground)' : color }}
+            aria-live="polite"
+            aria-label={formatTime(remainingSeconds)}
+          >
+            {formatTime(remainingSeconds)}
+          </span>
+          <span
+            className="text-sm font-bold uppercase tracking-widest mt-1.5"
+            style={{ color }}
+          >
+            {t(`timer.${sessionType}`)}
+          </span>
+        </div>
+      </ProgressRing>
+      <ProgressRing size={270} strokeWidth={10} progress={progress} color={color}
+        className="hidden md:flex"
+      >
+        <div className="flex flex-col items-center select-none">
+          <span
+            className="text-6xl font-bold tabular-nums tracking-tighter"
+            style={{ color: status === 'idle' ? 'var(--foreground)' : color }}
+            aria-live="polite"
+            aria-label={formatTime(remainingSeconds)}
+          >
+            {formatTime(remainingSeconds)}
+          </span>
+          <span
+            className="text-base md:text-lg font-bold uppercase tracking-widest mt-1.5"
+            style={{ color }}
+          >
+            {t(`timer.${sessionType}`)}
+          </span>
+        </div>
+      </ProgressRing>
+    </div>
   );
 }
 
