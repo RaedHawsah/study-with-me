@@ -114,6 +114,9 @@ export function TimerView() {
           onSkip={skip}
         />
 
+        {/* Timer settings (collapsible) */}
+        <TimerSettings />
+
         {/* Active task badge */}
         {activeTask && (
           <div
@@ -140,9 +143,6 @@ export function TimerView() {
         <div className="w-full max-w-sm mt-2">
           <PetCompanion />
         </div>
-
-        {/* Timer settings (collapsible) */}
-        <TimerSettings />
       </div>
 
       {/* ── Divider ───────────────────────────────────────────────────────── */}

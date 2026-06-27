@@ -274,7 +274,7 @@ export class AmbientSoundEngine {
 
   // ─── Pomodoro Alarm Scheduling ─────────────────────────────────────────────
   
-  private activeAlarmSource: AudioScheduledSourceNode | null = null;
+  private activeAlarmSources: AudioScheduledSourceNode[] = [];
 
   /**
    * Schedules the "Ding" sound to play at exactly [delaySeconds] in the future.
@@ -307,11 +307,7 @@ export class AmbientSoundEngine {
         osc.start(noteStart);
         osc.stop(noteStart + 0.4);
         
-        // Cleanup if we stop after it starts
-        if (i === 0) {
-          // Keep track of one to allow cancellation if needed (approximate)
-          this.activeAlarmSource = osc;
-        }
+        this.activeAlarmSources.push(osc);
       });
     } catch (err) {
       console.warn('[AudioEngine] Failed to schedule alarm:', err);
@@ -319,9 +315,11 @@ export class AmbientSoundEngine {
   }
 
   public cancelPomodoroAlarm(): void {
-    if (this.activeAlarmSource) {
-      try { this.activeAlarmSource.stop(); } catch { /* ignore */ }
-      this.activeAlarmSource = null;
+    if (this.activeAlarmSources && this.activeAlarmSources.length > 0) {
+      this.activeAlarmSources.forEach(osc => {
+        try { osc.stop(); } catch { /* ignore */ }
+      });
+      this.activeAlarmSources = [];
     }
   }
 }

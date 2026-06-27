@@ -163,7 +163,7 @@ export function GlobalAmbience() {
   return (
     <div
       ref={dockRef}
-      className="fixed bottom-[112px] sm:bottom-8 end-4 sm:end-8 z-[var(--z-sidebar)] pointer-events-none flex justify-end"
+      className="fixed top-20 sm:top-auto sm:bottom-8 end-4 sm:end-8 z-[var(--z-sidebar)] pointer-events-none flex justify-end"
       style={{ willChange: 'transform' }}
     >
       <div

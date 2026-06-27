@@ -194,7 +194,7 @@ export function RoomView() {
 
   // ─── ACTIVE ROOM SCREEN ────────────────────────────────────────────────────
   return (
-    <div className="relative flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100vh-80px)] w-full overflow-hidden gap-2 md:gap-3">
+    <div className="relative flex flex-col h-[calc(100dvh-130px)] md:h-[calc(100vh-80px)] w-full overflow-hidden gap-2 md:gap-3">
       
       {/* Timer Banner — always visible for all room types */}
       <div className="shrink-0 px-0 md:px-1">
@@ -224,7 +224,7 @@ export function RoomView() {
       </div>
 
       {/* Absolute positioned control bar at the bottom */}
-      <div className="absolute bottom-0 md:bottom-4 left-0 right-0 z-50 flex justify-center pointer-events-none pb-1 md:pb-0">
+      <div className="absolute bottom-2 md:bottom-4 left-0 right-0 z-50 flex justify-center pointer-events-none pb-1 md:pb-0">
         <div className="pointer-events-auto shadow-2xl rounded-3xl">
           <RoomControls />
         </div>

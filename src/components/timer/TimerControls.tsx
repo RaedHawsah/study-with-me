@@ -74,7 +74,7 @@ export function TimerControls({
   const MainIcon = status === 'running' ? Pause : Play;
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 w-full max-w-[90vw]">
       {/* Reset */}
       <IconBtn id="timer-reset" onClick={onReset} label={t('timer.reset')}>
         <RotateCcw size={19} />
@@ -86,8 +86,8 @@ export function TimerControls({
         onClick={handleMain}
         aria-label={mainLabel}
         className="
-          flex items-center gap-2.5 px-9 py-3.5 rounded-full
-          text-sm font-bold text-white
+          flex items-center justify-center gap-2 px-6 sm:px-9 py-3 sm:py-3.5 rounded-full
+          text-sm font-bold text-white whitespace-nowrap min-w-[120px] sm:min-w-[140px]
           transition-all duration-200 hover:scale-105 active:scale-95
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
         "
@@ -96,7 +96,7 @@ export function TimerControls({
           boxShadow:  `0 0 20px -2px var(--accent), 0 8px 16px -4px ${sessionColor}80`,
         }}
       >
-        <MainIcon size={20} strokeWidth={2.5} fill="white" aria-hidden="true" />
+        <MainIcon size={20} strokeWidth={2.5} fill="white" aria-hidden="true" className="shrink-0" />
         <span>{mainLabel}</span>
       </button>
 

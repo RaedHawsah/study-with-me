@@ -29,7 +29,7 @@ export function SessionSelector({
 
   return (
     <div
-      className="flex gap-1 p-1 rounded-xl bg-muted"
+      className="flex flex-wrap sm:flex-nowrap gap-1 p-1 rounded-xl bg-muted w-full justify-center"
       role="tablist"
       aria-label={t('timer.sessionSelector')}
     >
@@ -44,8 +44,8 @@ export function SessionSelector({
             disabled={disabled}
             onClick={() => !disabled && onSelect(id)}
             className="
-              flex-1 px-3 py-1.5 rounded-lg
-              text-xs font-semibold
+              flex-1 min-w-[30%] px-2 sm:px-3 py-1.5 rounded-lg
+              text-xs font-semibold whitespace-nowrap
               transition-all duration-200
               disabled:opacity-50 disabled:cursor-not-allowed
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
