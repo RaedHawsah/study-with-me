@@ -27,11 +27,15 @@ export function useMediaStream() {
         });
         
         if (localStream?.getTracks().length === 0) {
-            setLocalStream(null);
+            useRoomStore.setState({ localStream: null, micOn: false });
         } else if (localStream) {
-            setLocalStream(new MediaStream(localStream.getTracks()));
+            useRoomStore.setState({ 
+                localStream: new MediaStream(localStream.getTracks()),
+                micOn: false
+            });
+        } else {
+            useRoomStore.setState({ micOn: false });
         }
-        setMicOn(false);
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({ 
           audio: true,
@@ -41,11 +45,13 @@ export function useMediaStream() {
         if (localStream) {
             const audioTrack = stream.getAudioTracks()[0];
             localStream.addTrack(audioTrack);
-            setLocalStream(new MediaStream(localStream.getTracks()));
+            useRoomStore.setState({ 
+                localStream: new MediaStream(localStream.getTracks()),
+                micOn: true
+            });
         } else {
-            setLocalStream(stream);
+            useRoomStore.setState({ localStream: stream, micOn: true });
         }
-        setMicOn(true);
       }
     } catch (err) {
       console.error('Failed to toggle mic:', err);
@@ -62,11 +68,15 @@ export function useMediaStream() {
         });
         
         if (localStream?.getTracks().length === 0) {
-            setLocalStream(null);
+            useRoomStore.setState({ localStream: null, cameraOn: false });
         } else if (localStream) {
-            setLocalStream(new MediaStream(localStream.getTracks()));
+            useRoomStore.setState({ 
+                localStream: new MediaStream(localStream.getTracks()),
+                cameraOn: false
+            });
+        } else {
+            useRoomStore.setState({ cameraOn: false });
         }
-        setCameraOn(false);
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -76,11 +86,13 @@ export function useMediaStream() {
         if (localStream) {
             const videoTrack = stream.getVideoTracks()[0];
             localStream.addTrack(videoTrack);
-            setLocalStream(new MediaStream(localStream.getTracks()));
+            useRoomStore.setState({ 
+                localStream: new MediaStream(localStream.getTracks()),
+                cameraOn: true
+            });
         } else {
-            setLocalStream(stream);
+            useRoomStore.setState({ localStream: stream, cameraOn: true });
         }
-        setCameraOn(true);
       }
     } catch (err) {
       console.error('Failed to toggle camera:', err);

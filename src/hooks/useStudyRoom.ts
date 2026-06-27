@@ -73,21 +73,7 @@ export function useStudyRoom() {
     });
   }, [totalXp, currentStreak]);
 
-  useEffect(() => {
-    const { localStream, screenStream } = useRoomStore.getState();
-    Object.values(pcs.current).forEach(pc => {
-      const senders = pc.getSenders();
-      const localVideoTrack = localStream?.getVideoTracks()[0];
-      if (localVideoTrack && !senders.find(s => s.track?.id === localVideoTrack.id)) {
-        pc.addTrack(localVideoTrack, localStream!);
-      }
-      const screenVideoTrack = screenStream?.getVideoTracks()[0];
-      if (screenVideoTrack && !senders.find(s => s.track?.id === screenVideoTrack.id)) {
-        pc.addTrack(screenVideoTrack, screenStream!);
-      }
-    });
-    syncPresence();
-  }, [localStream, screenStream, syncPresence]);
+
   const createPeerConnection = useCallback((peerId: string) => {
     if (pcs.current[peerId]) return pcs.current[peerId];
 
