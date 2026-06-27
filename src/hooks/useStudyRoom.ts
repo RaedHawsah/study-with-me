@@ -66,6 +66,7 @@ export function useStudyRoom() {
       timerLastUpdated: Date.now(),
       cameraOn: roomStore.cameraOn,
       screenOn: roomStore.screenOn,
+      micOn: roomStore.micOn,
       cameraStreamId: roomStore.localStream?.id || null,
       screenStreamId: roomStore.screenStream?.id || null,
       last_updated: new Date().toISOString()
@@ -380,6 +381,7 @@ export function useStudyRoom() {
               level: number;
               cameraOn?: boolean;
               screenOn?: boolean;
+              micOn?: boolean;
               cameraStreamId?: string | null;
               screenStreamId?: string | null;
               remainingSeconds?: number;
@@ -403,7 +405,7 @@ export function useStudyRoom() {
               if (matchedScreen) screenStream = matchedScreen;
 
               // 2. Logical fallback for unmatched streams
-              if (!matchedCamera && userState.cameraOn) {
+              if (!matchedCamera && (userState.cameraOn || userState.micOn)) {
                 const candidate = remoteStreams.find(s => s.id !== userState.screenStreamId);
                 if (candidate) stream = candidate;
               }
@@ -423,7 +425,7 @@ export function useStudyRoom() {
               remainingSeconds: userState.remainingSeconds,
               timerStatus: userState.timerStatus as RoomPeer['timerStatus'],
               timerLastUpdated: userState.timerLastUpdated,
-              stream: userState.cameraOn ? stream : null,
+              stream: (userState.cameraOn || userState.micOn) ? stream : null,
               screenStream: userState.screenOn ? screenStream : null
             };
 
@@ -617,7 +619,7 @@ export function useStudyRoom() {
     reconnectAttemptsRef.current = 0;
     // Clear synced timer state
     useRoomStore.getState().setSyncedTimerState(null);
-    const { roomId, roomType, localStream, screenStream, setLocalStream, setScreenStream, setCameraOn, setScreenOn } = useRoomStore.getState();
+    const { roomId, roomType, localStream, screenStream, setLocalStream, setScreenStream, setCameraOn, setScreenOn, setMicOn } = useRoomStore.getState();
     
     // 1. Cleanup media tracks
     [localStream, screenStream].forEach(stream => stream?.getTracks().forEach(track => track.stop()));
@@ -625,6 +627,7 @@ export function useStudyRoom() {
     setScreenStream(null);
     setCameraOn(false);
     setScreenOn(false);
+    setMicOn(false);
     
     // 2. Close WebRTC connections
     Object.values(pcs.current).forEach(pc => { try { pc.close(); } catch(e) {} });

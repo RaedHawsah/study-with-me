@@ -59,6 +59,7 @@ const INITIAL_STATE = {
   screenStream: null as MediaStream | null,
   cameraOn:     false,
   screenOn:     false,
+  micOn:        false,
 
   // Chat
   messages:    [] as ChatMessage[],
@@ -92,6 +93,7 @@ export interface RoomStore extends RoomState {
   setScreenStream: (s: MediaStream | null)                   => void;
   setCameraOn:     (v: boolean)                              => void;
   setScreenOn:     (v: boolean)                              => void;
+  setMicOn:        (v: boolean)                              => void;
 
   addMessage:      (msg: ChatMessage)                        => void;
   toggleChat:      ()                                        => void;
@@ -151,6 +153,7 @@ export const useRoomStore = create<RoomStore>()(
       setScreenStream: (screenStream) => set({ screenStream }),
       setCameraOn:     (cameraOn)     => set({ cameraOn }),
       setScreenOn:     (screenOn)     => set({ screenOn }),
+      setMicOn:        (micOn)        => set({ micOn }),
 
       addMessage: (msg) =>
         set((s) => ({

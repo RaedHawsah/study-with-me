@@ -13,7 +13,9 @@ import {
   Users,
   Video,
   VideoOff,
-  Monitor
+  Monitor,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import { useRoomStore } from '@/store/useRoomStore';
 import { useStudyRoom } from '@/hooks/useStudyRoom';
@@ -21,7 +23,7 @@ import { useMediaStream } from '@/hooks/useMediaStream';
 
 export function RoomControls() {
   const { t } = useTranslation('common');
-  const { toggleCamera, toggleScreenShare } = useMediaStream();
+  const { toggleCamera, toggleScreenShare, toggleMic } = useMediaStream();
   const { 
     roomCode, 
     peers, 
@@ -35,6 +37,7 @@ export function RoomControls() {
     leaderId,
     cameraOn,
     screenOn,
+    micOn,
     actions
   } = useRoomStore();
   
@@ -87,6 +90,21 @@ export function RoomControls() {
           >
             <Clock size={15} />
             <span className="text-[6px] md:text-[7px] font-black uppercase leading-none">{t('room.syncLabel', 'Sync')}</span>
+          </button>
+        )}
+
+        {/* Mic Toggle (Only in Private Room) */}
+        {roomType === 'private' && (
+          <button
+            onClick={toggleMic}
+            className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
+              micOn 
+                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
+            }`}
+            title={micOn ? 'Mute Microphone' : 'Turn Microphone On'}
+          >
+            {micOn ? <Mic size={17} /> : <MicOff size={17} />}
           </button>
         )}
 
