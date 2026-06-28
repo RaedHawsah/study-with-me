@@ -199,23 +199,39 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
               ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
             `} />
           </div>
+
+          <div className="text-center mt-1 pointer-events-auto max-w-[90%]">
+            <h4 className="font-black text-xs sm:text-sm md:text-base tracking-tight truncate text-white drop-shadow-md">
+              {peer.name || 'Anonymous'}
+              {isMe && <span className="ms-1 opacity-70 text-[8px] md:text-[9px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
+            </h4>
+            <p className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
+              isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
+            }`}>
+              {isPaused 
+                ? (isFocus ? `${t('room.focusMode', { defaultValue: 'Focus Mode' })} (Paused)` : `${t('room.onBreak', { defaultValue: 'On Break' })} (Paused)`) 
+                : (isFocus ? t('room.focusMode', { defaultValue: 'Focus Mode' }) : isBreak ? t('room.onBreak', { defaultValue: 'On Break' }) : t('room.chilling', { defaultValue: 'Chilling' }))}
+            </p>
+          </div>
         </div>
       )}
 
-      <div className={`mt-auto z-10 transition-transform duration-300 ${hasVideo ? 'translate-y-1 group-hover:translate-y-0' : ''}`}>
-        <div className="text-center mb-2 md:mb-4">
-          <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto">
-            {peer.name || 'Anonymous'}
-            {isMe && <span className="ms-1 opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
-          </h4>
-          <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
-            isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
-          }`}>
-            {isPaused 
-              ? (isFocus ? `${t('room.focusMode', { defaultValue: 'Focus Mode' })} (Paused)` : `${t('room.onBreak', { defaultValue: 'On Break' })} (Paused)`) 
-              : (isFocus ? t('room.focusMode', { defaultValue: 'Focus Mode' }) : isBreak ? t('room.onBreak', { defaultValue: 'On Break' }) : t('room.chilling', { defaultValue: 'Chilling' }))}
-          </p>
-        </div>
+      <div className={`mt-auto z-10 w-full`}>
+        {hasVideo && (
+          <div className="text-center mb-2 md:mb-4">
+            <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto">
+              {peer.name || 'Anonymous'}
+              {isMe && <span className="ms-1 opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
+            </h4>
+            <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
+              isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
+            }`}>
+              {isPaused 
+                ? (isFocus ? `${t('room.focusMode', { defaultValue: 'Focus Mode' })} (Paused)` : `${t('room.onBreak', { defaultValue: 'On Break' })} (Paused)`) 
+                : (isFocus ? t('room.focusMode', { defaultValue: 'Focus Mode' }) : isBreak ? t('room.onBreak', { defaultValue: 'On Break' }) : t('room.chilling', { defaultValue: 'Chilling' }))}
+            </p>
+          </div>
+        )}
 
         <div className="flex justify-around items-center pt-2 md:pt-4 border-t border-white/10">
           <div className="text-center">

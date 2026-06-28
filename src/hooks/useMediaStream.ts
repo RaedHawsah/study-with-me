@@ -25,9 +25,9 @@ export function useMediaStream() {
       const isEnabled = localParticipant.isCameraEnabled;
       await localParticipant.setCameraEnabled(!isEnabled);
       useRoomStore.getState().setCameraOn(!isEnabled);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to toggle camera:', err);
-      alert('Could not access camera. Please check permissions.');
+      alert(`Could not access camera: ${err?.message || err}. Please ensure permissions are allowed in browser settings and system privacy settings.`);
     }
   }, [localParticipant]);
 
@@ -37,8 +37,9 @@ export function useMediaStream() {
       const isEnabled = localParticipant.isScreenShareEnabled;
       await localParticipant.setScreenShareEnabled(!isEnabled);
       useRoomStore.getState().setScreenOn(!isEnabled);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to share screen:', err);
+      alert(`Could not share screen: ${err?.message || err}. Please check browser settings and ensure screen recording permissions are granted.`);
     }
   }, [localParticipant]);
 
