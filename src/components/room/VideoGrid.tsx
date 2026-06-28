@@ -3,43 +3,9 @@ import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'lucide-react';
-import { useParticipants, useLocalParticipant, VideoTrack, AudioTrack, useParticipant } from '@livekit/components-react';
+import { useParticipants, useLocalParticipant, VideoTrack, AudioTrack, useTracks } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { useShallow } from 'zustand/react/shallow';
-
-function ParticipantMedia({ participant, isScreen, isMe, onMediaStateChange }: { participant: any, isScreen: boolean, isMe: boolean, onMediaStateChange: (hasVideo: boolean, hasMic: boolean) => void }) {
-  const { cameraPublication, screenSharePublication, microphonePublication } = useParticipant(participant);
-  
-  const hasVideo = isScreen ? !!screenSharePublication : !!cameraPublication;
-  const hasMic = !!microphonePublication;
-
-  useEffect(() => {
-    onMediaStateChange(hasVideo, hasMic);
-  }, [hasVideo, hasMic, onMediaStateChange]);
-
-  if (!hasVideo && !hasMic) return null;
-
-  return (
-    <>
-      {hasVideo && (
-        <div className="absolute inset-0 z-0 bg-black">
-          <VideoTrack
-            participant={participant}
-            source={isScreen ? Track.Source.ScreenShare : Track.Source.Camera}
-            className={`w-full h-full object-cover transition-opacity duration-700 ${isScreen ? 'object-contain' : ''}`}
-          />
-          {!isMe && !isScreen && (
-             <AudioTrack participant={participant} source={Track.Source.Microphone} />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
-        </div>
-      )}
-      {!hasVideo && !isMe && !isScreen && hasMic && (
-         <div className="hidden"><AudioTrack participant={participant} source={Track.Source.Microphone} /></div>
-      )}
-    </>
-  );
-}
 
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
   // Read self timer state to prevent parent from re-rendering every second
@@ -59,13 +25,16 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const participant = peer.participant;
-  const [hasVideo, setHasVideo] = useState(false);
-  const [hasMic, setHasMic] = useState(false);
+  
+  const cameraTracks = useTracks([Track.Source.Camera]);
+  const screenTracks = useTracks([Track.Source.ScreenShare]);
+  const micTracks = useTracks([Track.Source.Microphone]);
 
-  const handleMediaStateChange = useCallback((v: boolean, m: boolean) => {
-    setHasVideo(prev => prev !== v ? v : prev);
-    setHasMic(prev => prev !== m ? m : prev);
-  }, []);
+  const hasCamera = cameraTracks.some(t => t.participant.identity === peer.id);
+  const hasScreen = screenTracks.some(t => t.participant.identity === peer.id);
+  const hasMic = micTracks.some(t => t.participant.identity === peer.id);
+
+  const hasVideo = isScreen ? hasScreen : hasCamera;
 
   useEffect(() => {
     let initialSeconds = currentRemainingSeconds || 0;
@@ -111,13 +80,22 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       ${isScreen && !hasVideo ? 'hidden' : ''}
     `}>
       
-      {participant && (
-        <ParticipantMedia 
-          participant={participant} 
-          isScreen={isScreen} 
-          isMe={isMe} 
-          onMediaStateChange={handleMediaStateChange} 
-        />
+      {hasVideo && participant && (
+        <div className="absolute inset-0 z-0 bg-black">
+          <VideoTrack
+            participant={participant}
+            source={isScreen ? Track.Source.ScreenShare : Track.Source.Camera}
+            className={`w-full h-full object-cover transition-opacity duration-700 ${isScreen ? 'object-contain' : ''}`}
+          />
+          {!isMe && !isScreen && (
+             <AudioTrack participant={participant} source={Track.Source.Microphone} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+        </div>
+      )}
+
+      {!hasVideo && !isMe && !isScreen && participant && hasMic && (
+         <div className="hidden"><AudioTrack participant={participant} source={Track.Source.Microphone} /></div>
       )}
 
       {!hasVideo && (
