@@ -4,10 +4,34 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { User as UserIcon, LogOut, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
+import { useState, useRef } from 'react';
+import { uploadCustomAvatar } from '@/utils/avatarUtils';
+import { Camera, Loader2 } from 'lucide-react';
 
 export function AccountSettings() {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const { user, loading, signInWithGoogle, signOut } = useSupabaseAuth();
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert(i18n.language === 'ar' ? 'حجم الصورة يجب أن يكون أقل من 2 ميجابايت' : 'Image size must be less than 2MB');
+      return;
+    }
+    try {
+      setUploading(true);
+      await uploadCustomAvatar(file);
+      window.location.reload();
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   if (loading) {
     return (
@@ -43,19 +67,29 @@ export function AccountSettings() {
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4 justify-between bg-white/5 border border-white/10 rounded-2xl p-4">
       <div className="flex items-center gap-4 w-full">
-        <div className="relative w-14 h-14 shrink-0 rounded-full overflow-hidden border-2 border-white/10 shadow-lg">
+        <div className="relative w-14 h-14 shrink-0 rounded-full overflow-hidden border-2 border-white/10 shadow-lg group cursor-pointer" onClick={() => !uploading && fileInputRef.current?.click()}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            className="hidden"
+          />
           {user.user_metadata?.avatar_url ? (
             <Image
               src={user.user_metadata.avatar_url}
               alt="Avatar"
               fill
-              className="object-cover"
+              className="object-cover transition-opacity group-hover:opacity-50"
             />
           ) : (
-            <div className="w-full h-full bg-primary/20 text-primary flex items-center justify-center">
+            <div className="w-full h-full bg-primary/20 text-primary flex items-center justify-center transition-opacity group-hover:opacity-50">
               <UserIcon size={24} />
             </div>
           )}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+            {uploading ? <Loader2 size={20} className="animate-spin text-white" /> : <Camera size={20} className="text-white" />}
+          </div>
         </div>
         <div className="text-start flex-1 min-w-0">
           <p className="text-base font-bold text-foreground truncate">

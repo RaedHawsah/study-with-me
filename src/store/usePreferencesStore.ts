@@ -60,6 +60,7 @@ interface PreferencesState {
   setCustomBackgrounds: (filenames: string[]) => void;
   setShowFloatingAudioDock: (show: boolean) => Promise<void>;
   clearStore: () => void;
+  _saveGuestPreferences: () => void;
 }
 
 const ADMIN_EMAIL = '55raed55@gmail.com';
@@ -79,6 +80,22 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   showFloatingAudioDock: true,
   globalBackgrounds: {},
 
+  _saveGuestPreferences: () => {
+    try {
+      const prefs = {
+        theme: get().colorPresetId,
+        timerShape: get().timerShape,
+        backgroundType: get().backgroundType,
+        backgroundValue: get().backgroundValue,
+        showFloatingAudioDock: get().showFloatingAudioDock,
+        sounds: get().sounds
+      };
+      localStorage.setItem('guest_preferences', JSON.stringify(prefs));
+    } catch (e) {
+      console.warn('Failed to save guest preferences:', e);
+    }
+  },
+
   fetchPreferences: async (userId?: string) => {
     // Always fetch local backgrounds (for fallback/system)
     get().refreshBackgrounds();
@@ -95,7 +112,26 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
     const { globalBackgrounds } = get();
 
     if (!effectiveUserId) {
-      // For Guests: If a global background exists for the current/default theme, apply it
+      // For Guests: load from localStorage if exists
+      try {
+        const local = localStorage.getItem('guest_preferences');
+        if (local) {
+          const parsed = JSON.parse(local);
+          set({
+            colorPresetId: parsed.theme || get().colorPresetId,
+            timerShape: parsed.timerShape || get().timerShape,
+            backgroundType: parsed.backgroundType || get().backgroundType,
+            backgroundValue: parsed.backgroundValue || get().backgroundValue,
+            showFloatingAudioDock: parsed.showFloatingAudioDock ?? get().showFloatingAudioDock,
+            sounds: parsed.sounds || get().sounds,
+          });
+          return;
+        }
+      } catch (e) {
+        console.warn('Failed to parse local guest preferences', e);
+      }
+
+      // If no local config, fallback to global background if exists for current theme
       const currentTheme = get().colorPresetId;
       if (globalBackgrounds[currentTheme]) {
         set({ backgroundType: 'custom', backgroundValue: globalBackgrounds[currentTheme] });
@@ -185,6 +221,8 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
           backgroundValue: newValue 
         };
         await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+      } else {
+        get()._saveGuestPreferences();
       }
     } catch (e) {
       console.warn('[setColorPreset] sync skipped:', e);
@@ -257,6 +295,8 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
         const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
         const updated = { ...profile?.settings, backgroundType: type, backgroundValue: value };
         await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+      } else {
+        get()._saveGuestPreferences();
       }
     } catch (e) {
       console.warn('[setBackground] sync skipped:', e);
@@ -300,6 +340,8 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
         const volumes = { ...(profile?.settings?.audio?.volumes || {}), [id]: { volume, isPlaying: false } };
         const updated = { ...profile?.settings, audio: { ...profile?.settings?.audio, volumes } };
         await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+      } else {
+        get()._saveGuestPreferences();
       }
     } catch (e) {
       console.warn('[setSoundVolume] sync skipped:', e);
@@ -319,6 +361,8 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
         const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
         const updated = { ...profile?.settings, audio: { ...profile?.settings?.audio, showDock: show } };
         await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+      } else {
+        get()._saveGuestPreferences();
       }
     } catch (e) {
       console.warn('[setShowFloatingAudioDock] sync skipped:', e);
@@ -347,5 +391,9 @@ async function syncSettings(value: any, key: string) {
     const { data: profile } = await supabase.from('profiles').select('settings').eq('id', user.id).single();
     const updated = { ...profile?.settings, [key]: value };
     await supabase.from('profiles').update({ settings: updated }).eq('id', user.id);
+  } else {
+    // Note: usePreferencesStore.getState()._saveGuestPreferences() can be called from outside but it's cleaner to just call it directly in setTimerShape if we could.
+    // We will just do it via getState():
+    usePreferencesStore.getState()._saveGuestPreferences();
   }
 }
