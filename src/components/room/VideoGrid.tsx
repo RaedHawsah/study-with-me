@@ -3,7 +3,7 @@ import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useGamificationStore, getLevelFromXp } from '@/store/useGamificationStore';
 import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'lucide-react';
-import { useParticipants, useLocalParticipant, useRemoteParticipant, VideoTrack, AudioTrack } from '@livekit/components-react';
+import { useParticipants, useLocalParticipant, useRemoteParticipant, VideoTrack, AudioTrack, useParticipantTracks } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +35,21 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   const hasCamera = isMe ? isCameraEnabled : remoteParticipant?.isCameraEnabled;
   const hasScreen = isMe ? isScreenShareEnabled : remoteParticipant?.isScreenShareEnabled;
   const hasMic = isMe ? isMicrophoneEnabled : remoteParticipant?.isMicrophoneEnabled;
+
+  // Get trackRefs for the v2 API - pass identity string, not participant object
+  const localTracks = useParticipantTracks(
+    [Track.Source.Camera, Track.Source.ScreenShare, Track.Source.Microphone],
+    localParticipant?.identity
+  );
+  const remoteTracks = useParticipantTracks(
+    [Track.Source.Camera, Track.Source.ScreenShare, Track.Source.Microphone],
+    remoteParticipant?.identity
+  );
+  const tracks = isMe ? localTracks : remoteTracks;
+
+  const videoSource = isScreen ? Track.Source.ScreenShare : Track.Source.Camera;
+  const videoTrackRef = tracks.find(t => t.source === videoSource);
+  const audioTrackRef = tracks.find(t => t.source === Track.Source.Microphone);
 
   const hasVideo = isScreen ? hasScreen : hasCamera;
 
@@ -99,22 +114,21 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       ${isScreen && !hasVideo ? 'hidden' : ''}
     `}>
       
-      {hasVideo && participant && (
+      {hasVideo && videoTrackRef && (
         <div className="absolute inset-0 z-0 bg-black">
           <VideoTrack
-            participant={participant}
-            source={isScreen ? Track.Source.ScreenShare : Track.Source.Camera}
+            trackRef={videoTrackRef}
             className={`w-full h-full object-cover transition-opacity duration-700 ${isScreen ? 'object-contain' : ''}`}
           />
-          {!isMe && !isScreen && (
-             <AudioTrack participant={participant} source={Track.Source.Microphone} />
+          {!isMe && !isScreen && audioTrackRef && (
+             <AudioTrack trackRef={audioTrackRef} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
         </div>
       )}
 
-      {!hasVideo && !isMe && !isScreen && participant && hasMic && (
-         <div className="hidden"><AudioTrack participant={participant} source={Track.Source.Microphone} /></div>
+      {!hasVideo && !isMe && !isScreen && audioTrackRef && hasMic && (
+         <div className="hidden"><AudioTrack trackRef={audioTrackRef} /></div>
       )}
 
       {!hasVideo && (
