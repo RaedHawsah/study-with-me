@@ -68,7 +68,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   return (
     <div ref={containerRef} className={`
       relative group overflow-hidden rounded-3xl border transition-all duration-500
-      aspect-[4/5] flex flex-col p-5 shadow-xl
+      aspect-[3/4] md:aspect-[4/3] flex flex-col p-4 md:p-5 shadow-xl
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
     `}>
       
@@ -255,7 +255,7 @@ export function VideoGrid() {
         ))}
         
         {Array.from({ length: Math.max(0, 5 - peerList.length - (localParticipant.isScreenShareEnabled ? 1 : 0)) }).map((_, i) => (
-          <div key={`placeholder-${i}`} className="aspect-[4/5] rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
+          <div key={`placeholder-${i}`} className="aspect-[3/4] md:aspect-[4/3] rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
             <User size={40} strokeWidth={1} />
           </div>
         ))}
