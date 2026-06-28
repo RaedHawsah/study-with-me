@@ -4,41 +4,18 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useGamificationStore, getLevelFromXp } from '@/store/useGamificationStore';
 import { LogIn, LogOut, User as UserIcon, Zap } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { uploadCustomAvatar } from '@/utils/avatarUtils';
-import { Camera, Loader2 } from 'lucide-react';
 
 interface AuthMenuProps {
   collapsed?: boolean;
 }
 
 export function AuthMenu({ collapsed }: AuthMenuProps) {
-  const { t, i18n } = useTranslation('common');
+  const { t } = useTranslation('common');
   const { user, loading, signInWithGoogle, signOut } = useSupabaseAuth();
   const { totalXp, fetchGamificationData } = useGamificationStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert(i18n.language === 'ar' ? 'حجم الصورة يجب أن يكون أقل من 2 ميجابايت' : 'Image size must be less than 2MB');
-      return;
-    }
-    try {
-      setUploading(true);
-      await uploadCustomAvatar(file);
-      window.location.reload();
-    } catch (error: any) {
-      alert(error.message);
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
 
   useEffect(() => {
     if (user) {
@@ -75,37 +52,19 @@ export function AuthMenu({ collapsed }: AuthMenuProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 w-full p-1.5 rounded-md hover:bg-sidebar-accent transition-colors"
       >
-        <div 
-          className="relative rounded-full w-8 h-8 shrink-0 border border-white/10 overflow-hidden group cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!uploading) fileInputRef.current?.click();
-          }}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*"
-            className="hidden"
+        {user.user_metadata?.avatar_url ? (
+          <Image
+            src={user.user_metadata.avatar_url}
+            alt="Avatar"
+            width={32}
+            height={32}
+            className="rounded-full w-8 h-8 shrink-0 border border-white/10"
           />
-          {user.user_metadata?.avatar_url ? (
-            <Image
-              src={user.user_metadata.avatar_url}
-              alt="Avatar"
-              width={32}
-              height={32}
-              className="w-full h-full object-cover transition-opacity group-hover:opacity-50"
-            />
-          ) : (
-            <div className="w-full h-full bg-primary/20 text-primary flex items-center justify-center transition-opacity group-hover:opacity-50">
-              <UserIcon size={16} />
-            </div>
-          )}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-            {uploading ? <Loader2 size={12} className="animate-spin text-white" /> : <Camera size={12} className="text-white" />}
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+            <UserIcon size={16} />
           </div>
-        </div>
+        )}
 
         {!collapsed && (
           <div className="flex flex-col items-start overflow-hidden text-start">
