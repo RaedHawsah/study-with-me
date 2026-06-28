@@ -20,11 +20,6 @@ export function useStudyRoom() {
   const { totalXp, currentStreak } = useGamificationStore();
   const channelRef = useRef<RealtimeChannel | null>(null);
   
-  // WebRTC Refs
-  const pcs = useRef<Record<string, RTCPeerConnection>>({});
-  const makingOffer = useRef<Record<string, boolean>>({});
-  const ignoreOffer = useRef<Record<string, boolean>>({});
-
   // Reconnect state
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -38,9 +33,9 @@ export function useStudyRoom() {
         supabase.removeChannel(channelRef.current).catch(console.error);
         channelRef.current = null;
       }
-      if (pcs.current) {
-        Object.values(pcs.current).forEach(pc => { try { pc.close(); } catch(e) {} });
-        pcs.current = {};
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current).catch(console.error);
+        channelRef.current = null;
       }
     };
   }, [supabase]);
@@ -74,137 +69,7 @@ export function useStudyRoom() {
   }, [totalXp, currentStreak]);
 
 
-  const createPeerConnection = useCallback((peerId: string) => {
-    if (pcs.current[peerId]) return pcs.current[peerId];
 
-    const myId = useRoomStore.getState().myId || '';
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    });
-
-    pc.onicecandidate = ({ candidate }) => {
-      if (candidate && channelRef.current) {
-        channelRef.current.send({
-          type: 'broadcast',
-          event: 'webrtc_signal',
-          payload: { to: peerId, from: myId, ice: candidate }
-        });
-      }
-    };
-
-    pc.onnegotiationneeded = async () => {
-      try {
-        makingOffer.current[peerId] = true;
-        await pc.setLocalDescription();
-        channelRef.current?.send({
-          type: 'broadcast',
-          event: 'webrtc_signal',
-          payload: { to: peerId, from: myId, sdp: pc.localDescription }
-        });
-      } catch (err) {
-        console.error('Negotiation error:', err);
-      } finally {
-        makingOffer.current[peerId] = false;
-      }
-    };
-
-    pc.ontrack = (event) => {
-      const stream = event.streams[0];
-      if (!stream) return;
-
-      // Cache the stream on the peer connection object
-      const customPc = pc as any;
-      customPc.remoteStreams = customPc.remoteStreams || [];
-      if (!customPc.remoteStreams.some((s: MediaStream) => s.id === stream.id)) {
-        customPc.remoteStreams.push(stream);
-      }
-
-      // Identify stream based on Presence metadata
-      const peerState = (channelRef.current?.presenceState()[peerId]?.[0]) as any;
-      if (peerState) {
-        if (stream.id === peerState.cameraStreamId) {
-          useRoomStore.getState().setPeerStream(peerId, stream);
-        } else if (stream.id === peerState.screenStreamId) {
-          useRoomStore.getState().setPeerScreenStream(peerId, stream);
-        } else {
-          // Logical fallback based on status flags
-          if (peerState.cameraOn && !peerState.screenOn) {
-            useRoomStore.getState().setPeerStream(peerId, stream);
-          } else if (peerState.screenOn && !peerState.cameraOn) {
-            useRoomStore.getState().setPeerScreenStream(peerId, stream);
-          } else {
-            useRoomStore.getState().setPeerStream(peerId, stream);
-          }
-        }
-      } else {
-        useRoomStore.getState().setPeerStream(peerId, stream);
-      }
-    };
-
-    const { localStream, screenStream } = useRoomStore.getState();
-    if (localStream) localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-    if (screenStream) screenStream.getTracks().forEach(track => pc.addTrack(track, screenStream));
-
-    pcs.current[peerId] = pc;
-    return pc;
-  }, []);
-
-  const handleSignal = useCallback(async ({ payload }: { payload: any }) => {
-    const { from, to, sdp, ice } = payload;
-    const myId = useRoomStore.getState().myId;
-    if (to !== myId) return;
-    if (from === myId) return;
-
-    let pc = pcs.current[from];
-    if (!pc) pc = createPeerConnection(from);
-
-    try {
-      if (sdp) {
-        const isPolite = (myId || '') < from;
-        const offerCollision = sdp.type === 'offer' && (makingOffer.current[from] || pc.signalingState !== 'stable');
-        
-        ignoreOffer.current[from] = !isPolite && offerCollision;
-        if (ignoreOffer.current[from]) return;
-
-        await pc.setRemoteDescription(sdp);
-        if (sdp.type === 'offer') {
-          await pc.setLocalDescription();
-          channelRef.current?.send({
-            type: 'broadcast',
-            event: 'webrtc_signal',
-            payload: { to: from, from: myId, sdp: pc.localDescription }
-          });
-        }
-      } else if (ice) {
-        try {
-          await pc.addIceCandidate(ice);
-        } catch (err) {
-          if (!ignoreOffer.current[from]) throw err;
-        }
-      }
-    } catch (err) {
-      console.error('Signaling error:', err);
-    }
-  }, [createPeerConnection]);
-
-  // Force renegotiation on all PCs when local streams change
-  useEffect(() => {
-    syncPresence();
-
-    Object.values(pcs.current).forEach((pc) => {
-      const senders = pc.getSenders();
-      senders.forEach(s => {
-        try {
-          pc.removeTrack(s);
-        } catch (e) {
-          console.error('Failed to remove track:', e);
-        }
-      });
-      
-      if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-      if (screenStream) screenStream.getTracks().forEach(t => pc.addTrack(t, screenStream));
-    });
-  }, [cameraOn, screenOn, localStream, screenStream, syncPresence]);
 
   // Sync Presence + fast broadcast when Timer changes
   useEffect(() => {
@@ -328,6 +193,23 @@ export function useStudyRoom() {
       setRoomCode(targetCode);
       useRoomStore.getState().setRoomType(type);
       
+      // Fetch LiveKit Token
+      try {
+        const res = await fetch('/api/livekit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ room: targetRoomId, username: name, userId: myId })
+        });
+        const data = await res.json();
+        if (data.token) {
+          useRoomStore.getState().setLiveKitToken(data.token);
+        } else {
+          console.error('Failed to get LiveKit token:', data.error);
+        }
+      } catch (e) {
+        console.error('Failed to fetch LiveKit token:', e);
+      }
+
       // Clear peers immediately ONLY if it's a fresh join to a new room
       if (!isReconnect) {
         useRoomStore.setState({ peers: {} });
@@ -375,32 +257,6 @@ export function useStudyRoom() {
               timerLastUpdated?: number;
             };
 
-            // Resolve streams from peer connection cache
-            const peerPc = pcs.current[key] as any;
-            let stream = useRoomStore.getState().peers[key]?.stream || null;
-            let screenStream = useRoomStore.getState().peers[key]?.screenStream || null;
-
-            if (peerPc && peerPc.remoteStreams && peerPc.remoteStreams.length > 0) {
-              const remoteStreams = peerPc.remoteStreams as MediaStream[];
-              
-              // 1. Try matching by stream ID
-              const matchedCamera = remoteStreams.find(s => s.id === userState.cameraStreamId);
-              const matchedScreen = remoteStreams.find(s => s.id === userState.screenStreamId);
-              
-              if (matchedCamera) stream = matchedCamera;
-              if (matchedScreen) screenStream = matchedScreen;
-
-              // 2. Logical fallback for unmatched streams
-              if (!matchedCamera && (userState.cameraOn || userState.micOn)) {
-                const candidate = remoteStreams.find(s => s.id !== userState.screenStreamId);
-                if (candidate) stream = candidate;
-              }
-              if (!matchedScreen && userState.screenOn) {
-                const candidate = remoteStreams.find(s => s.id !== userState.cameraStreamId);
-                if (candidate) screenStream = candidate;
-              }
-            }
-
             newPeers[key] = {
               id: key,
               name: userState.name,
@@ -411,27 +267,15 @@ export function useStudyRoom() {
               remainingSeconds: userState.remainingSeconds,
               timerStatus: userState.timerStatus as RoomPeer['timerStatus'],
               timerLastUpdated: userState.timerLastUpdated,
-              stream: (userState.cameraOn || userState.micOn) ? stream : null,
-              screenStream: userState.screenOn ? screenStream : null
+              stream: null, // Managed by LiveKit
+              screenStream: null // Managed by LiveKit
             };
-
-            if (!pcs.current[key]) createPeerConnection(key);
           });
 
           useRoomStore.setState({ peers: newPeers });
         })
         .on('presence', { event: 'leave' }, ({ key }: { key: string }) => {
-          // Immediate WebRTC cleanup when someone leaves
-          if (pcs.current[key]) {
-            pcs.current[key].close();
-            delete pcs.current[key];
-            delete makingOffer.current[key];
-            delete ignoreOffer.current[key];
-          }
-        })
-        .on('broadcast', { event: 'webrtc_signal' }, (payload: any) => {
-          if (useRoomStore.getState().roomId !== targetRoomId) return;
-          handleSignal(payload);
+          // LiveKit handles media, Supabase handles presence metadata removal
         })
         .on('broadcast', { event: 'timer_sync' }, ({ payload }: { payload: any }) => {
           if (useRoomStore.getState().roomId !== targetRoomId) return;
@@ -557,7 +401,7 @@ export function useStudyRoom() {
       console.error('Study room join failed:', err);
       setStatus('error');
     }
-  }, [addMessage, resetRoom, setMyId, setMyName, setRoomCode, setRoomId, setStatus, syncPresence, supabase, createPeerConnection, handleSignal]);
+  }, [addMessage, resetRoom, setMyId, setMyName, setRoomCode, setRoomId, setStatus, syncPresence, supabase]);
 
   const createRoom = useCallback(async (name: string, userId?: string) => {
     try {
@@ -605,7 +449,7 @@ export function useStudyRoom() {
     reconnectAttemptsRef.current = 0;
     // Clear synced timer state
     useRoomStore.getState().setSyncedTimerState(null);
-    const { roomId, roomType, localStream, screenStream, setLocalStream, setScreenStream, setCameraOn, setScreenOn, setMicOn } = useRoomStore.getState();
+    const { roomId, roomType, localStream, screenStream, setLocalStream, setScreenStream, setCameraOn, setScreenOn, setMicOn, setLiveKitToken } = useRoomStore.getState();
     
     // 1. Cleanup media tracks
     [localStream, screenStream].forEach(stream => stream?.getTracks().forEach(track => track.stop()));
@@ -614,14 +458,9 @@ export function useStudyRoom() {
     setCameraOn(false);
     setScreenOn(false);
     setMicOn(false);
+    setLiveKitToken(null);
     
-    // 2. Close WebRTC connections
-    Object.values(pcs.current).forEach(pc => { try { pc.close(); } catch(e) {} });
-    pcs.current = {};
-    makingOffer.current = {};
-    ignoreOffer.current = {};
-    
-    // 3. Optional: Delete room if I'm the last one (Private Rooms only)
+    // 2. Optional: Delete room if I'm the last one (Private Rooms only)
     if (roomId && roomType === 'private' && channelRef.current) {
       const presence = channelRef.current.presenceState();
       const count = Object.keys(presence).length;

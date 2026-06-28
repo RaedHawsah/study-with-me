@@ -10,10 +10,12 @@ import { VideoGrid } from './VideoGrid';
 import { RoomControls } from './RoomControls';
 import { ChatPanel } from './ChatPanel';
 import { RoomTimerBanner } from './RoomTimerBanner';
+import { LiveKitRoom } from '@livekit/components-react';
+import '@livekit/components-styles';
 
 export function RoomView() {
   const { t, i18n } = useTranslation('common');
-  const { status, errorMessage, chatOpen, setError, actions } = useRoomStore();
+  const { status, errorMessage, chatOpen, setError, actions, liveKitToken } = useRoomStore();
   const { user } = useSupabaseAuth();
 
   const [name, setName] = useState('');
@@ -194,7 +196,17 @@ export function RoomView() {
 
   // ─── ACTIVE ROOM SCREEN ────────────────────────────────────────────────────
   return (
-    <div className="relative flex flex-col h-[calc(100dvh-130px)] md:h-[calc(100vh-80px)] w-full overflow-hidden gap-2 md:gap-3">
+    <LiveKitRoom
+      video={false}
+      audio={false}
+      token={liveKitToken || ''}
+      serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
+      connect={!!liveKitToken}
+      onDisconnected={() => {
+        if (actions?.leaveRoom) actions.leaveRoom();
+      }}
+      className="relative flex flex-col h-[calc(100dvh-130px)] md:h-[calc(100vh-80px)] w-full overflow-hidden gap-2 md:gap-3"
+    >
       
       {/* Timer Banner — always visible for all room types */}
       <div className="shrink-0 px-0 md:px-1">
@@ -230,6 +242,6 @@ export function RoomView() {
         </div>
       </div>
       
-    </div>
+    </LiveKitRoom>
   );
 }

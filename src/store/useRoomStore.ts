@@ -54,7 +54,9 @@ const INITIAL_STATE = {
   // Synced timer state (leader → followers via Realtime)
   syncedTimerState: null as SyncedTimerState | null,
 
-  // Local media
+  liveKitToken: null as string | null,
+  
+  // Local media (kept for backward compatibility during transition if needed, though LiveKit handles it)
   localStream:  null as MediaStream | null,
   screenStream: null as MediaStream | null,
   cameraOn:     false,
@@ -89,6 +91,8 @@ export interface RoomStore extends RoomState {
   setPeerStream:   (peerId: string, stream: MediaStream)     => void;
   setPeerScreenStream: (peerId: string, stream: MediaStream) => void;
 
+  setLiveKitToken: (token: string | null)                    => void;
+
   setLocalStream:  (s: MediaStream | null)                   => void;
   setScreenStream: (s: MediaStream | null)                   => void;
   setCameraOn:     (v: boolean)                              => void;
@@ -117,6 +121,7 @@ export const useRoomStore = create<RoomStore>()(
 
       setStatus:           (status)           => set({ status }),
       setRoomType:         (roomType)          => set({ roomType }),
+      setLiveKitToken:     (liveKitToken)      => set({ liveKitToken }),
       setRoomId:           (roomId)            => set({ roomId }),
       setRoomCode:         (roomCode)          => set({ roomCode }),
       setTimerSync:        (timerSync)         => set({ timerSync }),

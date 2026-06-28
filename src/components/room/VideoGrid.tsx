@@ -3,21 +3,24 @@ import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'lucide-react';
+import { useParticipants, useLocalParticipant, VideoTrack, AudioTrack } from '@livekit/components-react';
+import { Track } from 'livekit-client';
 
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
   const isFocus = peer.status === 'focus';
   const isBreak = peer.status === 'shortBreak' || peer.status === 'longBreak';
   const isPaused = peer.timerStatus === 'paused';
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [displaySeconds, setDisplaySeconds] = useState(peer.remainingSeconds || 0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const participant = peer.participant;
+  
+  // Check if track is published and enabled
+  const hasVideo = isScreen 
+    ? participant?.isScreenShareEnabled 
+    : participant?.isCameraEnabled;
 
   const { roomType, timerSync, leaderId } = useRoomStore();
-
-  useEffect(() => {
-    if (videoRef.current && peer.stream) {
-      videoRef.current.srcObject = peer.stream;
-    }
-  }, [peer.stream]);
 
   // Timer Countdown Logic
   useEffect(() => {
@@ -46,41 +49,48 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   };
   
   const handleFullscreen = () => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      } else if ((videoRef.current as any).webkitRequestFullscreen) {
-        (videoRef.current as any).webkitRequestFullscreen();
-      } else if ((videoRef.current as any).msRequestFullscreen) {
-        (videoRef.current as any).msRequestFullscreen();
+    if (containerRef.current) {
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      } else if ((containerRef.current as any).webkitRequestFullscreen) {
+        (containerRef.current as any).webkitRequestFullscreen();
+      } else if ((containerRef.current as any).msRequestFullscreen) {
+        (containerRef.current as any).msRequestFullscreen();
       }
     }
   };
   
   return (
-    <div className={`
+    <div ref={containerRef} className={`
       relative group overflow-hidden rounded-3xl border transition-all duration-500
       aspect-[4/5] flex flex-col p-5 shadow-xl
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
     `}>
       
-      {/* Video Content */}
-      {peer.stream && (
+      {/* Video Content via LiveKit */}
+      {hasVideo && participant && (
         <div className="absolute inset-0 z-0 bg-black">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted={isMe}
+          <VideoTrack
+            participant={participant}
+            source={isScreen ? Track.Source.ScreenShare : Track.Source.Camera}
             className={`w-full h-full object-cover transition-opacity duration-700 ${isScreen ? 'object-contain' : ''}`}
           />
+          {/* Audio stream for remote peers */}
+          {!isMe && !isScreen && (
+             <AudioTrack participant={participant} source={Track.Source.Microphone} />
+          )}
           {/* Overlay for better readability over video */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
         </div>
       )}
 
+      {/* Fallback Audio stream for remote peers without video */}
+      {!hasVideo && !isMe && !isScreen && participant && participant.isMicrophoneEnabled && (
+         <div className="hidden"><AudioTrack participant={participant} source={Track.Source.Microphone} /></div>
+      )}
+
       {/* Background Status Glow (Only show if no video) */}
-      {!peer.stream && (
+      {!hasVideo && (
         <div className={`
           absolute -inset-10 opacity-10 blur-3xl transition-opacity duration-1000
           ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
@@ -88,7 +98,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       )}
 
       {/* Fullscreen Button - Only shows when video exists and on hover */}
-      {peer.stream && (
+      {hasVideo && (
         <div className="absolute top-4 right-4 z-20 flex gap-2">
           <button
             onClick={handleFullscreen}
@@ -136,7 +146,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       </div>
 
       {/* Avatar & Info (Shown if no video) */}
-      {!peer.stream && (
+      {!hasVideo && (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 z-10 pt-4">
           <div className={`
             relative w-24 h-24 rounded-full flex items-center justify-center text-4xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110
@@ -157,9 +167,9 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       )}
 
       {/* Participant Info Overlay (if video exists, it's pushed to bottom) */}
-      <div className={`mt-auto z-10 transition-transform duration-300 ${peer.stream ? 'translate-y-2 group-hover:translate-y-0' : ''}`}>
+      <div className={`mt-auto z-10 transition-transform duration-300 ${hasVideo ? 'translate-y-2 group-hover:translate-y-0' : ''}`}>
         <div className="text-center mb-4">
-          <h4 className="font-black text-lg tracking-tight truncate max-w-[140px] text-white drop-shadow-md">
+          <h4 className="font-black text-lg tracking-tight truncate max-w-[140px] text-white drop-shadow-md mx-auto">
             {peer.name || 'Anonymous'}
             {isMe && <span className="ml-1 opacity-70 text-[10px] uppercase">(You)</span>}
           </h4>
@@ -192,9 +202,13 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
 }
 
 export function VideoGrid() {
-  const { peers, myId, myName, localStream, screenStream } = useRoomStore();
+  const { peers, myId, myName } = useRoomStore();
   const { totalXp, currentStreak } = useGamificationStore();
   const timerStore = useTimerStore();
+  const participants = useParticipants();
+  const { localParticipant } = useLocalParticipant();
+
+  const getParticipant = (id: string) => participants.find(p => p.identity === id) || (localParticipant.identity === id ? localParticipant : null);
 
   const myPeer = {
     id: myId,
@@ -206,10 +220,13 @@ export function VideoGrid() {
     timerStatus: timerStore.status,
     remainingSeconds: timerStore.remainingSeconds,
     timerLastUpdated: timerStore.lastUpdatedAt,
-    stream: localStream
+    participant: localParticipant
   };
 
-  const peerList = Object.values(peers);
+  const peerList = Object.values(peers).map(peer => ({
+    ...peer,
+    participant: getParticipant(peer.id)
+  }));
 
   return (
     <div className="flex-1 w-full h-full p-4 overflow-y-auto custom-scrollbar">
@@ -217,9 +234,9 @@ export function VideoGrid() {
         <ParticipantCard peer={myPeer} isMe />
         
         {/* If I am screen sharing, show my screen in a card */}
-        {screenStream && (
+        {localParticipant.isScreenShareEnabled && (
           <ParticipantCard 
-            peer={{ ...myPeer, name: `${myName}'s Screen`, stream: screenStream }} 
+            peer={{ ...myPeer, name: `${myName}'s Screen` }} 
             isMe 
             isScreen
           />
@@ -228,9 +245,9 @@ export function VideoGrid() {
         {peerList.map(peer => (
           <div key={peer.id} className="contents">
             <ParticipantCard peer={peer} />
-            {peer.screenStream && (
+            {peer.participant?.isScreenShareEnabled && (
               <ParticipantCard 
-                peer={{ ...peer, name: `${peer.name}'s Screen`, stream: peer.screenStream }} 
+                peer={{ ...peer, name: `${peer.name}'s Screen` }} 
                 isScreen
               />
             )}
@@ -238,8 +255,8 @@ export function VideoGrid() {
         ))}
         
         {/* Placeholder slots for empty spots in 6-person rooms */}
-        {Array.from({ length: Math.max(0, 5 - peerList.length - (screenStream ? 1 : 0)) }).map((_, i) => (
-          <div key={i} className="aspect-[4/5] rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
+        {Array.from({ length: Math.max(0, 5 - peerList.length - (localParticipant.isScreenShareEnabled ? 1 : 0)) }).map((_, i) => (
+          <div key={`placeholder-${i}`} className="aspect-[4/5] rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
             <User size={40} strokeWidth={1} />
           </div>
         ))}
