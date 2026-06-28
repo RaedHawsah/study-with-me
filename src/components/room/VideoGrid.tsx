@@ -3,7 +3,7 @@ import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'lucide-react';
-import { useParticipants, useLocalParticipant, VideoTrack, AudioTrack, useTracks } from '@livekit/components-react';
+import { useParticipants, useLocalParticipant, useRemoteParticipant, VideoTrack, AudioTrack } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -24,15 +24,14 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   const [displaySeconds, setDisplaySeconds] = useState(currentRemainingSeconds || 0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const participant = peer.participant;
+  const { localParticipant, isCameraEnabled, isMicrophoneEnabled, isScreenShareEnabled } = useLocalParticipant();
+  const remoteParticipant = useRemoteParticipant(peer.id);
   
-  const cameraTracks = useTracks([Track.Source.Camera]);
-  const screenTracks = useTracks([Track.Source.ScreenShare]);
-  const micTracks = useTracks([Track.Source.Microphone]);
-
-  const hasCamera = cameraTracks.some(t => t.participant.identity === peer.id);
-  const hasScreen = screenTracks.some(t => t.participant.identity === peer.id);
-  const hasMic = micTracks.some(t => t.participant.identity === peer.id);
+  const participant = isMe ? localParticipant : remoteParticipant;
+  
+  const hasCamera = isMe ? isCameraEnabled : remoteParticipant?.isCameraEnabled;
+  const hasScreen = isMe ? isScreenShareEnabled : remoteParticipant?.isScreenShareEnabled;
+  const hasMic = isMe ? isMicrophoneEnabled : remoteParticipant?.isMicrophoneEnabled;
 
   const hasVideo = isScreen ? hasScreen : hasCamera;
 
@@ -75,7 +74,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   return (
     <div ref={containerRef} className={`
       relative group overflow-hidden rounded-3xl border transition-all duration-500
-      aspect-[3/4] md:aspect-[4/3] flex flex-col p-4 md:p-5 shadow-xl
+      aspect-[3/4] sm:aspect-square md:aspect-[5/4] lg:aspect-[4/3] min-h-[240px] md:min-h-[280px] flex flex-col p-3 md:p-4 shadow-xl
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
       ${isScreen && !hasVideo ? 'hidden' : ''}
     `}>
@@ -153,7 +152,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       {!hasVideo && (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 md:gap-4 z-10 pt-2 md:pt-4">
           <div className={`
-            relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110
+            relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110
             ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted/80 text-foreground'}
           `}>
             {peer.avatar_url ? (
@@ -169,7 +168,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         </div>
       )}
 
-      <div className={`mt-auto z-10 transition-transform duration-300 ${hasVideo ? 'translate-y-2 group-hover:translate-y-0' : ''}`}>
+      <div className={`mt-auto z-10 transition-transform duration-300 ${hasVideo ? 'translate-y-1 group-hover:translate-y-0' : ''}`}>
         <div className="text-center mb-2 md:mb-4">
           <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto">
             {peer.name || 'Anonymous'}
@@ -259,7 +258,7 @@ export function VideoGrid() {
         ))}
         
         {Array.from({ length: Math.max(0, 5 - peerList.length - (localParticipant.isScreenShareEnabled ? 1 : 0)) }).map((_, i) => (
-          <div key={`placeholder-${i}`} className="aspect-[3/4] md:aspect-[4/3] rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
+          <div key={`placeholder-${i}`} className="aspect-[3/4] sm:aspect-square md:aspect-[5/4] lg:aspect-[4/3] min-h-[240px] md:min-h-[280px] rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
             <User size={40} strokeWidth={1} />
           </div>
         ))}
