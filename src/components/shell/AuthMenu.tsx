@@ -41,7 +41,7 @@ export function AuthMenu({ collapsed }: AuthMenuProps) {
         title={collapsed ? "Login" : undefined}
       >
         <LogIn size={18} />
-        {!collapsed && <span className="font-medium text-sm truncate">Sign In</span>}
+        {!collapsed && <span className="font-medium text-sm truncate">{t('auth.signIn', { defaultValue: 'Sign In' })}</span>}
       </button>
     );
   }
@@ -113,7 +113,7 @@ export function AuthMenu({ collapsed }: AuthMenuProps) {
             className="flex items-center gap-2 w-full p-3 text-red-400 hover:bg-red-500/10 transition-colors text-sm font-medium"
           >
             <LogOut size={16} />
-            <span>Sign Out</span>
+            <span>{t('auth.signOut', { defaultValue: 'Sign Out' })}</span>
           </button>
         </div>
       )}

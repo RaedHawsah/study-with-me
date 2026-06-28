@@ -25,8 +25,8 @@ export function AccountSettings() {
             <UserIcon size={24} />
           </div>
           <div className="text-start">
-            <p className="text-sm font-semibold text-foreground">{t('common.notSignedIn', { defaultValue: 'Not signed in' })}</p>
-            <p className="text-xs text-muted-foreground">{t('common.signInPrompt', { defaultValue: 'Sign in to save your progress and sync settings.' })}</p>
+            <p className="text-sm font-semibold text-foreground">{t('auth.notSignedIn', { defaultValue: 'Not signed in' })}</p>
+            <p className="text-xs text-muted-foreground">{t('auth.signInPrompt', { defaultValue: 'Sign in to save your progress and sync settings.' })}</p>
           </div>
         </div>
         <button
@@ -34,7 +34,7 @@ export function AccountSettings() {
           className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 font-bold transition-colors shrink-0"
         >
           <LogIn size={18} />
-          <span>{t('common.signIn', { defaultValue: 'Sign In' })}</span>
+          <span>{t('auth.signIn', { defaultValue: 'Sign In' })}</span>
         </button>
       </div>
     );
@@ -72,7 +72,7 @@ export function AccountSettings() {
         className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 font-bold transition-colors shrink-0 w-full sm:w-auto"
       >
         <LogOut size={18} />
-        <span>{t('common.signOut', { defaultValue: 'Sign Out' })}</span>
+        <span>{t('auth.signOut', { defaultValue: 'Sign Out' })}</span>
       </button>
     </div>
   );
