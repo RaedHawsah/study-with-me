@@ -103,6 +103,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
     }
   };
 
+  return (
     <div ref={containerRef} className={`
       relative group overflow-hidden rounded-3xl border transition-all duration-500
       aspect-[3/4] md:aspect-[4/3] flex flex-col p-4 md:p-5 shadow-xl
@@ -239,23 +240,8 @@ export function VideoGrid() {
     }))
   );
 
-  const roomType = useRoomStore(state => state.roomType);
-  const setMicOn = useRoomStore(state => state.setMicOn);
-  const micAutoEnabledRef = useRef(false);
-
   const participants = useParticipants();
   const { localParticipant } = useLocalParticipant();
-
-  useEffect(() => {
-    if (roomType === 'private' && localParticipant && !micAutoEnabledRef.current) {
-      micAutoEnabledRef.current = true;
-      localParticipant.setMicrophoneEnabled(true).then(() => {
-        setMicOn(true);
-      }).catch(err => {
-        console.error('Failed to auto-enable mic:', err);
-      });
-    }
-  }, [localParticipant, roomType, setMicOn]);
 
   const getParticipant = (id: string) => participants.find(p => p.identity === id) || (localParticipant.identity === id ? localParticipant : null);
 
