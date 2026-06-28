@@ -204,16 +204,18 @@ export function RoomView() {
     );
   }
 
+  const cleanLiveKitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL?.replace(/^["']|["']$/g, '');
+
   // ─── ACTIVE ROOM SCREEN ────────────────────────────────────────────────────
   return (
     <LiveKitRoom
       video={false}
       audio={false}
       token={liveKitToken || ''}
-      serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
+      serverUrl={cleanLiveKitUrl}
       connect={!!liveKitToken}
       onDisconnected={() => {
-        if (actions?.leaveRoom) actions.leaveRoom();
+        console.warn('[LiveKit] Disconnected from video server.');
       }}
       className="relative flex flex-col h-[calc(100dvh-130px)] md:h-[calc(100vh-80px)] w-full overflow-hidden gap-2 md:gap-3"
     >

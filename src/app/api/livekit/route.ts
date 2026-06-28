@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = process.env.LIVEKIT_API_KEY;
-    const apiSecret = process.env.LIVEKIT_API_SECRET;
+    const apiKey = process.env.LIVEKIT_API_KEY?.replace(/^["']|["']$/g, '');
+    const apiSecret = process.env.LIVEKIT_API_SECRET?.replace(/^["']|["']$/g, '');
 
     if (!apiKey || !apiSecret) {
       console.error('LiveKit credentials missing');
