@@ -7,6 +7,40 @@ import { useParticipants, useLocalParticipant, VideoTrack, AudioTrack, usePartic
 import { Track } from 'livekit-client';
 import { useShallow } from 'zustand/react/shallow';
 
+function ParticipantMedia({ participant, isScreen, isMe, onMediaStateChange }: { participant: any, isScreen: boolean, isMe: boolean, onMediaStateChange: (hasVideo: boolean, hasMic: boolean) => void }) {
+  const { cameraPublication, screenSharePublication, microphonePublication } = useParticipant(participant);
+  
+  const hasVideo = isScreen ? !!screenSharePublication : !!cameraPublication;
+  const hasMic = !!microphonePublication;
+
+  useEffect(() => {
+    onMediaStateChange(hasVideo, hasMic);
+  }, [hasVideo, hasMic, onMediaStateChange]);
+
+  if (!hasVideo && !hasMic) return null;
+
+  return (
+    <>
+      {hasVideo && (
+        <div className="absolute inset-0 z-0 bg-black">
+          <VideoTrack
+            participant={participant}
+            source={isScreen ? Track.Source.ScreenShare : Track.Source.Camera}
+            className={`w-full h-full object-cover transition-opacity duration-700 ${isScreen ? 'object-contain' : ''}`}
+          />
+          {!isMe && !isScreen && (
+             <AudioTrack participant={participant} source={Track.Source.Microphone} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+        </div>
+      )}
+      {!hasVideo && !isMe && !isScreen && hasMic && (
+         <div className="hidden"><AudioTrack participant={participant} source={Track.Source.Microphone} /></div>
+      )}
+    </>
+  );
+}
+
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
   // Read self timer state to prevent parent from re-rendering every second
   const myTimerStatus = useTimerStore(state => state.status);
@@ -25,10 +59,13 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const participant = peer.participant;
-  const { cameraPublication, screenSharePublication, microphonePublication } = useParticipant(participant);
-  
-  const hasVideo = isScreen ? !!screenSharePublication : !!cameraPublication;
-  const hasMic = !!microphonePublication;
+  const [hasVideo, setHasVideo] = useState(false);
+  const [hasMic, setHasMic] = useState(false);
+
+  const handleMediaStateChange = useCallback((v: boolean, m: boolean) => {
+    setHasVideo(prev => prev !== v ? v : prev);
+    setHasMic(prev => prev !== m ? m : prev);
+  }, []);
 
   useEffect(() => {
     let initialSeconds = currentRemainingSeconds || 0;
@@ -66,31 +103,20 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
     }
   };
 
-  if (isScreen && !hasVideo) return null;
-  
-  return (
     <div ref={containerRef} className={`
       relative group overflow-hidden rounded-3xl border transition-all duration-500
       aspect-[3/4] md:aspect-[4/3] flex flex-col p-4 md:p-5 shadow-xl
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
+      ${isScreen && !hasVideo ? 'hidden' : ''}
     `}>
       
-      {hasVideo && participant && (
-        <div className="absolute inset-0 z-0 bg-black">
-          <VideoTrack
-            participant={participant}
-            source={isScreen ? Track.Source.ScreenShare : Track.Source.Camera}
-            className={`w-full h-full object-cover transition-opacity duration-700 ${isScreen ? 'object-contain' : ''}`}
-          />
-          {!isMe && !isScreen && (
-             <AudioTrack participant={participant} source={Track.Source.Microphone} />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
-        </div>
-      )}
-
-      {!hasVideo && !isMe && !isScreen && participant && hasMic && (
-         <div className="hidden"><AudioTrack participant={participant} source={Track.Source.Microphone} /></div>
+      {participant && (
+        <ParticipantMedia 
+          participant={participant} 
+          isScreen={isScreen} 
+          isMe={isMe} 
+          onMediaStateChange={handleMediaStateChange} 
+        />
       )}
 
       {!hasVideo && (
@@ -213,8 +239,23 @@ export function VideoGrid() {
     }))
   );
 
+  const roomType = useRoomStore(state => state.roomType);
+  const setMicOn = useRoomStore(state => state.setMicOn);
+  const micAutoEnabledRef = useRef(false);
+
   const participants = useParticipants();
   const { localParticipant } = useLocalParticipant();
+
+  useEffect(() => {
+    if (roomType === 'private' && localParticipant && !micAutoEnabledRef.current) {
+      micAutoEnabledRef.current = true;
+      localParticipant.setMicrophoneEnabled(true).then(() => {
+        setMicOn(true);
+      }).catch(err => {
+        console.error('Failed to auto-enable mic:', err);
+      });
+    }
+  }, [localParticipant, roomType, setMicOn]);
 
   const getParticipant = (id: string) => participants.find(p => p.identity === id) || (localParticipant.identity === id ? localParticipant : null);
 
