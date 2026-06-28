@@ -25,9 +25,31 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const participant = peer.participant;
-  const hasVideo = isScreen 
-    ? participant?.isScreenShareEnabled 
-    : participant?.isCameraEnabled;
+  
+  const [hasVideo, setHasVideo] = useState(false);
+  const [hasMic, setHasMic] = useState(false);
+
+  useEffect(() => {
+    if (!participant) return;
+
+    const updateState = () => {
+      setHasVideo(isScreen ? participant.isScreenShareEnabled : participant.isCameraEnabled);
+      setHasMic(participant.isMicrophoneEnabled);
+    };
+
+    updateState();
+
+    const events = [
+      'trackPublished', 'trackSubscribed', 'trackUnpublished', 'trackUnsubscribed',
+      'trackMuted', 'trackUnmuted', 'localTrackPublished', 'localTrackUnpublished'
+    ];
+
+    events.forEach(e => participant.on(e, updateState));
+
+    return () => {
+      events.forEach(e => participant.off(e, updateState));
+    };
+  }, [participant, isScreen]);
 
   useEffect(() => {
     let initialSeconds = currentRemainingSeconds || 0;
@@ -64,6 +86,8 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       }
     }
   };
+
+  if (isScreen && !hasVideo) return null;
   
   return (
     <div ref={containerRef} className={`
@@ -86,7 +110,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         </div>
       )}
 
-      {!hasVideo && !isMe && !isScreen && participant && participant.isMicrophoneEnabled && (
+      {!hasVideo && !isMe && !isScreen && participant && hasMic && (
          <div className="hidden"><AudioTrack participant={participant} source={Track.Source.Microphone} /></div>
       )}
 
@@ -234,23 +258,19 @@ export function VideoGrid() {
       <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 w-full h-fit max-w-7xl mx-auto">
         <ParticipantCard peer={myPeer} isMe />
         
-        {localParticipant.isScreenShareEnabled && (
-          <ParticipantCard 
-            peer={{ ...myPeer, name: `${myName}'s Screen` }} 
-            isMe 
-            isScreen
-          />
-        )}
+        <ParticipantCard 
+          peer={{ ...myPeer, name: `${myName}'s Screen` }} 
+          isMe 
+          isScreen
+        />
 
         {peerList.map(peer => (
           <div key={peer.id} className="contents">
             <ParticipantCard peer={peer} />
-            {peer.participant?.isScreenShareEnabled && (
-              <ParticipantCard 
-                peer={{ ...peer, name: `${peer.name}'s Screen` }} 
-                isScreen
-              />
-            )}
+            <ParticipantCard 
+              peer={{ ...peer, name: `${peer.name}'s Screen` }} 
+              isScreen
+            />
           </div>
         ))}
         
