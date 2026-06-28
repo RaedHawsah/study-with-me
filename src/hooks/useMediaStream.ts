@@ -55,7 +55,15 @@ export function useMediaStream() {
     if (!localParticipant) return;
     try {
       const isEnabled = localParticipant.isScreenShareEnabled;
-      await localParticipant.setScreenShareEnabled(!isEnabled);
+      await localParticipant.setScreenShareEnabled(!isEnabled, {
+        audio: true,
+        videoCodec: 'h264',
+        videoResolution: {
+          width: 1920,
+          height: 1080,
+          frameRate: 30, // 30fps for ultra clear and smooth text/video stream
+        }
+      });
       useRoomStore.getState().setScreenOn(!isEnabled);
     } catch (err: any) {
       console.error('Failed to share screen:', err);

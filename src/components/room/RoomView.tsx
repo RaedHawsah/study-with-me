@@ -239,7 +239,7 @@ export function RoomView() {
             fixed inset-x-0 bottom-14 top-0 md:static md:bottom-auto md:top-auto md:inset-x-auto
             md:h-full z-40 transition-all duration-300 ease-in-out
             ${chatOpen 
-              ? 'opacity-100 translate-y-0 pointer-events-auto' 
+              ? 'opacity-100 translate-y-0 pointer-events-auto md:w-80' 
               : 'opacity-100 translate-y-full md:translate-y-0 md:translate-x-8 pointer-events-none md:w-0 md:h-0'}
           `}
         >

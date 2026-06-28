@@ -109,11 +109,8 @@ export function useStudyRoom() {
   }, [timerStore.status, timerStore.sessionType, syncPresence]);
 
   // Broadcast Timer State (Only if Leader & Sync is ON)
-  const timerSyncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   useEffect(() => {
     const roomStore = useRoomStore.getState();
-    const timer = useTimerStore.getState();
 
     if (
       channelRef.current && 
@@ -137,10 +134,11 @@ export function useStudyRoom() {
         });
       };
 
-      if (timerSyncTimeoutRef.current) clearTimeout(timerSyncTimeoutRef.current);
-      timerSyncTimeoutRef.current = setTimeout(sendSync, 500);
+      // Sync instantly on status/type changes
+      sendSync();
 
-      const interval = setInterval(sendSync, 5000);
+      // Frequent sync every 2 seconds for active ticking drift correction
+      const interval = setInterval(sendSync, 2000);
       return () => clearInterval(interval);
     }
   }, [timerStore.status, timerStore.sessionType, timerSync]);
