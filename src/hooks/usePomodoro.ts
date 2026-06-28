@@ -30,8 +30,8 @@ export const SESSION_COLORS: Record<SessionType, string> = {
 // ─── Audio feedback ───────────────────────────────────────────────────────────
 
 function playDing() {
-  // Use the professional engine for punctual background delivery
-  AmbientSoundEngine.getInstance().schedulePomodoroAlarm(0);
+  // Play the end chime immediately
+  AmbientSoundEngine.getInstance().scheduleEndChime(0);
 }
 
 // ─── Browser notification ─────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ function syncTimerWithReality() {
       // Actually, updating the store is fine as long as we also update the worker and alarm
       useTimerStore.getState().setRemaining(rounded);
       globalWorker?.postMessage({ type: 'START', totalSeconds: rounded });
-      AmbientSoundEngine.getInstance().schedulePomodoroAlarm(rounded);
+      AmbientSoundEngine.getInstance().scheduleEndChime(rounded);
     }
   }
 }
@@ -129,9 +129,9 @@ function advanceSession(completedType: SessionType, skipped = false) {
 
   if (autoStart && globalWorker) {
     globalWorker.postMessage({ type: 'START', totalSeconds: newTotal });
-    AmbientSoundEngine.getInstance().schedulePomodoroAlarm(newTotal);
+    AmbientSoundEngine.getInstance().scheduleEndChime(newTotal);
   } else {
-    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
+    AmbientSoundEngine.getInstance().cancelScheduledChimes();
   }
 }
 
@@ -174,10 +174,10 @@ export function initGlobalTimer() {
 export function syncFollowerTimer(status: string, remaining: number, total?: number) {
   if (status === 'running' && globalWorker) {
     globalWorker.postMessage({ type: 'START', totalSeconds: remaining });
-    AmbientSoundEngine.getInstance().schedulePomodoroAlarm(remaining);
+    AmbientSoundEngine.getInstance().scheduleEndChime(remaining);
   } else if (status === 'paused' || status === 'idle') {
     globalWorker?.postMessage({ type: status === 'paused' ? 'PAUSE' : 'STOP' });
-    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
+    AmbientSoundEngine.getInstance().cancelScheduledChimes();
   }
 }
 
@@ -203,13 +203,14 @@ export function usePomodoro() {
       type: 'START',
       totalSeconds: currentRemaining,
     });
-    AmbientSoundEngine.getInstance().schedulePomodoroAlarm(currentRemaining);
+    AmbientSoundEngine.getInstance().playStartChime();
+    AmbientSoundEngine.getInstance().scheduleEndChime(currentRemaining);
     store.setStatus('running');
   }, [store]);
 
   const pause = useCallback(() => {
     globalWorker?.postMessage({ type: 'PAUSE' });
-    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
+    AmbientSoundEngine.getInstance().cancelScheduledChimes();
     store.setStatus('paused');
   }, [store]);
 
@@ -217,13 +218,14 @@ export function usePomodoro() {
     if (!globalWorker) return;
     const currentRemaining = useTimerStore.getState().remainingSeconds;
     globalWorker.postMessage({ type: 'RESUME' });
-    AmbientSoundEngine.getInstance().schedulePomodoroAlarm(currentRemaining);
+    AmbientSoundEngine.getInstance().playStartChime();
+    AmbientSoundEngine.getInstance().scheduleEndChime(currentRemaining);
     store.setStatus('running');
   }, [store]);
 
   const reset = useCallback(() => {
     globalWorker?.postMessage({ type: 'STOP' });
-    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
+    AmbientSoundEngine.getInstance().cancelScheduledChimes();
     const { sessionType, settings } = useTimerStore.getState();
     const total = getSessionDuration(sessionType, settings);
     store.setStatus('idle');
@@ -233,13 +235,13 @@ export function usePomodoro() {
 
   const skip = useCallback(() => {
     globalWorker?.postMessage({ type: 'STOP' });
-    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
+    AmbientSoundEngine.getInstance().cancelScheduledChimes();
     advanceSession(useTimerStore.getState().sessionType, true);
   }, []);
 
   const switchSession = useCallback((type: SessionType) => {
     globalWorker?.postMessage({ type: 'STOP' });
-    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
+    AmbientSoundEngine.getInstance().cancelScheduledChimes();
     const { settings } = useTimerStore.getState();
     const total = getSessionDuration(type, settings);
     store.setStatus('idle');

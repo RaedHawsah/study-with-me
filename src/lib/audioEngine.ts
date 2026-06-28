@@ -274,65 +274,90 @@ export class AmbientSoundEngine {
 
   // ─── Pomodoro Alarm Scheduling ─────────────────────────────────────────────
   
-  private activeAlarmSources: AudioScheduledSourceNode[] = [];
+  private scheduledChimes: { osc: AudioScheduledSourceNode, startTime: number }[] = [];
 
-  /**
-   * Schedules the "Ding" sound to play at exactly [delaySeconds] in the future.
-   * This uses the high-precision audio hardware clock.
-   */
-  public async schedulePomodoroAlarm(delaySeconds: number): Promise<void> {
+  public async playStartChime(): Promise<void> {
     if (typeof window === 'undefined') return;
     try {
       const ctx = await this.getCtx();
-      this.cancelPomodoroAlarm();
-
-      const startTime = ctx.currentTime + Math.max(0, delaySeconds);
+      const startTime = ctx.currentTime;
       
-      // Beautiful chime frequencies (Major chord harmonics)
-      const harmonics = [
-        { freq: 523.25, gain: 0.6, decay: 2.0 }, // C5
-        { freq: 659.25, gain: 0.4, decay: 1.5 }, // E5
-        { freq: 783.99, gain: 0.3, decay: 1.2 }, // G5
-        { freq: 1046.50, gain: 0.2, decay: 1.0 } // C6
+      // Gentle ascending start chime (3 seconds)
+      const notes = [
+        { freq: 392.00, startOffset: 0.0, vol: 0.3, decay: 3.0 }, // G4
+        { freq: 523.25, startOffset: 0.15, vol: 0.3, decay: 2.8 }, // C5
+        { freq: 659.25, startOffset: 0.3, vol: 0.3, decay: 2.6 }, // E5
       ];
       
-      harmonics.forEach(({ freq, gain: vol, decay }, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(this.masterGain!);
-        
-        // Use sine for smooth bell-like tone
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        
-        const noteStart = startTime + (i * 0.05); // slight arpeggio
-        
-        // Sharp attack, long exponential decay
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.setValueAtTime(0, noteStart);
-        gain.gain.linearRampToValueAtTime(vol * 0.5, noteStart + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, noteStart + decay);
-        
-        osc.start(noteStart);
-        osc.stop(noteStart + decay);
-        
-        this.activeAlarmSources.push(osc);
-      });
+      this.playChime(ctx, startTime, notes);
     } catch (err) {
-      console.warn('[AudioEngine] Failed to schedule alarm:', err);
+      console.warn('[AudioEngine] Failed to play start chime:', err);
     }
   }
 
-  public cancelPomodoroAlarm(): void {
-    if (this.activeAlarmSources && this.activeAlarmSources.length > 0) {
-      this.activeAlarmSources.forEach(osc => {
+  public async scheduleEndChime(delaySeconds: number): Promise<void> {
+    if (typeof window === 'undefined') return;
+    try {
+      const ctx = await this.getCtx();
+      this.cancelScheduledChimes(); 
+
+      const startTime = ctx.currentTime + Math.max(0, delaySeconds);
+      
+      // Relaxing 3-second end chime (major 7th chord, slow roll)
+      const notes = [
+        { freq: 523.25, startOffset: 0.0, vol: 0.4, decay: 3.0 }, // C5
+        { freq: 659.25, startOffset: 0.1, vol: 0.3, decay: 2.9 }, // E5
+        { freq: 783.99, startOffset: 0.2, vol: 0.2, decay: 2.8 }, // G5
+        { freq: 987.77, startOffset: 0.3, vol: 0.2, decay: 2.7 }, // B5
+      ];
+      
+      const oscs = this.playChime(ctx, startTime, notes);
+      
+      this.scheduledChimes.push(...oscs.map(osc => ({ osc, startTime })));
+    } catch (err) {
+      console.warn('[AudioEngine] Failed to schedule end chime:', err);
+    }
+  }
+
+  private playChime(ctx: AudioContext, startTime: number, notes: {freq: number, startOffset: number, vol: number, decay: number}[]): AudioScheduledSourceNode[] {
+    const oscs: AudioScheduledSourceNode[] = [];
+    notes.forEach(({ freq, startOffset, vol, decay }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this.masterGain!);
+      
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      
+      const noteStart = startTime + startOffset;
+      
+      gain.gain.setValueAtTime(0, Math.max(0, noteStart - 0.01));
+      gain.gain.linearRampToValueAtTime(vol, noteStart + 0.1); 
+      gain.gain.exponentialRampToValueAtTime(0.001, noteStart + decay); 
+      
+      osc.start(noteStart);
+      osc.stop(noteStart + decay);
+      
+      oscs.push(osc);
+    });
+    return oscs;
+  }
+
+  public cancelScheduledChimes(): void {
+    if (this.scheduledChimes && this.scheduledChimes.length > 0) {
+      const currentTime = this.ctx ? this.ctx.currentTime : 0;
+      this.scheduledChimes.forEach(({ osc, startTime }) => {
         try { 
-          // Softly cancel by fading out
-          osc.stop(this.ctx ? this.ctx.currentTime + 0.1 : 0); 
+          // Only stop if the chime is scheduled for the future.
+          // This prevents cutting off a chime that is currently ringing (e.g. at timer end).
+          if (startTime > currentTime + 0.1) {
+             osc.stop(currentTime); 
+          }
         } catch { /* ignore */ }
       });
-      this.activeAlarmSources = [];
+      // Clear the tracking array. Active sounds will stop naturally.
+      this.scheduledChimes = [];
     }
   }
 }

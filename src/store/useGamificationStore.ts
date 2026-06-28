@@ -156,13 +156,18 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
   }),
 }));
 
-export const getLevelFromXp = (xp: number) => Math.max(1, Math.floor(xp / 500) + 1);
+export const getLevelFromXp = (xp: number) => Math.max(1, Math.floor(Math.sqrt(xp / 50)) + 1);
+
 export const getProgressToNextLevel = (xp: number) => {
-  const currentLevelXp = (getLevelFromXp(xp) - 1) * 500;
-  const nextLevelXp = getLevelFromXp(xp) * 500;
+  const currentLevel = getLevelFromXp(xp);
+  const currentLevelXp = 50 * Math.pow(currentLevel - 1, 2);
+  const nextLevelXp = 50 * Math.pow(currentLevel, 2);
+  
+  const progressPercent = Math.min(100, Math.max(0, ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100));
+  
   return {
     currentLevelXp,
     nextLevelXp,
-    progressPercent: ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100,
+    progressPercent,
   };
 };
