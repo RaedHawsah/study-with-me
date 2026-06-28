@@ -147,17 +147,18 @@ export function TimerSettings() {
   const [open, setOpen]           = useState(false);
 
   return (
-    <div className="w-full max-w-sm flex flex-col items-center gap-3">
+    <div className="w-full max-w-md flex flex-col items-center gap-3">
       {/* Toggle button */}
       <button
         id="timer-settings-toggle"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className="
-          flex items-center gap-1.5
-          text-sm md:text-base font-medium text-muted-foreground hover:text-foreground
-          transition-colors
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded
+          flex items-center gap-1.5 px-4 py-2 rounded-full
+          bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/20 shadow-sm
+          text-sm md:text-base font-medium text-foreground hover:bg-white/20 dark:hover:bg-black/40
+          transition-all duration-300
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
         "
       >
         <Settings2 size={16} aria-hidden="true" />
@@ -176,7 +177,7 @@ export function TimerSettings() {
       {open && (
         <div className="w-full p-4 sm:p-6 rounded-3xl border border-white/10 bg-card/85 backdrop-blur-2xl shadow-2xl flex flex-col gap-5 sm:gap-6">
           {/* Duration steppers */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 place-items-center">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-4">
             <Stepper
               label={t('timer.focusDuration')}
               value={settings.focusDuration}
