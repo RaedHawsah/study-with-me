@@ -82,7 +82,7 @@ export function RoomControls() {
         {roomType === 'private' && roomCode && (
           <button 
             onClick={copyCode}
-            className="flex items-center gap-1.5 pl-2 pr-1.5 py-1 hover:bg-white/5 rounded-lg transition-all group border border-transparent hover:border-white/5"
+            className="flex items-center gap-1.5 ps-2 pe-1.5 py-1 hover:bg-white/5 rounded-lg transition-all group border border-transparent hover:border-white/5"
           >
             <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase">{t('room.room', { defaultValue: 'Room:' })}</span>
             <span className="text-[10px] md:text-xs font-mono font-bold text-foreground">{roomCode}</span>
@@ -164,7 +164,7 @@ export function RoomControls() {
         >
           <MessageSquareText size={19} />
           {unreadCount > 0 && !chatOpen && (
-            <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white ring-2 ring-card">
+            <span className="absolute top-0 end-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white ring-2 ring-card">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -175,7 +175,7 @@ export function RoomControls() {
         {/* Leave Room */}
         <button
           onClick={() => actions?.leaveRoom()}
-          className="group pl-3 md:pl-4 pr-4 md:pr-6 h-11 md:h-14 rounded-full flex items-center gap-2 md:gap-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-all shadow-lg hover:shadow-red-500/20 active:scale-95"
+          className="group ps-3 md:ps-4 pe-4 md:pe-6 h-11 md:h-14 rounded-full flex items-center gap-2 md:gap-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-all shadow-lg hover:shadow-red-500/20 active:scale-95"
         >
           <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
             <LogOut size={16} />

@@ -166,7 +166,7 @@ export function Leaderboard() {
               </div>
 
               {/* XP Score */}
-              <div className="text-right">
+              <div className="text-end">
                 <p className="font-mono font-bold text-lg text-primary tracking-tight">
                   {(user.xp || 0).toLocaleString()}
                 </p>

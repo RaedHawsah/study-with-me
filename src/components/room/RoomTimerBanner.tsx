@@ -119,7 +119,7 @@ function SyncedBigTimer() {
               <button onClick={start}
                 className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black shadow-lg transition-all hover:scale-110 active:scale-95"
                 style={{ background: color, color: '#fff', boxShadow: `0 4px 20px ${color}40` }}>
-                <Play size={18} fill="white" className="ml-1" />
+                <Play size={18} fill="white" className="ms-1" />
               </button>
             )}
             {timerStatus === 'running' && (
@@ -133,7 +133,7 @@ function SyncedBigTimer() {
               <button onClick={resume}
                 className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black shadow-lg transition-all hover:scale-110 active:scale-95"
                 style={{ background: color, color: '#fff', boxShadow: `0 4px 20px ${color}40` }}>
-                <Play size={18} fill="white" className="ml-1" />
+                <Play size={18} fill="white" className="ms-1" />
               </button>
             )}
           </div>

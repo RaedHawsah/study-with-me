@@ -80,7 +80,7 @@ export default function HomePage() {
               {weeklyStudyMinutes >= 60 && (
                 <>
                   <span>{Math.floor(weeklyStudyMinutes / 60)}</span>
-                  <span className="text-sm font-normal text-muted-foreground ml-1 mr-2">{t('common.h')}</span>
+                  <span className="text-sm font-normal text-muted-foreground ms-1 me-2">{t('common.h')}</span>
                 </>
               )}
               <span>{weeklyStudyMinutes % 60}</span>

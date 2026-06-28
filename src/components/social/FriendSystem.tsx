@@ -136,12 +136,12 @@ export function FriendSystem() {
               placeholder={isAr ? 'أدخل رمز الصداقة (مثل a1b2c3d4)' : 'Enter Friend Code (e.g. a1b2c3d4)'}
               value={friendCode}
               onChange={(e) => setFriendCode(e.target.value)}
-              className="w-full bg-background border border-border rounded-2xl px-5 py-4 pr-12 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-mono"
+              className="w-full bg-background border border-border rounded-2xl px-5 py-4 pe-12 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-mono"
             />
             <button 
               onClick={addFriend}
               disabled={adding || !friendCode}
-              className="absolute right-2 top-2 p-2.5 rounded-xl bg-primary text-primary-foreground disabled:opacity-50 disabled:grayscale transition-all hover:shadow-lg hover:shadow-primary/20"
+              className="absolute end-2 top-2 p-2.5 rounded-xl bg-primary text-primary-foreground disabled:opacity-50 disabled:grayscale transition-all hover:shadow-lg hover:shadow-primary/20"
               style={{ direction: 'ltr' }}
             >
               {adding ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
@@ -179,7 +179,7 @@ export function FriendSystem() {
                     <p className="text-sm font-bold truncate">{friend.full_name || 'Anonymous'}</p>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Level {friend.level}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="text-sm font-mono font-black text-primary">{friend.xp}</p>
                     <p className="text-[9px] text-muted-foreground uppercase font-bold">XP</p>
                   </div>

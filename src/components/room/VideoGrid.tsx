@@ -76,7 +76,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   return (
     <div ref={containerRef} className={`
       relative group overflow-hidden rounded-3xl border transition-all duration-500
-      aspect-[3/4] sm:aspect-square md:aspect-[5/4] lg:aspect-[4/3] min-h-[240px] md:min-h-[280px] flex flex-col p-3 md:p-4 shadow-xl
+      aspect-[3/4] @sm:aspect-square @2xl:aspect-[5/4] @5xl:aspect-[4/3] min-h-[180px] flex flex-col p-3 md:p-4 shadow-xl
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
       ${isScreen && !hasVideo ? 'hidden' : ''}
     `}>
@@ -107,7 +107,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       )}
 
       {hasVideo && (
-        <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20 flex gap-1.5 md:gap-2">
+        <div className="absolute top-2 end-2 md:top-4 md:end-4 z-20 flex gap-1.5 md:gap-2">
           <button
             onClick={handleFullscreen}
             className="p-2 md:p-3 rounded-xl md:rounded-2xl bg-black/40 hover:bg-primary backdrop-blur-xl border border-white/20 text-white transition-all duration-300 shadow-xl flex items-center gap-1.5 md:gap-2"
@@ -163,7 +163,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
               peer.name?.charAt(0) || '?'
             )}
             <div className={`
-              absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-card/60 transition-colors duration-300
+              absolute bottom-1 end-1 w-6 h-6 rounded-full border-4 border-card/60 transition-colors duration-300
               ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
             `} />
           </div>
@@ -174,7 +174,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         <div className="text-center mb-2 md:mb-4">
           <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto">
             {peer.name || 'Anonymous'}
-            {isMe && <span className="ml-1 opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
+            {isMe && <span className="ms-1 opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
           </h4>
           <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
             isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
@@ -239,8 +239,8 @@ export function VideoGrid() {
   }));
 
   return (
-    <div className="flex-1 w-full h-full p-4 overflow-y-auto custom-scrollbar">
-      <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 w-full h-fit max-w-7xl mx-auto">
+    <div className="flex-1 w-full h-full p-2 md:p-4 overflow-y-auto custom-scrollbar @container">
+      <div className="grid grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 gap-3 md:gap-4 w-full h-fit max-w-7xl mx-auto">
         <ParticipantCard peer={myPeer} isMe />
         
         <ParticipantCard 

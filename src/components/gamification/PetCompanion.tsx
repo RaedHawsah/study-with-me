@@ -140,7 +140,7 @@ export function PetCompanion() {
           {/* Character Change Button */}
           <button
             onClick={() => setSelectorOpen(true)}
-            className="absolute top-3 right-3 p-2 bg-black/40 hover:bg-primary/80 text-white backdrop-blur-md rounded-xl border border-white/10 transition-all shadow-lg z-20 group"
+            className="absolute top-3 end-3 p-2 bg-black/40 hover:bg-primary/80 text-white backdrop-blur-md rounded-xl border border-white/10 transition-all shadow-lg z-20 group"
             title={i18n.language === 'ar' ? 'تغيير الشخصية' : 'Change Character'}
           >
             <Settings2 size={16} className="group-hover:rotate-90 transition-transform" />
@@ -158,7 +158,7 @@ export function PetCompanion() {
                 {t('gami.level', { defaultValue: 'Level' })} {currentLvl}
               </p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="text-[10px] text-muted-foreground font-mono">
                 {totalXp - currentLevelXp} / {nextLevelXp - currentLevelXp} XP
               </p>
@@ -168,11 +168,11 @@ export function PetCompanion() {
           {/* XP Progress Bar */}
           <div className="w-full h-3 bg-muted rounded-full overflow-hidden shadow-inner flex relative">
             <div
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-blue-500 rounded-full transition-all duration-1000 ease-out"
+              className="absolute top-0 start-0 h-full bg-gradient-to-r from-primary to-blue-500 rounded-full transition-all duration-1000 ease-out"
               style={{ width: `${Math.max(4, progressPercent)}%` }}
             />
             {progressPercent >= 99 && (
-              <div className="absolute top-0 left-0 w-full h-full animate-pulse bg-white/40" />
+              <div className="absolute top-0 start-0 w-full h-full animate-pulse bg-white/40" />
             )}
           </div>
         </div>
@@ -222,7 +222,7 @@ export function PetCompanion() {
                       <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none" />
                       
                       {isActive && (
-                        <div className="absolute top-2 right-2 p-1 bg-primary text-primary-foreground rounded-full shadow-lg animate-in zoom-in">
+                        <div className="absolute top-2 end-2 p-1 bg-primary text-primary-foreground rounded-full shadow-lg animate-in zoom-in">
                           <Check size={14} strokeWidth={3} />
                         </div>
                       )}
