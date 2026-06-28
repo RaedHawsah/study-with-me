@@ -184,9 +184,9 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       </div>
 
       {!hasVideo && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none z-0">
+        <div className="absolute inset-x-0 top-12 bottom-12 flex flex-col items-center justify-center gap-1 pointer-events-none z-0">
           <div className={`
-            relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110 pointer-events-auto
+            relative w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110 pointer-events-auto
             ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted/80 text-foreground'}
           `}>
             {peer.avatar_url ? (
@@ -195,7 +195,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
               peer.name?.charAt(0) || '?'
             )}
             <div className={`
-              absolute bottom-1 end-1 w-5 h-5 md:w-6 md:h-6 rounded-full border-4 border-card/60 transition-colors duration-300
+              absolute bottom-0.5 end-0.5 w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-card/60 transition-colors duration-300
               ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
             `} />
           </div>
@@ -233,7 +233,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
           </div>
         )}
 
-        <div className="flex justify-around items-center pt-2 md:pt-4 border-t border-white/10">
+        <div className={`flex justify-around items-center pt-2 md:pt-3 ${hasVideo ? 'border-t border-white/10' : ''}`}>
           <div className="text-center">
             <p className="text-[6px] md:text-[7px] font-bold text-white/50 uppercase leading-none mb-1">XP</p>
             <p className="font-mono font-black text-[10px] md:text-xs text-white">{peer.xp || 0}</p>
