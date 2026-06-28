@@ -110,18 +110,20 @@ export function RoomControls() {
           </button>
         )}
 
-        {/* Mic Toggle */}
-        <button
-          onClick={toggleMic}
-          className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
-            micOn 
-              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
-              : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
-          }`}
-          title={micOn ? 'Mute Microphone' : 'Turn Microphone On'}
-        >
-          {micOn ? <Mic size={17} /> : <MicOff size={17} />}
-        </button>
+        {/* Mic Toggle (Private rooms only) */}
+        {roomType === 'private' && (
+          <button
+            onClick={toggleMic}
+            className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
+              micOn 
+                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
+            }`}
+            title={micOn ? 'Mute Microphone' : 'Turn Microphone On'}
+          >
+            {micOn ? <Mic size={17} /> : <MicOff size={17} />}
+          </button>
+        )}
 
         {/* Camera Toggle */}
         <button
