@@ -154,7 +154,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       {!hasVideo && (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 md:gap-4 z-10 pt-2 md:pt-4">
           <div className={`
-            relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110
+            relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110
             ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted/80 text-foreground'}
           `}>
             {peer.avatar_url ? (
