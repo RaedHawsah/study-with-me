@@ -24,6 +24,7 @@ import { TimerSettings } from './TimerSettings';
 import { TaskList } from '@/components/tasks/TaskList';
 import { PetCompanion } from '@/components/gamification/PetCompanion';
 import { StreakBadge } from '@/components/gamification/StreakBadge';
+import { useShallow } from 'zustand/react/shallow';
 
 export function TimerView() {
   const { t } = useTranslation('common');
@@ -32,11 +33,17 @@ export function TimerView() {
     status,
     sessionType,
     currentCycle,
-    remainingSeconds,
-    totalSeconds,
     settings,
     activeTaskId,
-  } = useTimerStore();
+  } = useTimerStore(
+    useShallow(state => ({
+      status: state.status,
+      sessionType: state.sessionType,
+      currentCycle: state.currentCycle,
+      settings: state.settings,
+      activeTaskId: state.activeTaskId,
+    }))
+  );
 
   const { tasks } = useTaskStore();
   const { start, pause, resume, reset, skip, switchSession } = usePomodoro();
@@ -70,8 +77,6 @@ export function TimerView() {
       {/* ── Timer + Controls block ────────────────────────────────────────── */}
       <div className="flex flex-col items-center gap-6 w-full">
         <TimerDisplay
-          remainingSeconds={remainingSeconds}
-          totalSeconds={totalSeconds}
           sessionType={sessionType}
           status={status}
         />
@@ -103,6 +108,9 @@ export function TimerView() {
           </div>
         )}
 
+        {/* Timer settings (collapsible) */}
+        <TimerSettings />
+
         {/* Controls */}
         <TimerControls
           status={status}
@@ -113,9 +121,6 @@ export function TimerView() {
           onReset={reset}
           onSkip={skip}
         />
-
-        {/* Timer settings (collapsible) */}
-        <TimerSettings />
 
         {/* Active task badge */}
         {activeTask && (

@@ -12,10 +12,20 @@ import { ChatPanel } from './ChatPanel';
 import { RoomTimerBanner } from './RoomTimerBanner';
 import { LiveKitRoom } from '@livekit/components-react';
 import '@livekit/components-styles';
+import { useShallow } from 'zustand/react/shallow';
 
 export function RoomView() {
   const { t, i18n } = useTranslation('common');
-  const { status, errorMessage, chatOpen, setError, actions, liveKitToken } = useRoomStore();
+  const { status, errorMessage, chatOpen, setError, actions, liveKitToken } = useRoomStore(
+    useShallow(state => ({
+      status: state.status,
+      errorMessage: state.errorMessage,
+      chatOpen: state.chatOpen,
+      setError: state.setError,
+      actions: state.actions,
+      liveKitToken: state.liveKitToken
+    }))
+  );
   const { user } = useSupabaseAuth();
 
   const [name, setName] = useState('');
@@ -235,9 +245,9 @@ export function RoomView() {
         </div>
       </div>
 
-      {/* Absolute positioned control bar at the bottom */}
-      <div className="absolute bottom-2 md:bottom-4 left-0 right-0 z-50 flex justify-center pointer-events-none pb-1 md:pb-0">
-        <div className="pointer-events-auto shadow-2xl rounded-3xl">
+      {/* Bottom control bar */}
+      <div className="mt-auto mb-2 md:mb-4 z-50 flex justify-center w-full">
+        <div className="shadow-2xl rounded-3xl">
           <RoomControls />
         </div>
       </div>

@@ -6,6 +6,8 @@ import { SESSION_COLORS } from '@/hooks/usePomodoro';
 import { ProgressRing } from './ProgressRing';
 import type { TimerStatus, SessionType } from '@/store/useTimerStore';
 
+import { useTimerStore } from '@/store/useTimerStore';
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTime(seconds: number): string {
@@ -15,15 +17,13 @@ function formatTime(seconds: number): string {
 }
 
 interface DisplayProps {
-  remainingSeconds: number;
-  totalSeconds: number;
   sessionType: SessionType;
   status: TimerStatus;
 }
 
 // ─── Circular (default) ───────────────────────────────────────────────────────
 
-function CircularTimer({ remainingSeconds, totalSeconds, sessionType, status }: DisplayProps) {
+function CircularTimer({ remainingSeconds, totalSeconds, sessionType, status }: DisplayProps & { remainingSeconds: number, totalSeconds: number }) {
   const { t } = useTranslation('common');
   const color    = SESSION_COLORS[sessionType];
   const progress = totalSeconds > 0 ? remainingSeconds / totalSeconds : 1;
@@ -77,7 +77,7 @@ function CircularTimer({ remainingSeconds, totalSeconds, sessionType, status }: 
 
 // ─── Minimal ─────────────────────────────────────────────────────────────────
 
-function MinimalTimer({ remainingSeconds, sessionType, status }: Omit<DisplayProps, 'totalSeconds'>) {
+function MinimalTimer({ remainingSeconds, sessionType, status }: DisplayProps & { remainingSeconds: number }) {
   const { t } = useTranslation('common');
   const color  = SESSION_COLORS[sessionType];
 
@@ -105,7 +105,7 @@ function MinimalTimer({ remainingSeconds, sessionType, status }: Omit<DisplayPro
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-function CardTimer({ remainingSeconds, totalSeconds, sessionType, status }: DisplayProps) {
+function CardTimer({ remainingSeconds, totalSeconds, sessionType, status }: DisplayProps & { remainingSeconds: number, totalSeconds: number }) {
   const { t } = useTranslation('common');
   const color    = SESSION_COLORS[sessionType];
   const progress = totalSeconds > 0 ? remainingSeconds / totalSeconds : 1;
@@ -150,8 +150,10 @@ function CardTimer({ remainingSeconds, totalSeconds, sessionType, status }: Disp
 
 export function TimerDisplay(props: DisplayProps) {
   const { timerShape } = usePreferencesStore();
+  const remainingSeconds = useTimerStore(state => state.remainingSeconds);
+  const totalSeconds = useTimerStore(state => state.totalSeconds);
 
-  if (timerShape === 'minimal') return <MinimalTimer {...props} />;
-  if (timerShape === 'card')    return <CardTimer    {...props} />;
-  return <CircularTimer {...props} />;
+  if (timerShape === 'minimal') return <MinimalTimer {...props} remainingSeconds={remainingSeconds} />;
+  if (timerShape === 'card')    return <CardTimer    {...props} remainingSeconds={remainingSeconds} totalSeconds={totalSeconds} />;
+  return <CircularTimer {...props} remainingSeconds={remainingSeconds} totalSeconds={totalSeconds} />;
 }

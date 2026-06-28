@@ -286,26 +286,36 @@ export class AmbientSoundEngine {
       const ctx = await this.getCtx();
       this.cancelPomodoroAlarm();
 
-      const notes = [660, 880, 1100];
-      const startTime = ctx.currentTime + delaySeconds;
+      const startTime = ctx.currentTime + Math.max(0, delaySeconds);
       
-      // We create a master group for these notes
-      notes.forEach((freq, i) => {
+      // Beautiful chime frequencies (Major chord harmonics)
+      const harmonics = [
+        { freq: 523.25, gain: 0.6, decay: 2.0 }, // C5
+        { freq: 659.25, gain: 0.4, decay: 1.5 }, // E5
+        { freq: 783.99, gain: 0.3, decay: 1.2 }, // G5
+        { freq: 1046.50, gain: 0.2, decay: 1.0 } // C6
+      ];
+      
+      harmonics.forEach(({ freq, gain: vol, decay }, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(this.masterGain!);
-        osc.frequency.value = freq;
+        
+        // Use sine for smooth bell-like tone
         osc.type = 'sine';
+        osc.frequency.value = freq;
         
-        const noteStart = startTime + i * 0.14;
+        const noteStart = startTime + (i * 0.05); // slight arpeggio
         
+        // Sharp attack, long exponential decay
         gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.setValueAtTime(0.22, noteStart);
-        gain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.4);
+        gain.gain.setValueAtTime(0, noteStart);
+        gain.gain.linearRampToValueAtTime(vol * 0.5, noteStart + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, noteStart + decay);
         
         osc.start(noteStart);
-        osc.stop(noteStart + 0.4);
+        osc.stop(noteStart + decay);
         
         this.activeAlarmSources.push(osc);
       });
@@ -317,7 +327,10 @@ export class AmbientSoundEngine {
   public cancelPomodoroAlarm(): void {
     if (this.activeAlarmSources && this.activeAlarmSources.length > 0) {
       this.activeAlarmSources.forEach(osc => {
-        try { osc.stop(); } catch { /* ignore */ }
+        try { 
+          // Softly cancel by fading out
+          osc.stop(this.ctx ? this.ctx.currentTime + 0.1 : 0); 
+        } catch { /* ignore */ }
       });
       this.activeAlarmSources = [];
     }

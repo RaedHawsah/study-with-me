@@ -5,42 +5,47 @@ import { useGamificationStore } from '@/store/useGamificationStore';
 import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'lucide-react';
 import { useParticipants, useLocalParticipant, VideoTrack, AudioTrack } from '@livekit/components-react';
 import { Track } from 'livekit-client';
+import { useShallow } from 'zustand/react/shallow';
 
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
-  const isFocus = peer.status === 'focus';
-  const isBreak = peer.status === 'shortBreak' || peer.status === 'longBreak';
-  const isPaused = peer.timerStatus === 'paused';
-  const [displaySeconds, setDisplaySeconds] = useState(peer.remainingSeconds || 0);
+  // Read self timer state to prevent parent from re-rendering every second
+  const myTimerStatus = useTimerStore(state => state.status);
+  const myRemainingSeconds = useTimerStore(state => state.remainingSeconds);
+  const myLastUpdatedAt = useTimerStore(state => state.lastUpdatedAt);
+  const mySessionType = useTimerStore(state => state.sessionType);
+
+  const isFocus = isMe ? (myTimerStatus === 'idle' ? false : mySessionType === 'focus') : peer.status === 'focus';
+  const isBreak = isMe ? (myTimerStatus !== 'idle' && mySessionType !== 'focus') : (peer.status === 'shortBreak' || peer.status === 'longBreak');
+  const isPaused = isMe ? myTimerStatus === 'paused' : peer.timerStatus === 'paused';
+  const currentTimerStatus = isMe ? myTimerStatus : peer.timerStatus;
+  const currentRemainingSeconds = isMe ? myRemainingSeconds : peer.remainingSeconds;
+  const currentLastUpdated = isMe ? myLastUpdatedAt : peer.timerLastUpdated;
+
+  const [displaySeconds, setDisplaySeconds] = useState(currentRemainingSeconds || 0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const participant = peer.participant;
-  
-  // Check if track is published and enabled
   const hasVideo = isScreen 
     ? participant?.isScreenShareEnabled 
     : participant?.isCameraEnabled;
 
-  const { roomType, timerSync, leaderId } = useRoomStore();
-
-  // Timer Countdown Logic
   useEffect(() => {
-    let initialSeconds = peer.remainingSeconds || 0;
+    let initialSeconds = currentRemainingSeconds || 0;
     
-    // Adjust for time elapsed since the last update
-    if (peer.timerStatus === 'running' && peer.timerLastUpdated) {
-      const elapsed = Math.floor((Date.now() - peer.timerLastUpdated) / 1000);
+    if (currentTimerStatus === 'running' && currentLastUpdated) {
+      const elapsed = Math.floor((Date.now() - currentLastUpdated) / 1000);
       initialSeconds = Math.max(0, initialSeconds - elapsed);
     }
     
     setDisplaySeconds(initialSeconds);
 
-    if (peer.timerStatus === 'running') {
+    if (currentTimerStatus === 'running') {
       const interval = setInterval(() => {
         setDisplaySeconds((prev: number) => Math.max(0, prev - 1));
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [peer.timerStatus, peer.remainingSeconds, peer.timerLastUpdated]);
+  }, [currentTimerStatus, currentRemainingSeconds, currentLastUpdated]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -67,7 +72,6 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
     `}>
       
-      {/* Video Content via LiveKit */}
       {hasVideo && participant && (
         <div className="absolute inset-0 z-0 bg-black">
           <VideoTrack
@@ -75,21 +79,17 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             source={isScreen ? Track.Source.ScreenShare : Track.Source.Camera}
             className={`w-full h-full object-cover transition-opacity duration-700 ${isScreen ? 'object-contain' : ''}`}
           />
-          {/* Audio stream for remote peers */}
           {!isMe && !isScreen && (
              <AudioTrack participant={participant} source={Track.Source.Microphone} />
           )}
-          {/* Overlay for better readability over video */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
         </div>
       )}
 
-      {/* Fallback Audio stream for remote peers without video */}
       {!hasVideo && !isMe && !isScreen && participant && participant.isMicrophoneEnabled && (
          <div className="hidden"><AudioTrack participant={participant} source={Track.Source.Microphone} /></div>
       )}
 
-      {/* Background Status Glow (Only show if no video) */}
       {!hasVideo && (
         <div className={`
           absolute -inset-10 opacity-10 blur-3xl transition-opacity duration-1000
@@ -97,7 +97,6 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         `} />
       )}
 
-      {/* Fullscreen Button - Only shows when video exists and on hover */}
       {hasVideo && (
         <div className="absolute top-4 right-4 z-20 flex gap-2">
           <button
@@ -110,7 +109,6 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         </div>
       )}
 
-      {/* Header: Level & Status Icon */}
       <div className="flex justify-between items-start z-10">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest text-white shadow-inner w-fit">
@@ -118,8 +116,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             {isScreen ? 'Screen Share' : `LVL ${peer.level || 1}`}
           </div>
           
-          {/* Real-time Timer Badge */}
-          {(peer.timerStatus === 'running' || isPaused) && (
+          {(currentTimerStatus === 'running' || isPaused) && (
             <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl border text-[12px] font-black font-mono shadow-lg animate-in fade-in zoom-in duration-300 ${
               isPaused
                 ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-500'
@@ -145,7 +142,6 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         </div>
       </div>
 
-      {/* Avatar & Info (Shown if no video) */}
       {!hasVideo && (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 z-10 pt-4">
           <div className={`
@@ -157,7 +153,6 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             ) : (
               peer.name?.charAt(0) || '?'
             )}
-            {/* Status Indicator Dot */}
             <div className={`
               absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-card/60 transition-colors duration-300
               ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
@@ -166,7 +161,6 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         </div>
       )}
 
-      {/* Participant Info Overlay (if video exists, it's pushed to bottom) */}
       <div className={`mt-auto z-10 transition-transform duration-300 ${hasVideo ? 'translate-y-2 group-hover:translate-y-0' : ''}`}>
         <div className="text-center mb-4">
           <h4 className="font-black text-lg tracking-tight truncate max-w-[140px] text-white drop-shadow-md mx-auto">
@@ -182,7 +176,6 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
           </p>
         </div>
 
-        {/* Footer Stats */}
         <div className="flex justify-around items-center pt-4 border-t border-white/10">
           <div className="text-center">
             <p className="text-[7px] font-bold text-white/50 uppercase leading-none mb-1">XP</p>
@@ -202,9 +195,21 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
 }
 
 export function VideoGrid() {
-  const { peers, myId, myName } = useRoomStore();
-  const { totalXp, currentStreak } = useGamificationStore();
-  const timerStore = useTimerStore();
+  const { peers, myId, myName } = useRoomStore(
+    useShallow(state => ({
+      peers: state.peers,
+      myId: state.myId,
+      myName: state.myName
+    }))
+  );
+  
+  const { totalXp, currentStreak } = useGamificationStore(
+    useShallow(state => ({
+      totalXp: state.totalXp,
+      currentStreak: state.currentStreak
+    }))
+  );
+
   const participants = useParticipants();
   const { localParticipant } = useLocalParticipant();
 
@@ -216,10 +221,6 @@ export function VideoGrid() {
     xp: totalXp,
     level: Math.max(1, Math.floor((totalXp || 0) / 500) + 1),
     streak: currentStreak,
-    status: timerStore.status === 'idle' ? 'idle' : timerStore.sessionType,
-    timerStatus: timerStore.status,
-    remainingSeconds: timerStore.remainingSeconds,
-    timerLastUpdated: timerStore.lastUpdatedAt,
     participant: localParticipant
   };
 
@@ -233,7 +234,6 @@ export function VideoGrid() {
       <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 w-full h-fit max-w-7xl mx-auto">
         <ParticipantCard peer={myPeer} isMe />
         
-        {/* If I am screen sharing, show my screen in a card */}
         {localParticipant.isScreenShareEnabled && (
           <ParticipantCard 
             peer={{ ...myPeer, name: `${myName}'s Screen` }} 
@@ -254,7 +254,6 @@ export function VideoGrid() {
           </div>
         ))}
         
-        {/* Placeholder slots for empty spots in 6-person rooms */}
         {Array.from({ length: Math.max(0, 5 - peerList.length - (localParticipant.isScreenShareEnabled ? 1 : 0)) }).map((_, i) => (
           <div key={`placeholder-${i}`} className="aspect-[4/5] rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
             <User size={40} strokeWidth={1} />

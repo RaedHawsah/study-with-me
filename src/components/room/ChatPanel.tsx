@@ -5,10 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { X, Send } from 'lucide-react';
 import { useRoomStore } from '@/store/useRoomStore';
 import { useStudyRoom } from '@/hooks/useStudyRoom';
+import { useShallow } from 'zustand/react/shallow';
 
 export function ChatPanel() {
   const { t } = useTranslation('common');
-  const { chatOpen, toggleChat, messages, actions } = useRoomStore();
+  const { chatOpen, toggleChat, messages, actions } = useRoomStore(
+    useShallow(state => ({
+      chatOpen: state.chatOpen,
+      toggleChat: state.toggleChat,
+      messages: state.messages,
+      actions: state.actions
+    }))
+  );
   const [text, setText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 

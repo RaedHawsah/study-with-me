@@ -20,13 +20,14 @@ import {
 import { useRoomStore } from '@/store/useRoomStore';
 import { useStudyRoom } from '@/hooks/useStudyRoom';
 import { useMediaStream } from '@/hooks/useMediaStream';
+import { useShallow } from 'zustand/react/shallow';
 
 export function RoomControls() {
   const { t } = useTranslation('common');
   const { toggleCamera, toggleScreenShare, toggleMic } = useMediaStream();
   const { 
     roomCode, 
-    peers, 
+    peerCount, 
     unreadCount, 
     chatOpen, 
     toggleChat, 
@@ -39,11 +40,27 @@ export function RoomControls() {
     screenOn,
     micOn,
     actions
-  } = useRoomStore();
+  } = useRoomStore(
+    useShallow((state) => ({
+      roomCode: state.roomCode,
+      peerCount: Object.keys(state.peers).length + 1,
+      unreadCount: state.unreadCount,
+      chatOpen: state.chatOpen,
+      toggleChat: state.toggleChat,
+      roomType: state.roomType,
+      timerSync: state.timerSync,
+      setTimerSync: state.setTimerSync,
+      myId: state.myId,
+      leaderId: state.leaderId,
+      cameraOn: state.cameraOn,
+      screenOn: state.screenOn,
+      micOn: state.micOn,
+      actions: state.actions
+    }))
+  );
   
   const [copied, setCopied] = useState(false);
   const isLeader = myId === leaderId;
-  const peerCount = Object.keys(peers).length + 1; // Including me
 
   const copyCode = () => {
     if (roomCode) {

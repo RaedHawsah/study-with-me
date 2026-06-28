@@ -5,6 +5,7 @@ import { Play, Pause, RotateCcw, Radio, User2, BookOpen, Coffee, BedDouble } fro
 import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { usePomodoro, SESSION_COLORS } from '@/hooks/usePomodoro';
+import { useShallow } from 'zustand/react/shallow';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -30,14 +31,26 @@ const SESSION_LABELS: Record<string, string> = {
 // ─── Synced Compact Timer (private room, sync ON) ─────────────────────────────────
 
 function SyncedBigTimer() {
-  const { myId, leaderId, syncedTimerState } = useRoomStore();
-  const myTimer = useTimerStore();
+  const { myId, leaderId, syncedTimerState } = useRoomStore(
+    useShallow(state => ({
+      myId: state.myId,
+      leaderId: state.leaderId,
+      syncedTimerState: state.syncedTimerState
+    }))
+  );
+  
+  const myTimerRemaining = useTimerStore(state => state.remainingSeconds);
+  const myTimerTotal = useTimerStore(state => state.totalSeconds);
+  const myTimerSessionType = useTimerStore(state => state.sessionType);
+  const myTimerStatus = useTimerStore(state => state.status);
+  const myTimerLastUpdated = useTimerStore(state => state.lastUpdatedAt);
+  
   const { start, pause, resume, reset } = usePomodoro();
 
   const isLeader = myId === leaderId;
 
   const [followerDisplay, setFollowerDisplay] = useState<number>(
-    syncedTimerState?.remainingSeconds ?? myTimer.remainingSeconds
+    syncedTimerState?.remainingSeconds ?? myTimerRemaining
   );
   const lastSyncRef = useRef(syncedTimerState);
 
@@ -54,10 +67,10 @@ function SyncedBigTimer() {
     return () => clearInterval(interval);
   }, [syncedTimerState, isLeader]);
 
-  const remaining = isLeader ? myTimer.remainingSeconds : followerDisplay;
-  const total     = isLeader ? myTimer.totalSeconds : (syncedTimerState?.totalSeconds ?? myTimer.totalSeconds);
-  const sessionType = isLeader ? myTimer.sessionType : (syncedTimerState?.sessionType ?? 'focus');
-  const timerStatus = isLeader ? myTimer.status : (syncedTimerState?.timerStatus ?? 'idle');
+  const remaining = isLeader ? myTimerRemaining : followerDisplay;
+  const total     = isLeader ? myTimerTotal : (syncedTimerState?.totalSeconds ?? myTimerTotal);
+  const sessionType = isLeader ? myTimerSessionType : (syncedTimerState?.sessionType ?? 'focus');
+  const timerStatus = isLeader ? myTimerStatus : (syncedTimerState?.timerStatus ?? 'idle');
 
   const color    = SESSION_COLORS[sessionType] ?? 'var(--primary)';
   const progress = total > 0 ? remaining / total : 1;

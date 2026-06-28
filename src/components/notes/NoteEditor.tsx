@@ -68,7 +68,7 @@ export function NoteEditor() {
   return (
     <div className="flex flex-col h-full bg-card/20 backdrop-blur-xl md:rounded-e-[2rem]">
       {/* Editor Header */}
-      <div className="p-6 ps-16 md:ps-6 border-b border-white/5 shrink-0">
+      <div className="p-6 pt-16 md:pt-6 ps-6 border-b border-white/5 shrink-0">
         <input
           type="text"
           value={localTitle}
