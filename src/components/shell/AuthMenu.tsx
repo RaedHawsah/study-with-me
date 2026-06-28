@@ -4,9 +4,15 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useGamificationStore, getLevelFromXp } from '@/store/useGamificationStore';
 import { LogIn, LogOut, User as UserIcon, Zap } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
-export function AuthMenu({ collapsed }: { collapsed?: boolean }) {
+interface AuthMenuProps {
+  collapsed?: boolean;
+}
+
+export function AuthMenu({ collapsed }: AuthMenuProps) {
+  const { t } = useTranslation('common');
   const { user, loading, signInWithGoogle, signOut } = useSupabaseAuth();
   const { totalXp, fetchGamificationData } = useGamificationStore();
   const [isOpen, setIsOpen] = useState(false);
@@ -80,10 +86,10 @@ export function AuthMenu({ collapsed }: { collapsed?: boolean }) {
         `}>
           <div className="p-3 border-b border-white/5 flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-foreground">My Profile</span>
+              <span className="text-sm font-bold text-foreground">{t('common.profile', { defaultValue: 'My Profile' })}</span>
               <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">
                 <Zap size={10} fill="currentColor" />
-                LVL {level}
+                {t('gami.level', { defaultValue: 'LVL' })} {level}
               </div>
             </div>
             <div className="flex flex-col gap-1">

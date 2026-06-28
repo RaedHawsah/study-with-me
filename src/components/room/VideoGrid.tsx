@@ -113,7 +113,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             className="p-2 md:p-3 rounded-xl md:rounded-2xl bg-black/40 hover:bg-primary backdrop-blur-xl border border-white/20 text-white transition-all duration-300 shadow-xl flex items-center gap-1.5 md:gap-2"
           >
             <Maximize2 size={16} className="md:w-[18px] md:h-[18px]" />
-            {isScreen && <span className="text-[10px] md:text-xs font-bold uppercase tracking-tight">Full Screen</span>}
+            {isScreen && <span className="text-[10px] md:text-xs font-bold uppercase tracking-tight">{t('room.fullScreen', { defaultValue: 'Full Screen' })}</span>}
           </button>
         </div>
       )}
@@ -122,7 +122,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         <div className="flex flex-col gap-1.5 md:gap-2">
           <div className="flex items-center gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white shadow-inner w-fit">
             {isScreen ? <Monitor size={12} className="text-primary" /> : <Zap size={12} className="text-primary" fill="currentColor" />}
-            {isScreen ? 'Screen Share' : `LVL ${peer.level || 1}`}
+            {isScreen ? t('room.screenShare', { defaultValue: 'Screen Share' }) : `${t('gami.level', { defaultValue: 'LVL' })} ${peer.level || 1}`}
           </div>
           
           {(currentTimerStatus === 'running' || isPaused) && (
