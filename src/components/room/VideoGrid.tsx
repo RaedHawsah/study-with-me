@@ -75,8 +75,8 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
 
   return (
     <div ref={containerRef} className={`
-      relative group overflow-hidden rounded-3xl border transition-all duration-500
-      aspect-[3/4] sm:aspect-square md:aspect-[5/4] lg:aspect-[4/3] min-h-[180px] flex flex-col p-3 md:p-4 shadow-xl
+      w-full relative group overflow-hidden rounded-3xl border transition-all duration-500
+      aspect-[3/4] sm:aspect-square md:aspect-video flex flex-col p-3 md:p-4 shadow-xl
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
       ${isScreen && !hasVideo ? 'hidden' : ''}
     `}>
@@ -240,7 +240,7 @@ export function VideoGrid() {
 
   return (
     <div className="flex-1 w-full h-full p-2 md:p-4 overflow-y-auto custom-scrollbar">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 w-full h-fit max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 w-full min-h-full content-center max-w-7xl mx-auto">
         <ParticipantCard peer={myPeer} isMe />
         
         <ParticipantCard 
@@ -260,7 +260,7 @@ export function VideoGrid() {
         ))}
         
         {Array.from({ length: Math.max(0, 5 - peerList.length - (localParticipant.isScreenShareEnabled ? 1 : 0)) }).map((_, i) => (
-          <div key={`placeholder-${i}`} className="aspect-[3/4] sm:aspect-square md:aspect-[5/4] lg:aspect-[4/3] min-h-[240px] md:min-h-[280px] rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
+          <div key={`placeholder-${i}`} className="w-full aspect-[3/4] sm:aspect-square md:aspect-video rounded-3xl border border-dashed border-white/5 flex flex-col items-center justify-center text-muted-foreground/10">
             <User size={40} strokeWidth={1} />
           </div>
         ))}
