@@ -77,15 +77,13 @@ export function useStudyRoom() {
 
 
 
-  // Debounce broadcast when Timer changes
+  // Debounce and periodically broadcast peer timer state
   const peerUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     syncPresence();
 
-    if (peerUpdateTimeoutRef.current) clearTimeout(peerUpdateTimeoutRef.current);
-    
-    peerUpdateTimeoutRef.current = setTimeout(() => {
+    const sendUpdate = () => {
       if (channelRef.current) {
         const timer = useTimerStore.getState();
         const roomStore = useRoomStore.getState();
@@ -101,7 +99,13 @@ export function useStudyRoom() {
           }
         });
       }
-    }, 500);
+    };
+
+    if (peerUpdateTimeoutRef.current) clearTimeout(peerUpdateTimeoutRef.current);
+    peerUpdateTimeoutRef.current = setTimeout(sendUpdate, 500);
+
+    const interval = setInterval(sendUpdate, 10000);
+    return () => clearInterval(interval);
   }, [timerStore.status, timerStore.sessionType, syncPresence]);
 
   // Broadcast Timer State (Only if Leader & Sync is ON)
@@ -117,24 +121,28 @@ export function useStudyRoom() {
       roomStore.myId === roomStore.leaderId && 
       timerSync
     ) {
-      if (timerSyncTimeoutRef.current) clearTimeout(timerSyncTimeoutRef.current);
-      
-      timerSyncTimeoutRef.current = setTimeout(() => {
+      const sendSync = () => {
+        const currentTimer = useTimerStore.getState();
         channelRef.current?.send({
           type: 'broadcast',
           event: 'timer_sync',
           payload: {
             action: 'sync',
-            status: timer.status,
-            sessionType: timer.sessionType,
-            remainingSeconds: timer.remainingSeconds,
-            totalSeconds: timer.totalSeconds,
+            status: currentTimer.status,
+            sessionType: currentTimer.sessionType,
+            remainingSeconds: currentTimer.remainingSeconds,
+            totalSeconds: currentTimer.totalSeconds,
             timestamp: Date.now()
           }
         });
-      }, 500);
+      };
+
+      if (timerSyncTimeoutRef.current) clearTimeout(timerSyncTimeoutRef.current);
+      timerSyncTimeoutRef.current = setTimeout(sendSync, 500);
+
+      const interval = setInterval(sendSync, 5000);
+      return () => clearInterval(interval);
     }
-  // Removed remainingSeconds to avoid broadcasting 60 times a minute
   }, [timerStore.status, timerStore.sessionType, timerSync]);
 
   const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string, retryCount = 1) => {
@@ -312,14 +320,23 @@ export function useStudyRoom() {
 
             // Only sync local timer if I'm NOT the leader
             if (roomStore.myId !== roomStore.leaderId) {
-              console.log('[Room] Received timer sync:', payload);
-              timerStore.setSessionType(payload.sessionType);
-              timerStore.setStatus(payload.status);
-              timerStore.setRemaining(payload.remainingSeconds);
-              if (payload.totalSeconds) timerStore.setTotalSeconds(payload.totalSeconds);
+              const isStatusDiff = timerStore.status !== payload.status;
+              const isTypeDiff = timerStore.sessionType !== payload.sessionType;
+              const timeDiff = Math.abs(timerStore.remainingSeconds - payload.remainingSeconds);
               
-              // Ensure the follower's local worker actually ticks along
-              syncFollowerTimer(payload.status, payload.remainingSeconds, payload.totalSeconds);
+              // Force sync if status/type changed, or if time is off by more than 2 seconds
+              const needsTimeSync = payload.status === 'paused' ? timeDiff > 0 : timeDiff > 2;
+
+              if (isStatusDiff || isTypeDiff || needsTimeSync) {
+                console.log('[Room] Received timer sync, adjusting...', payload);
+                timerStore.setSessionType(payload.sessionType);
+                timerStore.setStatus(payload.status);
+                timerStore.setRemaining(payload.remainingSeconds);
+                if (payload.totalSeconds) timerStore.setTotalSeconds(payload.totalSeconds);
+                
+                // Ensure the follower's local worker actually ticks along
+                syncFollowerTimer(payload.status, payload.remainingSeconds, payload.totalSeconds);
+              }
             }
           }
         })
