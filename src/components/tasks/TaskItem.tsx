@@ -99,12 +99,8 @@ export function TaskItem({
         estimated={task.pomodorosEstimated}
       />
 
-      {/* Action buttons — visible on hover or when active */}
-      <div
-        className="flex items-center gap-0.5 flex-none transition-opacity duration-200"
-        style={{ opacity: hovered || isActive ? 1 : 0 }}
-        aria-hidden={!hovered && !isActive}
-      >
+      {/* Action buttons — always visible */}
+      <div className="flex items-center gap-0.5 flex-none">
         {/* Link/Unlink — only for incomplete tasks */}
         {!task.completed && (
           <button

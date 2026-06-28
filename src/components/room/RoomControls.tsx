@@ -76,7 +76,7 @@ export function RoomControls() {
       <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2">
         <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
           <Users size={11} className="text-primary" />
-          {peerCount} {peerCount === 6 ? 'Full' : 'Studying'}
+          {peerCount} {peerCount === 6 ? t('room.full', { defaultValue: 'Full' }) : t('room.studying', { defaultValue: 'Studying' })}
         </div>
 
         {roomType === 'private' && roomCode && (
@@ -84,7 +84,7 @@ export function RoomControls() {
             onClick={copyCode}
             className="flex items-center gap-1.5 pl-2 pr-1.5 py-1 hover:bg-white/5 rounded-lg transition-all group border border-transparent hover:border-white/5"
           >
-            <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase">Room:</span>
+            <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase">{t('room.room', { defaultValue: 'Room:' })}</span>
             <span className="text-[10px] md:text-xs font-mono font-bold text-foreground">{roomCode}</span>
             {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} className="opacity-40 group-hover:opacity-100" />}
           </button>

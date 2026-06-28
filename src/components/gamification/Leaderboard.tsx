@@ -155,13 +155,13 @@ export function Leaderboard() {
 
               {/* Info */}
               <div className="flex-1 overflow-hidden">
-                <h4 className="font-bold text-base truncate flex items-center gap-2">
-                  {user.full_name || 'Anonymous Student'}
-                  {isMe && <span className="bg-primary px-2 py-0.5 rounded-full text-[10px] text-primary-foreground uppercase tracking-wider">You</span>}
-                </h4>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5 uppercase font-bold tracking-tighter">
-                  <Zap size={10} className="text-primary" fill="currentColor" />
-                  Level {user.level || 1}
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-foreground text-sm max-w-[120px] truncate">{user.full_name || 'Anonymous'}</span>
+                  {isMe && <span className="bg-primary px-2 py-0.5 rounded-full text-[10px] text-primary-foreground uppercase tracking-wider">{t('gami.you', { defaultValue: 'You' })}</span>}
+                </div>
+                <div className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
+                  {t('gami.level', { defaultValue: 'Level' })} {user.level || 1}
+                  <Zap size={10} className="text-primary fill-primary opacity-70" />
                 </div>
               </div>
 

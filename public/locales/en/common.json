@@ -175,7 +175,14 @@
     "waitingDesc": "Your peers will appear here when they join.",
     "groupChat": "Group Chat",
     "noMessages": "No messages yet.",
-    "chatPlaceholder": "Type a message..."
+    "chatPlaceholder": "Type a message...",
+    "you": "(You)",
+    "chilling": "Chilling",
+    "focusMode": "Focus Mode",
+    "onBreak": "On Break",
+    "studying": "Studying",
+    "full": "Full",
+    "room": "Room:"
   },
   "gami": {
     "leaderboard": "Leaderboard",
@@ -183,7 +190,10 @@
     "global": "Global",
     "university": "University",
     "level": "Level",
-    "xp": "XP"
+    "xp": "XP",
+    "you": "You",
+    "streak": "Streak",
+    "days": "Days"
   },
   "notes": {
     "empty": "No notes yet. Create one!",

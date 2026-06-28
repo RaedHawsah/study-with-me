@@ -6,8 +6,10 @@ import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'l
 import { useParticipants, useLocalParticipant, useRemoteParticipant, VideoTrack, AudioTrack } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { useShallow } from 'zustand/react/shallow';
+import { useTranslation } from 'react-i18next';
 
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
+  const { t } = useTranslation('common');
   // Read self timer state to prevent parent from re-rendering every second
   const myTimerStatus = useTimerStore(state => state.status);
   const myRemainingSeconds = useTimerStore(state => state.remainingSeconds);
@@ -172,14 +174,14 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         <div className="text-center mb-2 md:mb-4">
           <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto">
             {peer.name || 'Anonymous'}
-            {isMe && <span className="ml-1 opacity-70 text-[8px] md:text-[10px] uppercase">(You)</span>}
+            {isMe && <span className="ml-1 opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
           </h4>
           <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
             isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
           }`}>
             {isPaused 
-              ? (isFocus ? 'Focus (Paused)' : 'On Break (Paused)') 
-              : (isFocus ? 'Focus Mode' : isBreak ? 'On Break' : 'Chilling')}
+              ? (isFocus ? `${t('room.focusMode', { defaultValue: 'Focus Mode' })} (Paused)` : `${t('room.onBreak', { defaultValue: 'On Break' })} (Paused)`) 
+              : (isFocus ? t('room.focusMode', { defaultValue: 'Focus Mode' }) : isBreak ? t('room.onBreak', { defaultValue: 'On Break' }) : t('room.chilling', { defaultValue: 'Chilling' }))}
           </p>
         </div>
 
@@ -189,7 +191,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             <p className="font-mono font-black text-[10px] md:text-xs text-white">{peer.xp || 0}</p>
           </div>
           <div className="text-center">
-            <p className="text-[6px] md:text-[7px] font-bold text-white/50 uppercase leading-none mb-1">Streak</p>
+            <p className="text-[6px] md:text-[7px] font-bold text-white/50 uppercase leading-none mb-1">{t('gami.streak', { defaultValue: 'Streak' })}</p>
             <div className="flex items-center gap-1 justify-center">
               <Flame size={10} className="text-orange-500" fill="currentColor" />
               <p className="font-mono font-black text-[10px] md:text-xs text-white">{peer.streak || 0}</p>
