@@ -1,7 +1,7 @@
-import { SignJWT } from 'jose';
+import { AccessToken } from 'livekit-server-sdk';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,9 +16,9 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
-    const wsUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
-    if (!apiKey || !apiSecret || !wsUrl) {
+    if (!apiKey || !apiSecret) {
+      console.error('LiveKit credentials missing:', { apiKey: !!apiKey, apiSecret: !!apiSecret });
       return NextResponse.json(
         { error: 'LiveKit credentials not configured on the server' },
         { status: 500 }
@@ -26,29 +26,28 @@ export async function POST(req: NextRequest) {
     }
 
     const identity = userId || crypto.randomUUID();
-    const secret = new TextEncoder().encode(apiSecret);
 
-    const token = await new SignJWT({
+    const at = new AccessToken(apiKey, apiSecret, {
+      identity,
       name: username,
-      video: {
-        roomJoin: true,
-        room: room,
-        canPublish: true,
-        canSubscribe: true,
-      },
-    })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuer(apiKey)
-      .setSubject(identity)
-      .setNotBefore('0s')
-      .setExpirationTime('4h')
-      .sign(secret);
+      ttl: '4h',
+    });
+
+    at.addGrant({
+      roomJoin: true,
+      room,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
+
+    const token = await at.toJwt();
 
     return NextResponse.json({ token });
   } catch (error) {
     console.error('Error generating LiveKit token:', error);
     return NextResponse.json(
-      { error: 'Failed to generate token' },
+      { error: 'Failed to generate token', details: String(error) },
       { status: 500 }
     );
   }
