@@ -24,6 +24,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   const currentLastUpdated = isMe ? myLastUpdatedAt : peer.timerLastUpdated;
 
   const [displaySeconds, setDisplaySeconds] = useState(currentRemainingSeconds || 0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { localParticipant, isCameraEnabled, isMicrophoneEnabled, isScreenShareEnabled } = useLocalParticipant();
@@ -63,20 +64,37 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   
   const handleFullscreen = () => {
     if (containerRef.current) {
-      if (containerRef.current.requestFullscreen) {
-        containerRef.current.requestFullscreen();
-      } else if ((containerRef.current as any).webkitRequestFullscreen) {
-        (containerRef.current as any).webkitRequestFullscreen();
-      } else if ((containerRef.current as any).msRequestFullscreen) {
-        (containerRef.current as any).msRequestFullscreen();
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        if (containerRef.current.requestFullscreen) {
+          containerRef.current.requestFullscreen();
+        } else if ((containerRef.current as any).webkitRequestFullscreen) {
+          (containerRef.current as any).webkitRequestFullscreen();
+        } else if ((containerRef.current as any).msRequestFullscreen) {
+          (containerRef.current as any).msRequestFullscreen();
+        }
       }
     }
   };
 
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement && document.fullscreenElement === containerRef.current);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+    };
+  }, []);
+
   return (
     <div ref={containerRef} className={`
-      w-full relative group overflow-hidden rounded-3xl border transition-all duration-500
-      aspect-[3/4] sm:aspect-square md:aspect-[4/3] flex flex-col p-3 md:p-4 shadow-xl
+      w-full relative group overflow-hidden transition-all duration-500
+      flex flex-col shadow-xl
+      ${isFullscreen ? 'aspect-auto h-screen rounded-none border-none p-6 md:p-10 z-[100]' : 'aspect-[3/4] sm:aspect-square md:aspect-[4/3] rounded-3xl border p-3 md:p-4'}
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
       ${isScreen && !hasVideo ? 'hidden' : ''}
     `}>
