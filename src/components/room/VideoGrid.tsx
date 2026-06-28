@@ -3,7 +3,7 @@ import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'lucide-react';
-import { useParticipants, useLocalParticipant, VideoTrack, AudioTrack } from '@livekit/components-react';
+import { useParticipants, useLocalParticipant, VideoTrack, AudioTrack, useParticipant } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -25,31 +25,10 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const participant = peer.participant;
+  const { cameraPublication, screenSharePublication, microphonePublication } = useParticipant(participant);
   
-  const [hasVideo, setHasVideo] = useState(false);
-  const [hasMic, setHasMic] = useState(false);
-
-  useEffect(() => {
-    if (!participant) return;
-
-    const updateState = () => {
-      setHasVideo(isScreen ? participant.isScreenShareEnabled : participant.isCameraEnabled);
-      setHasMic(participant.isMicrophoneEnabled);
-    };
-
-    updateState();
-
-    const events = [
-      'trackPublished', 'trackSubscribed', 'trackUnpublished', 'trackUnsubscribed',
-      'trackMuted', 'trackUnmuted', 'localTrackPublished', 'localTrackUnpublished'
-    ];
-
-    events.forEach(e => participant.on(e, updateState));
-
-    return () => {
-      events.forEach(e => participant.off(e, updateState));
-    };
-  }, [participant, isScreen]);
+  const hasVideo = isScreen ? !!screenSharePublication : !!cameraPublication;
+  const hasMic = !!microphonePublication;
 
   useEffect(() => {
     let initialSeconds = currentRemainingSeconds || 0;
@@ -122,26 +101,26 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       )}
 
       {hasVideo && (
-        <div className="absolute top-4 right-4 z-20 flex gap-2">
+        <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20 flex gap-1.5 md:gap-2">
           <button
             onClick={handleFullscreen}
-            className="p-3 rounded-2xl bg-black/60 hover:bg-primary backdrop-blur-xl border border-white/20 text-white transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-2xl flex items-center gap-2"
+            className="p-2 md:p-3 rounded-xl md:rounded-2xl bg-black/40 hover:bg-primary backdrop-blur-xl border border-white/20 text-white transition-all duration-300 shadow-xl flex items-center gap-1.5 md:gap-2"
           >
-            <Maximize2 size={18} />
-            {isScreen && <span className="text-xs font-bold uppercase tracking-tight">Full Screen</span>}
+            <Maximize2 size={16} className="md:w-[18px] md:h-[18px]" />
+            {isScreen && <span className="text-[10px] md:text-xs font-bold uppercase tracking-tight">Full Screen</span>}
           </button>
         </div>
       )}
 
       <div className="flex justify-between items-start z-10">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest text-white shadow-inner w-fit">
+        <div className="flex flex-col gap-1.5 md:gap-2">
+          <div className="flex items-center gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white shadow-inner w-fit">
             {isScreen ? <Monitor size={12} className="text-primary" /> : <Zap size={12} className="text-primary" fill="currentColor" />}
             {isScreen ? 'Screen Share' : `LVL ${peer.level || 1}`}
           </div>
           
           {(currentTimerStatus === 'running' || isPaused) && (
-            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl border text-[12px] font-black font-mono shadow-lg animate-in fade-in zoom-in duration-300 ${
+            <div className={`flex items-center gap-1.5 px-2 py-1 md:px-3 md:py-1 rounded-xl border text-[10px] md:text-[12px] font-black font-mono shadow-lg animate-in fade-in zoom-in duration-300 ${
               isPaused
                 ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-500'
                 : 'bg-primary/20 border-primary/30 text-primary'
@@ -157,19 +136,19 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         </div>
 
         <div className={`
-          p-2 rounded-2xl shadow-lg backdrop-blur-md transition-colors duration-300
+          p-1.5 md:p-2 rounded-xl md:rounded-2xl shadow-lg backdrop-blur-md transition-colors duration-300
           ${isPaused ? 'bg-yellow-500/80 text-white' :
             isFocus ? 'bg-primary/80 text-primary-foreground animate-pulse' : 
             isBreak ? 'bg-green-500/80 text-white' : 'bg-black/40 text-white'}
         `}>
-          {isFocus ? <BookOpen size={18} /> : isBreak ? <Coffee size={18} /> : <User size={18} />}
+          {isFocus ? <BookOpen size={16} className="md:w-[18px] md:h-[18px]" /> : isBreak ? <Coffee size={16} className="md:w-[18px] md:h-[18px]" /> : <User size={16} className="md:w-[18px] md:h-[18px]" />}
         </div>
       </div>
 
       {!hasVideo && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 z-10 pt-4">
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 md:gap-4 z-10 pt-2 md:pt-4">
           <div className={`
-            relative w-24 h-24 rounded-full flex items-center justify-center text-4xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110
+            relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-black shadow-2xl transition-transform duration-500 group-hover:scale-110
             ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted/80 text-foreground'}
           `}>
             {peer.avatar_url ? (
@@ -186,12 +165,12 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       )}
 
       <div className={`mt-auto z-10 transition-transform duration-300 ${hasVideo ? 'translate-y-2 group-hover:translate-y-0' : ''}`}>
-        <div className="text-center mb-4">
-          <h4 className="font-black text-lg tracking-tight truncate max-w-[140px] text-white drop-shadow-md mx-auto">
+        <div className="text-center mb-2 md:mb-4">
+          <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto">
             {peer.name || 'Anonymous'}
-            {isMe && <span className="ml-1 opacity-70 text-[10px] uppercase">(You)</span>}
+            {isMe && <span className="ml-1 opacity-70 text-[8px] md:text-[10px] uppercase">(You)</span>}
           </h4>
-          <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
+          <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
             isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
           }`}>
             {isPaused 
@@ -200,16 +179,16 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
           </p>
         </div>
 
-        <div className="flex justify-around items-center pt-4 border-t border-white/10">
+        <div className="flex justify-around items-center pt-2 md:pt-4 border-t border-white/10">
           <div className="text-center">
-            <p className="text-[7px] font-bold text-white/50 uppercase leading-none mb-1">XP</p>
-            <p className="font-mono font-black text-xs text-white">{peer.xp || 0}</p>
+            <p className="text-[6px] md:text-[7px] font-bold text-white/50 uppercase leading-none mb-1">XP</p>
+            <p className="font-mono font-black text-[10px] md:text-xs text-white">{peer.xp || 0}</p>
           </div>
           <div className="text-center">
-            <p className="text-[7px] font-bold text-white/50 uppercase leading-none mb-1">Streak</p>
+            <p className="text-[6px] md:text-[7px] font-bold text-white/50 uppercase leading-none mb-1">Streak</p>
             <div className="flex items-center gap-1 justify-center">
               <Flame size={10} className="text-orange-500" fill="currentColor" />
-              <p className="font-mono font-black text-xs text-white">{peer.streak || 0}</p>
+              <p className="font-mono font-black text-[10px] md:text-xs text-white">{peer.streak || 0}</p>
             </div>
           </div>
         </div>
