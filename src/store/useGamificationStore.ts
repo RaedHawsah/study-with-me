@@ -51,10 +51,25 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
       .single();
 
     if (!error && data) {
+      let streak = data.current_streak || 0;
+      const today = new Date().toLocaleDateString('en-CA');
+      
+      if (data.last_study_date && data.last_study_date !== today) {
+        const last = new Date(data.last_study_date);
+        const current = new Date(today);
+        const diffTime = Math.abs(current.getTime() - last.getTime());
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        
+        // If more than 1 day has passed, the streak is broken
+        if (diffDays > 1) {
+          streak = 0;
+        }
+      }
+
       set({
         totalXp: data.xp || 0,
         weeklyStudyMinutes: data.study_minutes || 0,
-        currentStreak: data.current_streak || 0,
+        currentStreak: streak,
         lastStudyDate: data.last_study_date || null,
         activePetType: data.settings?.pet?.type || 'CAT',
         activePetName: data.settings?.pet?.name || 'Luna',
@@ -85,7 +100,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
         const last = new Date(state.lastStudyDate);
         const current = new Date(today);
         const diffTime = Math.abs(current.getTime() - last.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
         if (diffDays === 1) newStreak += 1;
         else if (diffDays > 1) newStreak = 1;
       }
