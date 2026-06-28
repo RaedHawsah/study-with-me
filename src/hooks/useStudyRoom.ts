@@ -284,7 +284,7 @@ export function useStudyRoom() {
               level: userState.level,
               remainingSeconds: userState.remainingSeconds,
               timerStatus: userState.timerStatus as RoomPeer['timerStatus'],
-              timerLastUpdated: userState.timerLastUpdated,
+              timerLastUpdated: Date.now(), // Override with local timestamp to prevent clock skew
               stream: null, // Managed by LiveKit
               screenStream: null // Managed by LiveKit
             };
@@ -307,7 +307,7 @@ export function useStudyRoom() {
               totalSeconds: payload.totalSeconds ?? payload.remainingSeconds,
               sessionType: payload.sessionType,
               timerStatus: payload.status,
-              timestamp: payload.timestamp ?? Date.now()
+              timestamp: Date.now() // Override with local timestamp
             });
 
             // Only sync local timer if I'm NOT the leader
@@ -337,7 +337,7 @@ export function useStudyRoom() {
                   timerStatus: payload.timerStatus,
                   status: payload.status,
                   remainingSeconds: payload.remainingSeconds,
-                  timerLastUpdated: payload.timerLastUpdated
+                  timerLastUpdated: Date.now() // Override with local timestamp
                 }
               }
             });
