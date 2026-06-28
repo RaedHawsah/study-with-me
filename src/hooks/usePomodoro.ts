@@ -160,7 +160,7 @@ export function initGlobalTimer() {
     }
   };
 
-  // ── Sync Listeners ──
+// ── Sync Listeners ──
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') syncTimerWithReality();
   });
@@ -168,6 +168,17 @@ export function initGlobalTimer() {
 
   // ── Initial Sync ──
   syncTimerWithReality();
+}
+
+// ── Follower Sync Helper ──────────────────────────────────────────────────────
+export function syncFollowerTimer(status: string, remaining: number, total?: number) {
+  if (status === 'running' && globalWorker) {
+    globalWorker.postMessage({ type: 'START', totalSeconds: remaining });
+    AmbientSoundEngine.getInstance().schedulePomodoroAlarm(remaining);
+  } else if (status === 'paused' || status === 'idle') {
+    globalWorker?.postMessage({ type: status === 'paused' ? 'PAUSE' : 'STOP' });
+    AmbientSoundEngine.getInstance().cancelPomodoroAlarm();
+  }
 }
 
 // ── Initializer Component ────────────────────────────────────────────────────

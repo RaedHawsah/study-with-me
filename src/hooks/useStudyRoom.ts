@@ -4,6 +4,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { createClient as createSupabaseClient } from '@/utils/supabase/client';
 import { useRoomStore, type RoomPeer } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
+import { syncFollowerTimer } from './usePomodoro';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -40,60 +41,72 @@ export function useStudyRoom() {
     };
   }, [supabase]);
 
+  const syncPresenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const syncPresence = useCallback(() => {
     if (!channelRef.current) return;
     
-    const timer = useTimerStore.getState();
-    const roomStore = useRoomStore.getState();
-    const myLevel = Math.max(1, Math.floor((totalXp || 0) / 500) + 1);
+    if (syncPresenceTimeoutRef.current) clearTimeout(syncPresenceTimeoutRef.current);
     
-    channelRef.current.track({
-      id: roomStore.myId,
-      name: roomStore.myName,
-      xp: totalXp || 0,
-      level: myLevel,
-      streak: currentStreak || 0,
-      status: timer.status === 'idle' ? 'idle' : timer.sessionType,
-      // New Timer Metadata
-      timerStatus: timer.status,
-      remainingSeconds: timer.remainingSeconds,
-      sessionType: timer.sessionType,
-      timerLastUpdated: Date.now(),
-      cameraOn: roomStore.cameraOn,
-      screenOn: roomStore.screenOn,
-      micOn: roomStore.micOn,
-      cameraStreamId: roomStore.localStream?.id || null,
-      screenStreamId: roomStore.screenStream?.id || null,
-      last_updated: new Date().toISOString()
-    });
+    syncPresenceTimeoutRef.current = setTimeout(() => {
+      const timer = useTimerStore.getState();
+      const roomStore = useRoomStore.getState();
+      const myLevel = Math.max(1, Math.floor((totalXp || 0) / 500) + 1);
+      
+      channelRef.current?.track({
+        id: roomStore.myId,
+        name: roomStore.myName,
+        xp: totalXp || 0,
+        level: myLevel,
+        streak: currentStreak || 0,
+        status: timer.status === 'idle' ? 'idle' : timer.sessionType,
+        timerStatus: timer.status,
+        remainingSeconds: timer.remainingSeconds,
+        sessionType: timer.sessionType,
+        timerLastUpdated: Date.now(),
+        cameraOn: roomStore.cameraOn,
+        screenOn: roomStore.screenOn,
+        micOn: roomStore.micOn,
+        cameraStreamId: roomStore.localStream?.id || null,
+        screenStreamId: roomStore.screenStream?.id || null,
+        last_updated: new Date().toISOString()
+      });
+    }, 500);
   }, [totalXp, currentStreak]);
 
 
 
 
-  // Sync Presence + fast broadcast when Timer changes
+  // Debounce broadcast when Timer changes
+  const peerUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     syncPresence();
 
-    // Broadcast instantly so other clients update without waiting for presence sync
-    if (channelRef.current) {
-      const timer = useTimerStore.getState();
-      const roomStore = useRoomStore.getState();
-      channelRef.current.send({
-        type: 'broadcast',
-        event: 'peer_timer_update',
-        payload: {
-          id: roomStore.myId,
-          timerStatus: timer.status,
-          status: timer.status === 'idle' ? 'idle' : timer.sessionType,
-          remainingSeconds: timer.remainingSeconds,
-          timerLastUpdated: Date.now()
-        }
-      });
-    }
+    if (peerUpdateTimeoutRef.current) clearTimeout(peerUpdateTimeoutRef.current);
+    
+    peerUpdateTimeoutRef.current = setTimeout(() => {
+      if (channelRef.current) {
+        const timer = useTimerStore.getState();
+        const roomStore = useRoomStore.getState();
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'peer_timer_update',
+          payload: {
+            id: roomStore.myId,
+            timerStatus: timer.status,
+            status: timer.status === 'idle' ? 'idle' : timer.sessionType,
+            remainingSeconds: timer.remainingSeconds,
+            timerLastUpdated: Date.now()
+          }
+        });
+      }
+    }, 500);
   }, [timerStore.status, timerStore.sessionType, syncPresence]);
 
   // Broadcast Timer State (Only if Leader & Sync is ON)
+  const timerSyncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     const roomStore = useRoomStore.getState();
     const timer = useTimerStore.getState();
@@ -104,20 +117,25 @@ export function useStudyRoom() {
       roomStore.myId === roomStore.leaderId && 
       timerSync
     ) {
-      channelRef.current.send({
-        type: 'broadcast',
-        event: 'timer_sync',
-        payload: {
-          action: 'sync',
-          status: timer.status,
-          sessionType: timer.sessionType,
-          remainingSeconds: timer.remainingSeconds,
-          totalSeconds: timer.totalSeconds,
-          timestamp: Date.now()
-        }
-      });
+      if (timerSyncTimeoutRef.current) clearTimeout(timerSyncTimeoutRef.current);
+      
+      timerSyncTimeoutRef.current = setTimeout(() => {
+        channelRef.current?.send({
+          type: 'broadcast',
+          event: 'timer_sync',
+          payload: {
+            action: 'sync',
+            status: timer.status,
+            sessionType: timer.sessionType,
+            remainingSeconds: timer.remainingSeconds,
+            totalSeconds: timer.totalSeconds,
+            timestamp: Date.now()
+          }
+        });
+      }, 500);
     }
-  }, [timerStore.status, timerStore.sessionType, timerStore.remainingSeconds, timerSync]);
+  // Removed remainingSeconds to avoid broadcasting 60 times a minute
+  }, [timerStore.status, timerStore.sessionType, timerSync]);
 
   const joinRoom = useCallback(async (name: string, type: 'random' | 'private', code?: string, userId?: string, retryCount = 1) => {
     // Clear any pending reconnect timer
@@ -299,6 +317,9 @@ export function useStudyRoom() {
               timerStore.setStatus(payload.status);
               timerStore.setRemaining(payload.remainingSeconds);
               if (payload.totalSeconds) timerStore.setTotalSeconds(payload.totalSeconds);
+              
+              // Ensure the follower's local worker actually ticks along
+              syncFollowerTimer(payload.status, payload.remainingSeconds, payload.totalSeconds);
             }
           }
         })
