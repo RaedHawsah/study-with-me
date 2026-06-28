@@ -76,8 +76,15 @@ export default function HomePage() {
             <Clock size={20} strokeWidth={2} aria-hidden="true" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-foreground tabular-nums">
-              {weeklyStudyMinutes}
+            <p className="text-2xl font-bold text-foreground tabular-nums flex items-baseline gap-1" dir="auto">
+              {weeklyStudyMinutes >= 60 && (
+                <>
+                  <span>{Math.floor(weeklyStudyMinutes / 60)}</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1 mr-2">{t('common.h')}</span>
+                </>
+              )}
+              <span>{weeklyStudyMinutes % 60}</span>
+              <span className="text-sm font-normal text-muted-foreground mx-1">{t('common.m')}</span>
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {t('home.minutesStudied')}
