@@ -39,13 +39,13 @@ export function StreakBadge() {
         <div className="flex justify-between text-[11px] font-extrabold uppercase text-foreground/80">
           <span>XP</span>
           <span className="tabular-nums whitespace-nowrap" dir="ltr">
-            {Math.round(totalXp - getProgressToNextLevel(totalXp).currentLevelXp)} / {Math.round(getProgressToNextLevel(totalXp).nextLevelXp - getProgressToNextLevel(totalXp).currentLevelXp)}
+            {Math.round(totalXp - getProgressToNextLevel(totalXp).currentLevelXp).toLocaleString()} / {Math.round(getProgressToNextLevel(totalXp).nextLevelXp - getProgressToNextLevel(totalXp).currentLevelXp).toLocaleString()}
           </span>
         </div>
         <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
           <div 
             className="h-full bg-primary transition-all duration-1000" 
-            style={{ width: `${(totalXp % 500) / 5}%` }}
+            style={{ width: `${getProgressToNextLevel(totalXp).progressPercent}%` }}
           />
         </div>
       </div>

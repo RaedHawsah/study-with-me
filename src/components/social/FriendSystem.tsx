@@ -180,7 +180,7 @@ export function FriendSystem() {
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Level {friend.level}</p>
                   </div>
                   <div className="text-end">
-                    <p className="text-sm font-mono font-black text-primary">{friend.xp}</p>
+                    <p className="text-sm font-mono font-black text-primary">{(friend.xp || 0).toLocaleString()}</p>
                     <p className="text-[9px] text-muted-foreground uppercase font-bold">XP</p>
                   </div>
                 </div>
