@@ -1,4 +1,4 @@
-import { AccessToken } from 'livekit-server-sdk';
+import { SignJWT } from 'jose';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
@@ -25,14 +25,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const at = new AccessToken(apiKey, apiSecret, {
-      identity: userId || crypto.randomUUID(),
+    const identity = userId || crypto.randomUUID();
+    const secret = new TextEncoder().encode(apiSecret);
+
+    const token = await new SignJWT({
       name: username,
-    });
-
-    at.addGrant({ roomJoin: true, room: room, canPublish: true, canSubscribe: true });
-
-    const token = await at.toJwt();
+      video: {
+        roomJoin: true,
+        room: room,
+        canPublish: true,
+        canSubscribe: true,
+      },
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer(apiKey)
+      .setSubject(identity)
+      .setNotBefore('0s')
+      .setExpirationTime('4h')
+      .sign(secret);
 
     return NextResponse.json({ token });
   } catch (error) {
