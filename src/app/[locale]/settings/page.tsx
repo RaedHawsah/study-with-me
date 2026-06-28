@@ -4,6 +4,8 @@ import { getTranslations } from '@/i18n/server';
 import { Palette, Music2 } from 'lucide-react';
 import { ThemePicker } from '@/components/theme/ThemePicker';
 import { AmbientMixer } from '@/components/audio/AmbientMixer';
+import { AccountSettings } from '@/components/settings/AccountSettings';
+import { User } from 'lucide-react';
 
 interface SettingsPageProps {
   params: Promise<{ locale: string }>;
@@ -24,6 +26,32 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
       <h1 className="text-2xl font-bold tracking-tight text-foreground">
         {t('settings.title')}
       </h1>
+
+      {/* ── Account ────────────────────────────────────────────────────────── */}
+      <section
+        aria-labelledby="account-heading"
+        className="
+          flex flex-col gap-6 p-6
+          bg-card/60 backdrop-blur-md rounded-3xl border border-white/10
+          shadow-2xl
+        "
+      >
+        <div className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500"
+          >
+            <User size={16} strokeWidth={2} />
+          </span>
+          <h2
+            id="account-heading"
+            className="text-base font-semibold text-foreground"
+          >
+            {t('settings.account', { defaultValue: 'Account' })}
+          </h2>
+        </div>
+        <AccountSettings />
+      </section>
 
       {/* ── Appearance ─────────────────────────────────────────────────────── */}
       <section
