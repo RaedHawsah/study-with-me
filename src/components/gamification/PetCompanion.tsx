@@ -160,7 +160,7 @@ export function PetCompanion() {
             </div>
             <div className="text-end">
               <p className="text-[10px] text-muted-foreground font-mono">
-                {Math.round(totalXp - currentLevelXp).toLocaleString()} / {Math.round(nextLevelXp - currentLevelXp).toLocaleString()} XP
+                {Math.round(totalXp).toLocaleString()} / {Math.round(nextLevelXp).toLocaleString()} XP
               </p>
             </div>
           </div>

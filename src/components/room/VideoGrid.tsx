@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useRoomStore } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
-import { useGamificationStore } from '@/store/useGamificationStore';
+import { useGamificationStore, getLevelFromXp } from '@/store/useGamificationStore';
 import { User, Zap, Flame, Coffee, BookOpen, Monitor, Maximize2, Clock } from 'lucide-react';
 import { useParticipants, useLocalParticipant, useRemoteParticipant, VideoTrack, AudioTrack } from '@livekit/components-react';
 import { Track } from 'livekit-client';
@@ -228,7 +228,7 @@ export function VideoGrid() {
     id: myId,
     name: myName,
     xp: totalXp,
-    level: Math.max(1, Math.floor((totalXp || 0) / 500) + 1),
+    level: getLevelFromXp(totalXp || 0),
     streak: currentStreak,
     participant: localParticipant
   };

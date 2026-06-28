@@ -1,7 +1,7 @@
 'use client';
 
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { useGamificationStore, getLevelFromXp } from '@/store/useGamificationStore';
+import { useGamificationStore, getLevelFromXp, getProgressToNextLevel } from '@/store/useGamificationStore';
 import { LogIn, LogOut, User as UserIcon, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
@@ -95,12 +95,12 @@ export function AuthMenu({ collapsed }: AuthMenuProps) {
             <div className="flex flex-col gap-1">
               <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
                 <span>Experience</span>
-                <span>{totalXp} XP</span>
+                <span>{Math.round(totalXp).toLocaleString()} / {Math.round(getProgressToNextLevel(totalXp).nextLevelXp).toLocaleString()} XP</span>
               </div>
               <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-primary transition-all duration-1000" 
-                  style={{ width: `${(totalXp % 500) / 5}%` }}
+                  style={{ width: `${getProgressToNextLevel(totalXp).progressPercent}%` }}
                 />
               </div>
             </div>

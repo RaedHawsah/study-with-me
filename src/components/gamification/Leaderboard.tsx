@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trophy, Medal, MapPin, User as UserIcon, Loader2, Zap } from 'lucide-react';
-import { useGamificationStore } from '@/store/useGamificationStore';
+import { useGamificationStore, getLevelFromXp } from '@/store/useGamificationStore';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { createClient } from '@/utils/supabase/client';
 
@@ -160,7 +160,7 @@ export function Leaderboard() {
                   {isMe && <span className="bg-primary px-2 py-0.5 rounded-full text-[10px] text-primary-foreground uppercase tracking-wider">{t('gami.you', { defaultValue: 'You' })}</span>}
                 </div>
                 <div className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
-                  {t('gami.level', { defaultValue: 'Level' })} {user.level || 1}
+                  {t('gami.level', { defaultValue: 'Level' })} {getLevelFromXp(user.xp || 0)}
                   <Zap size={10} className="text-primary fill-primary opacity-70" />
                 </div>
               </div>

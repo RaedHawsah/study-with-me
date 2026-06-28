@@ -5,7 +5,7 @@ import { createClient as createSupabaseClient } from '@/utils/supabase/client';
 import { useRoomStore, type RoomPeer } from '@/store/useRoomStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { syncFollowerTimer } from './usePomodoro';
-import { useGamificationStore } from '@/store/useGamificationStore';
+import { useGamificationStore, getLevelFromXp } from '@/store/useGamificationStore';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export function useStudyRoom() {
@@ -51,7 +51,7 @@ export function useStudyRoom() {
     syncPresenceTimeoutRef.current = setTimeout(() => {
       const timer = useTimerStore.getState();
       const roomStore = useRoomStore.getState();
-      const myLevel = Math.max(1, Math.floor((totalXp || 0) / 500) + 1);
+      const myLevel = getLevelFromXp(totalXp || 0);
       
       channelRef.current?.track({
         id: roomStore.myId,
