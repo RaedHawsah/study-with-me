@@ -209,7 +209,7 @@ export function SoundCard({
           </span>
           
           {/* Controls: Prev, Track Select, Next */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" dir="ltr">
             <button
               onClick={() => handleTrackChange((currentLofiTrackIndex - 1 + LOFI_PLAYLIST.length) % LOFI_PLAYLIST.length)}
               disabled={isLoading}
