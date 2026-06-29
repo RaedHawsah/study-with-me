@@ -66,7 +66,7 @@ interface PreferencesState {
   _saveGuestPreferences: () => void;
 }
 
-const ADMIN_EMAIL = '55raed55@gmail.com';
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '55raed55@gmail.com';
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 

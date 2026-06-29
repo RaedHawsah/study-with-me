@@ -7,32 +7,7 @@ export interface LofiTrack {
 export const LOFI_PLAYLIST: LofiTrack[] = [
   {
     id: 'lofi_track_1',
-    title: '2 AM Debug Loop',
-    url: 'https://cdn.jsdelivr.net/gh/btahir/open-lofi@main/activities/2-am-debug-loop.mp3'
-  },
-  {
-    id: 'lofi_track_2',
-    title: 'Coffee Ring Notebook',
-    url: 'https://cdn.jsdelivr.net/gh/btahir/open-lofi@main/activities/coffee-ring-notebook.mp3'
-  },
-  {
-    id: 'lofi_track_3',
-    title: 'Cursor After Midnight',
-    url: 'https://cdn.jsdelivr.net/gh/btahir/open-lofi@main/activities/cursor-after-midnight.mp3'
-  },
-  {
-    id: 'lofi_track_4',
-    title: 'Dog Eared Pages',
-    url: 'https://cdn.jsdelivr.net/gh/btahir/open-lofi@main/activities/dog-eared-pages.mp3'
-  },
-  {
-    id: 'lofi_track_5',
-    title: 'Graphite Mornings',
-    url: 'https://cdn.jsdelivr.net/gh/btahir/open-lofi@main/activities/graphite-mornings.mp3'
-  },
-  {
-    id: 'lofi_track_6',
-    title: 'Hour Between Clicks',
-    url: 'https://cdn.jsdelivr.net/gh/btahir/open-lofi@main/activities/hour-between-clicks.mp3'
+    title: 'Lofi Vibe',
+    url: '/audio/custom/lofi.mp3'
   }
 ];
