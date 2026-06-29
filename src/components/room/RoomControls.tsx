@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   LogOut, 
@@ -60,7 +60,12 @@ export function RoomControls() {
   );
   
   const [copied, setCopied] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const isLeader = myId === leaderId;
+
+  useEffect(() => {
+    setIsMobileDevice(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+  }, []);
 
   const copyCode = () => {
     if (roomCode) {
@@ -139,17 +144,19 @@ export function RoomControls() {
         </button>
 
         {/* Screen Share Toggle */}
-        <button
-          onClick={toggleScreenShare}
-          className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
-            screenOn 
-              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
-              : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
-          }`}
-          title={screenOn ? 'Stop Sharing' : 'Share Screen'}
-        >
-          <Monitor size={17} />
-        </button>
+        {!isMobileDevice && (
+          <button
+            onClick={toggleScreenShare}
+            className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
+              screenOn 
+                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
+            }`}
+            title={screenOn ? 'Stop Sharing' : 'Share Screen'}
+          >
+            <Monitor size={17} />
+          </button>
+        )}
 
         <div className="w-px h-7 bg-white/10 mx-0.5 md:mx-1" />
 

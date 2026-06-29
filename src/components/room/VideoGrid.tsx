@@ -46,9 +46,9 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   
   const participant = isMe ? localParticipant : remoteParticipant;
   
-  const hasCamera = isMe ? isCameraEnabled : remoteParticipant?.isCameraEnabled;
-  const hasScreen = isMe ? isScreenShareEnabled : remoteParticipant?.isScreenShareEnabled;
-  const hasMic = isMe ? isMicrophoneEnabled : remoteParticipant?.isMicrophoneEnabled;
+  const hasCamera = isMe ? isCameraEnabled : undefined; // Deprecated for remote
+  const hasScreen = isMe ? isScreenShareEnabled : undefined; // Deprecated for remote
+  const hasMic = isMe ? isMicrophoneEnabled : undefined; // We'll rely on audioTrackRef for remote
 
   // Get trackRefs for the v2 API - pass identity string, not participant object
   const localTracks = useParticipantTracks(
@@ -65,7 +65,10 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   const videoTrackRef = tracks.find(t => t.source === videoSource);
   const audioTrackRef = tracks.find(t => t.source === Track.Source.Microphone);
 
-  const hasVideo = isScreen ? hasScreen : hasCamera;
+  // For remote participants, ALWAYS rely on the actual track existing, because
+  // the remoteParticipant class properties don't always trigger React re-renders!
+  const hasVideo = isMe ? (isScreen ? isScreenShareEnabled : isCameraEnabled) : !!videoTrackRef;
+  const isMicOn = isMe ? isMicrophoneEnabled : !!audioTrackRef;
 
   useEffect(() => {
     let initialSeconds = currentRemainingSeconds || 0;
@@ -141,7 +144,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         </div>
       )}
 
-      {!hasVideo && !isMe && !isScreen && audioTrackRef && hasMic && (
+      {!hasVideo && !isMe && !isScreen && audioTrackRef && isMicOn && (
          <div className="hidden"><AudioTrack trackRef={audioTrackRef} /></div>
       )}
 
