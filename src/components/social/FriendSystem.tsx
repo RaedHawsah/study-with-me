@@ -142,7 +142,6 @@ export function FriendSystem() {
               onClick={addFriend}
               disabled={adding || !friendCode}
               className="absolute end-2 top-2 p-2.5 rounded-xl bg-primary text-primary-foreground disabled:opacity-50 disabled:grayscale transition-all hover:shadow-lg hover:shadow-primary/20"
-              style={{ direction: 'ltr' }}
             >
               {adding ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
             </button>
