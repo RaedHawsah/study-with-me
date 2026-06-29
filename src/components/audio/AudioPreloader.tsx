@@ -12,29 +12,21 @@ import { useEffect } from 'react';
 import { AmbientSoundEngine } from '@/lib/audioEngine';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 
-const BUILTIN_IDS = ['wind', 'fire', 'rain', 'coffee', 'lofi', 'nature'];
-
 export function AudioPreloader() {
-  const { setCustomSoundIds } = usePreferencesStore();
+  const { customSounds, refreshSounds } = usePreferencesStore();
+
+  useEffect(() => {
+    refreshSounds();
+  }, [refreshSounds]);
 
   useEffect(() => {
     const engine = AmbientSoundEngine.getInstance();
 
-    // 1. Preload all built-in sounds immediately
-    BUILTIN_IDS.forEach((id) => engine.preload(id));
-
-    // 2. Fetch custom sounds list and preload them too
-    fetch('/api/audio/list')
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data.files)) {
-          setCustomSoundIds(data.files);
-          data.files.forEach((id: string) => engine.preload(id));
-        }
-      })
-      .catch(() => {/* silent — fallback gracefully */});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // 2. Preload custom sounds
+    if (customSounds && customSounds.length > 0) {
+      customSounds.forEach((id: string) => engine.preload(id));
+    }
+  }, [customSounds]);
 
   // Renders nothing
   return null;

@@ -53,6 +53,7 @@ interface PreferencesState {
   setTimerShape: (shape: TimerShape) => Promise<void>;
   setBackground: (type: BackgroundType, value: string) => Promise<void>;
   refreshBackgrounds: () => Promise<void>;
+  refreshSounds: () => Promise<void>;
   uploadGlobalBackground: (themeId: string, file: File) => Promise<void>;
   deleteGlobalBackground: (themeId: string) => Promise<void>;
   toggleSound: (id: string) => void;
@@ -76,6 +77,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   backgroundType: 'default',
   backgroundValue: '',
   customBackgrounds: [],
+  customSounds: [],
   userBackgroundUrl: null,
   isUploading: false,
   sounds: DEFAULT_SOUNDS,
@@ -202,6 +204,18 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
       }
     } catch (e) {
       console.warn('Failed to fetch backgrounds', e);
+    }
+  },
+
+  refreshSounds: async () => {
+    try {
+      const r = await fetch('/api/audio/list');
+      if (r.ok) {
+        const data = await r.json();
+        if (data.files) set({ customSounds: data.files });
+      }
+    } catch (e) {
+      console.warn('Failed to fetch sounds', e);
     }
   },
 

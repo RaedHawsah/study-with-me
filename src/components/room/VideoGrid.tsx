@@ -209,10 +209,10 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
               peer.name?.charAt(0) || '?'
             )}
             <div 
-              className="absolute -bottom-1 -end-1 w-5.5 h-5.5 md:w-6.5 md:h-6.5 rounded-full border-2 border-card bg-card overflow-hidden shadow-md z-10 flex items-center justify-center"
+              className="absolute -bottom-1 -end-1 z-10 flex items-center justify-center drop-shadow-md"
               title={isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA')}
             >
-              {getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'), "w-full h-full rounded-full")}
+              {getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'), "w-6 h-4 rounded-[2px]")}
             </div>
           </div>
 

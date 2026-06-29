@@ -39,7 +39,7 @@ function EqBars({ color }: { color?: string }) {
   );
 }
 
-const BUILTIN_IDS = ['wind', 'fire', 'rain', 'coffee', 'lofi', 'nature'] as const;
+const BUILTIN_IDS: string[] = [];
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export function AmbientMixer() {
@@ -47,12 +47,17 @@ export function AmbientMixer() {
   const { sounds, handleToggle, handleVolumeChange, isSupported, anyPlaying } =
     useAmbientAudio();
   const {
-    customSoundIds,
+    customSounds,
+    refreshSounds,
     sounds: soundsState,
     toggleSound,
     showFloatingAudioDock,
     setShowFloatingAudioDock,
   } = usePreferencesStore();
+
+  useEffect(() => {
+    refreshSounds();
+  }, [refreshSounds]);
 
   // Preload built-ins on mount
   useEffect(() => {
@@ -75,10 +80,7 @@ export function AmbientMixer() {
     );
   }
 
-  // Custom sounds that don't duplicate built-ins
-  const extraSounds = customSoundIds.filter(
-    (fileName) => !BUILTIN_IDS.some((id) => fileName.toLowerCase().startsWith(id)),
-  );
+  const extraSounds = customSounds || [];
 
   return (
     <section aria-labelledby="mixer-heading">

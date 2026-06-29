@@ -70,7 +70,7 @@ function DockWaveform() {
   );
 }
 
-const BUILTIN_IDS = ['wind', 'fire', 'rain', 'coffee', 'lofi', 'nature'] as const;
+const BUILTIN_IDS: string[] = [];
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
@@ -78,7 +78,12 @@ export function GlobalAmbience() {
   const { t } = useTranslation('common');
   const [expanded, setExpanded] = useState(false);
   const { sounds, handleToggle, handleVolumeChange, anyPlaying } = useAmbientAudio();
-  const { customSoundIds, setCustomSoundIds, sounds: soundsState, toggleSound, showFloatingAudioDock } = usePreferencesStore();
+  const { customSounds, refreshSounds, showFloatingAudioDock } = usePreferencesStore();
+
+  useEffect(() => {
+    refreshSounds();
+  }, [refreshSounds]);
+  
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Drag Logic (Direct DOM manipulation for 60fps smoothness) ──
@@ -138,27 +143,17 @@ export function GlobalAmbience() {
   // Stop All
   const handleStopAll = useCallback(() => {
     AmbientSoundEngine.getInstance().stopAll();
-    Object.keys(soundsState).forEach((id) => {
-      if (soundsState[id]?.isPlaying) toggleSound(id);
+    const store = usePreferencesStore.getState();
+    Object.keys(store.sounds).forEach((id) => {
+      if (store.sounds[id]?.isPlaying) store.toggleSound(id);
     });
-  }, [soundsState, toggleSound]);
-
-  // Sync custom sounds on mount — preloading happens in AudioPreloader
-  useEffect(() => {
-    fetch('/api/audio/list')
-      .then((r) => r.json())
-      .then((data) => { if (data.files) setCustomSoundIds(data.files); })
-      .catch(() => {/* silent */ });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!showFloatingAudioDock) return null;
 
   const allSoundIds = [
     ...BUILTIN_IDS,
-    ...customSoundIds.filter(
-      (f) => !BUILTIN_IDS.some((id) => f.toLowerCase().startsWith(id)),
-    ),
+    ...(customSounds || []),
   ];
 
   return (

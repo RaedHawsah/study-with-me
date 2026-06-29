@@ -19,8 +19,8 @@ import { RootClientLayout } from '@/components/shell/RootClientLayout';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Study With Me | Your Ultimate Productivity Partner',
-    template: '%s · Study With Me',
+    default: 'ذاكر معي | Study With Me',
+    template: '%s · ذاكر معي',
   },
   description:
     'A high-fidelity, focused productivity companion. Features 3D companions, customizable ambience, and seamless study tracking.',
