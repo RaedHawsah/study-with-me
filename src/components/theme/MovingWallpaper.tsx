@@ -7,7 +7,7 @@
  * - Runs at 30fps (frame skip every other RAF) instead of 60fps — halves CPU cost
  * - Pauses completely when the tab is hidden (visibilitychange)
  * - Reduced particle counts: rain 80→45, cyber 45→28, coffee 45→22, lofi 40→22
- * - canvas.getContext('2d', { alpha: false, desynchronized: true }) for GPU offload
+ * - canvas.getContext('2d', { alpha: false }) for GPU offload
  * - will-change: transform on canvas so compositor promotes it to GPU layer
  * - ResizeObserver instead of window resize — more efficient
  */
@@ -339,7 +339,7 @@ export function MovingWallpaper() {
     if (!canvas) return;
 
     // Use desynchronized for GPU offload; alpha:false avoids alpha compositing
-    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     // Resize
@@ -364,9 +364,6 @@ export function MovingWallpaper() {
     const loop = () => {
       rafRef.current = requestAnimationFrame(loop);
       if (pausedRef.current) return; // Tab hidden — skip draw
-
-      tick++;
-      if (tick % 2 !== 0) return; // 30fps throttle — skip every other frame
 
       theme.draw(ctx, particles, canvas, frame++);
     };
