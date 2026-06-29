@@ -28,6 +28,8 @@ import {
   BookMarked,
   Users,
   UserPlus,
+  Mail,
+  Linkedin,
   type LucideIcon,
 } from 'lucide-react';
 import { LocaleSwitcher } from './LocaleSwitcher';
@@ -210,15 +212,43 @@ export function NavShell({ locale, children }: NavShellProps) {
           transition-[margin-inline-start] duration-[var(--duration-normal)] ease-out
         "
       >
-        <main id="main-content" className="flex-1 p-6 lg:p-10 max-w-[1400px] w-full mx-auto">
+        <main id="main-content" className="flex flex-col flex-1 p-6 lg:p-10 max-w-[1400px] w-full mx-auto">
           {children}
+          
+          <footer className="mt-auto pt-12 pb-2 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground/80">
+            <div className="flex items-center gap-4">
+              <a href="mailto:raed.hawsah@gmail.com" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="Email">
+                <Mail size={16} />
+                <span>raed.hawsah@gmail.com</span>
+              </a>
+              <a href="https://www.linkedin.com/in/raed-hawsah/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="LinkedIn">
+                <Linkedin size={16} />
+                <span>LinkedIn</span>
+              </a>
+            </div>
+            <p dir="rtl">جميع الحقوق محفوظة لـ 0xRexKov &copy; {new Date().getFullYear()}</p>
+          </footer>
         </main>
       </div>
 
       {/* ── Mobile Layout ───────────────────────────────────────────────────── */}
       <div className="md:hidden flex flex-col min-h-[100dvh] overflow-hidden">
-        <main id="main-content-mobile" className="flex-1 overflow-x-hidden overflow-y-auto px-3 pt-4 pb-20">
+        <main id="main-content-mobile" className="flex flex-col flex-1 overflow-x-hidden overflow-y-auto px-3 pt-4 pb-20">
           {children}
+
+          <footer className="mt-auto pt-10 pb-4 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground/80">
+            <div className="flex items-center gap-4">
+              <a href="mailto:raed.hawsah@gmail.com" className="hover:text-primary transition-colors flex items-center gap-1" aria-label="Email">
+                <Mail size={14} />
+                <span>Email</span>
+              </a>
+              <a href="https://www.linkedin.com/in/raed-hawsah/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors flex items-center gap-1" aria-label="LinkedIn">
+                <Linkedin size={14} />
+                <span>LinkedIn</span>
+              </a>
+            </div>
+            <p dir="rtl">جميع الحقوق محفوظة لـ 0xRexKov &copy; {new Date().getFullYear()}</p>
+          </footer>
         </main>
 
         {/* Bottom tab bar */}

@@ -39,7 +39,7 @@ interface PreferencesState {
 
   // Audio (isPlaying is runtime-only, volumes are persisted)
   sounds: Record<string, SoundState>;
-  customSoundIds: string[];
+  customSounds: string[];
   showFloatingAudioDock: boolean;
   currentLofiTrackIndex: number;
 
@@ -59,7 +59,6 @@ interface PreferencesState {
   toggleSound: (id: string) => void;
   setSoundLoading: (id: string, isLoading: boolean) => void;
   setSoundVolume: (id: string, volume: number) => Promise<void>;
-  setCustomSoundIds: (ids: string[]) => void;
   setCustomBackgrounds: (filenames: string[]) => void;
   setShowFloatingAudioDock: (show: boolean) => Promise<void>;
   setCurrentLofiTrackIndex: (index: number) => void;
@@ -81,7 +80,6 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   userBackgroundUrl: null,
   isUploading: false,
   sounds: DEFAULT_SOUNDS,
-  customSoundIds: [],
   showFloatingAudioDock: true,
   globalBackgrounds: {},
   currentLofiTrackIndex: 0,
@@ -410,7 +408,6 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
     }
   },
 
-  setCustomSoundIds: (ids) => set({ customSoundIds: ids }),
   setCustomBackgrounds: (filenames) => set({ customBackgrounds: filenames }),
   
   setCurrentLofiTrackIndex: (index) => {
@@ -449,7 +446,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
     showFloatingAudioDock: true,
     globalBackgrounds: {},
     sounds: DEFAULT_SOUNDS,
-    customSoundIds: [],
+    customSounds: [],
   }),
 }));
 
