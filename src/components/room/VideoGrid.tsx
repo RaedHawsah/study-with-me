@@ -205,8 +205,8 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
               {peer.name || 'Anonymous'}
               {isMe && <span className="ms-1 opacity-70 text-[8px] md:text-[9px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
             </h4>
-            <p className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
-              isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
+            <p className={`text-[10px] md:text-[11px] font-bold uppercase tracking-wide mt-0.5 drop-shadow-md transition-colors duration-300 ${
+              isPaused ? 'text-yellow-300' : (isFocus ? 'text-white' : isBreak ? 'text-green-300' : 'text-white/60')
             }`}>
               {isPaused 
                 ? (isFocus ? `${t('room.focusMode', { defaultValue: 'Focus Mode' })} (Paused)` : `${t('room.onBreak', { defaultValue: 'On Break' })} (Paused)`) 
@@ -223,8 +223,8 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
               {peer.name || 'Anonymous'}
               {isMe && <span className="ms-1 opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
             </h4>
-            <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest mt-0.5 drop-shadow-md transition-colors duration-300 ${
-              isPaused ? 'text-yellow-400' : (isFocus ? 'text-primary-foreground' : isBreak ? 'text-green-400' : 'text-white/60')
+            <p className={`text-[11px] md:text-xs font-bold uppercase tracking-wide mt-0.5 drop-shadow-md transition-colors duration-300 ${
+              isPaused ? 'text-yellow-300' : (isFocus ? 'text-white' : isBreak ? 'text-green-300' : 'text-white/60')
             }`}>
               {isPaused 
                 ? (isFocus ? `${t('room.focusMode', { defaultValue: 'Focus Mode' })} (Paused)` : `${t('room.onBreak', { defaultValue: 'On Break' })} (Paused)`) 
