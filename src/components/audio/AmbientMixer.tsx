@@ -48,63 +48,17 @@ export function AmbientMixer() {
     useAmbientAudio();
   const {
     customSoundIds,
-    setCustomSoundIds,
     sounds: soundsState,
     toggleSound,
     showFloatingAudioDock,
     setShowFloatingAudioDock,
   } = usePreferencesStore();
-  const [uploading, setUploading] = useState(false);
 
   // Preload built-ins on mount
   useEffect(() => {
     const engine = AmbientSoundEngine.getInstance();
     BUILTIN_IDS.forEach((id) => engine.preload(id));
   }, []);
-
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const res = await fetch('/api/audio/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.success) {
-        const listRes = await fetch('/api/audio/list');
-        const listData = await listRes.json();
-        setCustomSoundIds(listData.files);
-        const engine = AmbientSoundEngine.getInstance();
-        engine.preload(data.fileName || file.name);
-      }
-    } catch (err) {
-      console.error('Upload failed:', err);
-    } finally {
-      setUploading(false);
-      // Reset file input
-      e.target.value = '';
-    }
-  };
-
-  const handleDelete = async (fileName: string) => {
-    // Delete immediately without blocking confirm.
-    try {
-      const res = await fetch('/api/audio/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        // Optimistically update the UI state instead of re-fetching to bypass Next.js cache
-        setCustomSoundIds(customSoundIds.filter((id) => id !== fileName));
-        if (sounds[fileName]?.isPlaying) handleToggle(fileName);
-      }
-    } catch (err) {
-      console.error('Delete failed:', err);
-    }
-  };
 
   const handleStopAll = () => {
     AmbientSoundEngine.getInstance().stopAll();
@@ -174,28 +128,6 @@ export function AmbientMixer() {
             </button>
           )}
 
-          {/* Upload */}
-          <label
-            className={`
-              flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer
-              transition-all border
-              ${uploading
-                ? 'bg-muted text-muted-foreground border-border cursor-wait'
-                : 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/18 hover:border-primary/35'
-              }
-            `}
-          >
-            <input
-              type="file"
-              accept="audio/*"
-              onChange={handleUpload}
-              className="hidden"
-              disabled={uploading}
-            />
-            <Upload size={11} />
-            {uploading ? t('common.uploading', { defaultValue: 'Uploading…' }) : t('audio.addSound', { defaultValue: 'Add sound' })}
-          </label>
-
           {/* Playing indicator icon */}
           {anyPlaying ? (
             <Volume2 size={17} className="text-primary shrink-0" aria-hidden="true" />
@@ -237,7 +169,6 @@ export function AmbientMixer() {
             volume={sounds[fileName]?.volume ?? 0.5}
             onToggle={() => handleToggle(fileName)}
             onVolumeChange={(v) => handleVolumeChange(fileName, v)}
-            onDelete={() => handleDelete(fileName)}
             isCustom
           />
         ))}
