@@ -234,5 +234,10 @@
     "pixel_room": "Logic Master",
     "typing_cat": "Cramming Time",
     "reading_time": "Lesson Backlog"
+  },
+  "footer": {
+    "copyright": "All rights reserved to 0xRexKov © 2026",
+    "email": "raed.hawsah@gmail.com",
+    "linkedin": "LinkedIn"
   }
 }

@@ -231,5 +231,10 @@
     "pixel_room": "منطق",
     "typing_cat": "وضع الزنقة",
     "reading_time": "دروس متراكمة"
+  },
+  "footer": {
+    "copyright": "جميع الحقوق محفوظة لـ 0xRexKov © 2026",
+    "email": "raed.hawsah@gmail.com",
+    "linkedin": "LinkedIn"
   }
 }

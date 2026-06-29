@@ -39,7 +39,7 @@ function EqBars({ color }: { color?: string }) {
   );
 }
 
-const BUILTIN_IDS: string[] = [];
+const BUILTIN_IDS = ['wind', 'fire', 'rain', 'coffee', 'lofi', 'nature'] as const;
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export function AmbientMixer() {

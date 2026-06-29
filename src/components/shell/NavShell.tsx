@@ -215,18 +215,20 @@ export function NavShell({ locale, children }: NavShellProps) {
         <main id="main-content" className="flex flex-col flex-1 p-6 lg:p-10 max-w-[1400px] w-full mx-auto">
           {children}
           
-          <footer className="mt-auto pt-12 pb-2 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground/80">
-            <div className="flex items-center gap-4">
-              <a href="mailto:raed.hawsah@gmail.com" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="Email">
-                <Mail size={16} />
-                <span>raed.hawsah@gmail.com</span>
-              </a>
-              <a href="https://www.linkedin.com/in/raed-hawsah/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="LinkedIn">
-                <LinkIcon size={16} />
-                <span>LinkedIn</span>
-              </a>
+          <footer className="mt-auto pt-12 pb-2 flex justify-center">
+            <div className="flex flex-col items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-sidebar/40 backdrop-blur-md border border-sidebar-border shadow-sm text-sm text-muted-foreground/80 transition-colors hover:bg-sidebar/60">
+              <div className="flex items-center gap-6">
+                <a href="mailto:raed.hawsah@gmail.com" className="hover:text-primary transition-colors flex items-center gap-2" aria-label="Email">
+                  <Mail size={16} />
+                  <span>{t('footer.email', { defaultValue: 'raed.hawsah@gmail.com' })}</span>
+                </a>
+                <a href="https://www.linkedin.com/in/raed-hawsah/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors flex items-center gap-2" aria-label="LinkedIn">
+                  <LinkIcon size={16} />
+                  <span>{t('footer.linkedin', { defaultValue: 'LinkedIn' })}</span>
+                </a>
+              </div>
+              <p dir="auto">{t('footer.copyright', { defaultValue: 'جميع الحقوق محفوظة لـ 0xRexKov © 2026' })}</p>
             </div>
-            <p dir="rtl">جميع الحقوق محفوظة لـ 0xRexKov &copy; 2026</p>
           </footer>
         </main>
       </div>
@@ -236,18 +238,20 @@ export function NavShell({ locale, children }: NavShellProps) {
         <main id="main-content-mobile" className="flex flex-col flex-1 overflow-x-hidden overflow-y-auto px-3 pt-4 pb-20">
           {children}
 
-          <footer className="mt-auto pt-10 pb-4 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground/80">
-            <div className="flex items-center gap-4">
-              <a href="mailto:raed.hawsah@gmail.com" className="hover:text-primary transition-colors flex items-center gap-1" aria-label="Email">
-                <Mail size={14} />
-                <span>Email</span>
-              </a>
-              <a href="https://www.linkedin.com/in/raed-hawsah/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors flex items-center gap-1" aria-label="LinkedIn">
-                <LinkIcon size={14} />
-                <span>LinkedIn</span>
-              </a>
+          <footer className="mt-auto pt-10 pb-4 flex justify-center">
+            <div className="flex flex-col items-center justify-center gap-2.5 px-6 py-3.5 rounded-[1.25rem] bg-sidebar/40 backdrop-blur-md border border-sidebar-border shadow-sm text-xs text-muted-foreground/80 transition-colors hover:bg-sidebar/60">
+              <div className="flex items-center gap-5">
+                <a href="mailto:raed.hawsah@gmail.com" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="Email">
+                  <Mail size={14} />
+                  <span>{t('footer.email', { defaultValue: 'Email' })}</span>
+                </a>
+                <a href="https://www.linkedin.com/in/raed-hawsah/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="LinkedIn">
+                  <LinkIcon size={14} />
+                  <span>{t('footer.linkedin', { defaultValue: 'LinkedIn' })}</span>
+                </a>
+              </div>
+              <p dir="auto">{t('footer.copyright', { defaultValue: 'جميع الحقوق محفوظة لـ 0xRexKov © 2026' })}</p>
             </div>
-            <p dir="rtl">جميع الحقوق محفوظة لـ 0xRexKov &copy; 2026</p>
           </footer>
         </main>
 

@@ -70,7 +70,7 @@ function DockWaveform() {
   );
 }
 
-const BUILTIN_IDS: string[] = [];
+const BUILTIN_IDS = ['wind', 'fire', 'rain', 'coffee', 'lofi', 'nature'] as const;
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
