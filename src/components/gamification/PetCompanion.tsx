@@ -215,7 +215,7 @@ export function PetCompanion() {
                   >
                     <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-black/40">
                       {isItemGif ? (
-                        <img loading="lazy" src={char.src} alt={char.name} className={`w-full h-full ${char.id === 'chill_vibes' ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-500`} />
+                        <img loading="lazy" src={char.src.replace('giphy.gif', 'giphy_s.gif')} alt={char.name} className={`w-full h-full ${char.id === 'chill_vibes' ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-500`} />
                       ) : (
                         <video src={char.src} muted loop autoPlay playsInline className={`w-full h-full ${char.id === 'chill_vibes' ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-500`} />
                       )}
