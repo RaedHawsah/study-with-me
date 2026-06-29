@@ -13,6 +13,9 @@
  *  - Public isPlaying(id) for UI sync.
  */
 
+import { LOFI_PLAYLIST } from '@/lib/lofiPlaylist';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Channel {
@@ -87,8 +90,6 @@ export class AmbientSoundEngine {
     }
     if (id === 'lofi') {
       try {
-        const { LOFI_PLAYLIST } = require('@/lib/lofiPlaylist');
-        const { usePreferencesStore } = require('@/store/usePreferencesStore');
         const index = usePreferencesStore.getState().currentLofiTrackIndex || 0;
         const track = LOFI_PLAYLIST[index];
         if (track) {
@@ -123,7 +124,6 @@ export class AmbientSoundEngine {
     let cacheKey = id;
     if (id === 'lofi') {
       try {
-        const { usePreferencesStore } = require('@/store/usePreferencesStore');
         const index = usePreferencesStore.getState().currentLofiTrackIndex || 0;
         cacheKey = `lofi_${index}`;
       } catch {}
@@ -157,7 +157,6 @@ export class AmbientSoundEngine {
     let cacheKey = id;
     if (id === 'lofi') {
       try {
-        const { usePreferencesStore } = require('@/store/usePreferencesStore');
         const index = usePreferencesStore.getState().currentLofiTrackIndex || 0;
         cacheKey = `lofi_${index}`;
       } catch {}
@@ -174,7 +173,6 @@ export class AmbientSoundEngine {
     let cacheKey = id;
     if (id === 'lofi') {
       try {
-        const { usePreferencesStore } = require('@/store/usePreferencesStore');
         const index = usePreferencesStore.getState().currentLofiTrackIndex || 0;
         cacheKey = `lofi_${index}`;
       } catch {}
