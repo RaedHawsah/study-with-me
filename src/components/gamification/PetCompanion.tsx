@@ -180,8 +180,8 @@ export function PetCompanion() {
 
       {/* Character Selector Modal */}
       {selectorOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card/60 backdrop-blur-md border border-white/10 rounded-3xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[80vh]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 animate-in fade-in duration-200">
+          <div className="bg-[#111118]/95 border border-white/10 rounded-3xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[80vh]">
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-white/10 bg-transparent">
               <h2 className="text-xl font-bold text-foreground">
@@ -215,7 +215,7 @@ export function PetCompanion() {
                   >
                     <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-black/40">
                       {isItemGif ? (
-                        <img src={char.src} alt={char.name} className={`w-full h-full ${char.id === 'chill_vibes' ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-500`} />
+                        <img loading="lazy" src={char.src} alt={char.name} className={`w-full h-full ${char.id === 'chill_vibes' ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-500`} />
                       ) : (
                         <video src={char.src} muted loop autoPlay playsInline className={`w-full h-full ${char.id === 'chill_vibes' ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-500`} />
                       )}

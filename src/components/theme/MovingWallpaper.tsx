@@ -433,11 +433,9 @@ export function MovingWallpaper() {
         className="fixed inset-0 w-full h-full pointer-events-none"
         style={{
           zIndex: -1,
-          backdropFilter: isCustom ? 'blur(1px) brightness(0.9)' : 'blur(2px) saturate(1.3) brightness(0.6)',
-          WebkitBackdropFilter: isCustom ? 'blur(1px) brightness(0.9)' : 'blur(2px) saturate(1.3) brightness(0.6)',
           background: isCustom
             ? 'transparent' // Let the theme background color show through the 0.35 opacity video
-            : 'rgba(6, 5, 15, 0.45)',
+            : 'rgba(6, 5, 15, 0.65)',
         }}
       />
     </>
