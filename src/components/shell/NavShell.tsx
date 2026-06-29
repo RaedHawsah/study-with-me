@@ -226,7 +226,7 @@ export function NavShell({ locale, children }: NavShellProps) {
                 <span>LinkedIn</span>
               </a>
             </div>
-            <p dir="rtl">جميع الحقوق محفوظة لـ 0xRexKov &copy; {new Date().getFullYear()}</p>
+            <p dir="rtl">جميع الحقوق محفوظة لـ 0xRexKov &copy; 2026</p>
           </footer>
         </main>
       </div>
