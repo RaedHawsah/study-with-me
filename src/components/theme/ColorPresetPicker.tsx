@@ -52,14 +52,14 @@ export function ColorPresetPicker() {
                   group
                 "
                 style={{
-                  backgroundColor: preset.preview,
+                  background: `linear-gradient(135deg, ${preset.primary} 0%, ${preset.appBackground} 100%)`,
                   boxShadow: selected
-                    ? `0 0 20px ${preset.preview}80, inset 0 0 0 2px rgba(255,255,255,0.2)`
+                    ? `0 0 20px ${preset.primary}80, inset 0 0 0 2px rgba(255,255,255,0.3)`
                     : 'none'
                 }}
               >
                 {selected && <Check size={16} strokeWidth={4} className="text-white" />}
-                {!selected && <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-white/40 transition-colors" />}
+                {!selected && <div className="w-1.5 h-1.5 rounded-full bg-white/30 group-hover:bg-white/50 transition-colors" />}
               </button>
             );
           })}
