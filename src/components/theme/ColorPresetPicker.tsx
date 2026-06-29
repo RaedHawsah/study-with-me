@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { Check, Sparkles, Plus, Loader2, PlayCircle } from 'lucide-react';
+import { Check, Sparkles, Plus, Loader2, PlayCircle, X } from 'lucide-react';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { COLOR_PRESETS, PRESET_ORDER, type ColorPresetId } from '@/lib/themes';
 

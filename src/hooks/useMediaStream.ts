@@ -57,12 +57,13 @@ export function useMediaStream() {
       const isEnabled = localParticipant.isScreenShareEnabled;
       await localParticipant.setScreenShareEnabled(!isEnabled, {
         audio: true,
-        videoCodec: 'h264',
-        videoResolution: {
+        resolution: {
           width: 1920,
           height: 1080,
-          frameRate: 30, // 30fps for ultra clear and smooth text/video stream
+          frameRate: 30,
         }
+      }, {
+        videoCodec: 'h264',
       });
       useRoomStore.getState().setScreenOn(!isEnabled);
     } catch (err: any) {
