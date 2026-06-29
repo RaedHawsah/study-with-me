@@ -57,7 +57,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
   );
   const remoteTracks = useParticipantTracks(
     [Track.Source.Camera, Track.Source.ScreenShare, Track.Source.Microphone],
-    remoteParticipant?.identity
+    peer.id
   );
   const tracks = isMe ? localTracks : remoteTracks;
 
