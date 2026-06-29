@@ -29,7 +29,7 @@ import {
   Users,
   UserPlus,
   Mail,
-  Linkedin,
+  Link,
   type LucideIcon,
 } from 'lucide-react';
 import { LocaleSwitcher } from './LocaleSwitcher';
@@ -222,7 +222,7 @@ export function NavShell({ locale, children }: NavShellProps) {
                 <span>raed.hawsah@gmail.com</span>
               </a>
               <a href="https://www.linkedin.com/in/raed-hawsah/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="LinkedIn">
-                <Linkedin size={16} />
+                <Link size={16} />
                 <span>LinkedIn</span>
               </a>
             </div>
@@ -243,7 +243,7 @@ export function NavShell({ locale, children }: NavShellProps) {
                 <span>Email</span>
               </a>
               <a href="https://www.linkedin.com/in/raed-hawsah/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors flex items-center gap-1" aria-label="LinkedIn">
-                <Linkedin size={14} />
+                <Link size={14} />
                 <span>LinkedIn</span>
               </a>
             </div>
