@@ -79,47 +79,67 @@ export function ColorPresetPicker() {
             </span>
           </div>
 
-          <div className="relative group">
-            <button
-              disabled={isUploading}
-              onClick={() => fileInputRef.current?.click()}
-              className="
-                w-full h-24 rounded-2xl border-2 border-dashed border-white/10 bg-white/5
-                hover:border-primary/50 hover:bg-primary/5 transition-all duration-300
-                flex flex-col items-center justify-center gap-2
-                disabled:opacity-50 disabled:cursor-not-allowed
-                overflow-hidden
-              "
-            >
-              {isUploading ? (
-                <Loader2 size={24} className="animate-spin text-primary" />
-              ) : (
-                <>
-                  {globalBackgrounds[colorPresetId] ? (
-                    <div className="absolute inset-0 w-full h-full">
-                      {/\.(mp4|webm)(\?.*)?$/i.test(globalBackgrounds[colorPresetId]) ? (
-                        <video src={globalBackgrounds[colorPresetId]} muted className="w-full h-full object-cover" />
-                      ) : (
-                        <img src={globalBackgrounds[colorPresetId]} alt="" className="w-full h-full object-cover" />
-                      )}
+          <div className="flex gap-2">
+            <div className="relative group flex-1">
+              <button
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="
+                  w-full h-24 rounded-2xl border-2 border-dashed border-white/10 bg-white/5
+                  hover:border-primary/50 hover:bg-primary/5 transition-all duration-300
+                  flex flex-col items-center justify-center gap-2
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  overflow-hidden
+                "
+              >
+                {isUploading ? (
+                  <Loader2 size={24} className="animate-spin text-primary" />
+                ) : (
+                  <>
+                    {globalBackgrounds[colorPresetId] ? (
+                      <div className="absolute inset-0 w-full h-full">
+                        {/\.(mp4|webm)(\?.*)?$/i.test(globalBackgrounds[colorPresetId]) ? (
+                          <video src={globalBackgrounds[colorPresetId]} muted className="w-full h-full object-cover" />
+                        ) : (
+                          <img src={globalBackgrounds[colorPresetId]} alt="" className="w-full h-full object-cover" />
+                        )}
+                      </div>
+                    ) : null}
+                    <div className="relative z-10 flex flex-col items-center gap-1">
+                      <Plus size={24} className="text-primary group-hover:scale-125 transition-transform" />
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                        {globalBackgrounds[colorPresetId] ? 'Replace Video' : 'Add Official Video'}
+                      </span>
                     </div>
-                  ) : null}
-                  <div className="relative z-10 flex flex-col items-center gap-1">
-                    <Plus size={24} className="text-primary group-hover:scale-125 transition-transform" />
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      {globalBackgrounds[colorPresetId] ? 'Replace Official Video' : 'Add Official Video'}
-                    </span>
-                  </div>
-                </>
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="video/mp4,video/webm,image/gif"
-              className="hidden"
-              onChange={handleFileChange}
-            />
+                  </>
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/mp4,video/webm,image/gif"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            {globalBackgrounds[colorPresetId] && (
+              <button
+                onClick={() => {
+                  if (confirm('Are you sure you want to delete this official background? It will fall back to local/default wallpaper.')) {
+                    usePreferencesStore.getState().deleteGlobalBackground(colorPresetId);
+                  }
+                }}
+                className="
+                  px-4 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20
+                  transition-all duration-300 flex flex-col items-center justify-center gap-1 text-[9px] font-bold uppercase
+                  active:scale-95 shrink-0
+                "
+              >
+                <X size={16} />
+                Delete
+              </button>
+            )}
           </div>
         </div>
       )}

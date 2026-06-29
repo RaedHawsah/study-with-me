@@ -318,11 +318,20 @@ export function MovingWallpaper() {
   const rafRef = useRef<number>(0);
   const pausedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
+  // Reset video error state whenever background changes
   useEffect(() => {
-    if (!mounted || backgroundType !== 'default') {
+    setVideoError(false);
+  }, [backgroundValue]);
+
+  useEffect(() => {
+    const isCustomBg = backgroundType === 'custom' && backgroundValue;
+    const shouldShowCanvas = backgroundType === 'default' || (isCustomBg && videoError);
+
+    if (!mounted || !shouldShowCanvas) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       return;
     }
@@ -369,11 +378,11 @@ export function MovingWallpaper() {
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [mounted, colorPresetId, backgroundType]);
+  }, [mounted, colorPresetId, backgroundType, videoError]);
 
   if (!mounted) return null;
 
-  const isCustom = backgroundType === 'custom' && backgroundValue;
+  const isCustom = backgroundType === 'custom' && backgroundValue && !videoError;
   const isVideo = isCustom && /\.(mp4|webm)(\?.*)?$/i.test(backgroundValue);
 
   // Resolve path: if it starts with http, it's a Supabase URL, otherwise it's local
@@ -387,7 +396,7 @@ export function MovingWallpaper() {
       {isCustom && resolvedSrc && (
         <div
           className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden"
-          style={{ zIndex: -2 }}
+          style={{ zIndex: -2, opacity: 0.35 }}
         >
           {isVideo ? (
             <video
@@ -396,20 +405,22 @@ export function MovingWallpaper() {
               muted
               loop
               playsInline
+              onError={() => setVideoError(true)}
               className="w-full h-full object-cover"
             />
           ) : (
             <img
               src={resolvedSrc}
               alt=""
+              onError={() => setVideoError(true)}
               className="w-full h-full object-cover"
             />
           )}
         </div>
       )}
 
-      {/* Particle Canvas (only shown if backgroundType is 'default') */}
-      {backgroundType === 'default' && (
+      {/* Particle Canvas (only shown if backgroundType is 'default' or custom video failed) */}
+      {(backgroundType === 'default' || (backgroundType === 'custom' && videoError)) && (
         <canvas
           ref={canvasRef}
           className="fixed inset-0 w-full h-full pointer-events-none"
@@ -423,11 +434,11 @@ export function MovingWallpaper() {
         className="fixed inset-0 w-full h-full pointer-events-none"
         style={{
           zIndex: -1,
-          backdropFilter: isCustom ? 'blur(2px) brightness(0.6)' : 'blur(2px) saturate(1.3) brightness(0.6)',
-          WebkitBackdropFilter: isCustom ? 'blur(2px) brightness(0.6)' : 'blur(2px) saturate(1.3) brightness(0.6)',
+          backdropFilter: isCustom ? 'blur(1px) brightness(0.9)' : 'blur(2px) saturate(1.3) brightness(0.6)',
+          WebkitBackdropFilter: isCustom ? 'blur(1px) brightness(0.9)' : 'blur(2px) saturate(1.3) brightness(0.6)',
           background: isCustom
-            ? 'rgba(0, 0, 0, 0.6)'    /* Custom video: requested 0.6 darkness */
-            : 'rgba(6, 5, 15, 0.45)',  /* Default particles */
+            ? 'transparent' // Let the theme background color show through the 0.35 opacity video
+            : 'rgba(6, 5, 15, 0.45)',
         }}
       />
     </>

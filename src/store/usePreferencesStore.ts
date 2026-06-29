@@ -53,6 +53,7 @@ interface PreferencesState {
   setBackground: (type: BackgroundType, value: string) => Promise<void>;
   refreshBackgrounds: () => Promise<void>;
   uploadGlobalBackground: (themeId: string, file: File) => Promise<void>;
+  deleteGlobalBackground: (themeId: string) => Promise<void>;
   toggleSound: (id: string) => void;
   setSoundLoading: (id: string, isLoading: boolean) => void;
   setSoundVolume: (id: string, volume: number) => Promise<void>;
@@ -277,6 +278,46 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
       set({ isUploading: false });
       const msg = error.message || 'Unknown error';
       alert(`Official upload failed: ${msg}`);
+    }
+  },
+
+  deleteGlobalBackground: async (themeId: string) => {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    
+    if (user?.email !== ADMIN_EMAIL) {
+      alert('Access Denied: Only admin can manage official backgrounds.');
+      return;
+    }
+
+    try {
+      const key = `bg_${themeId}`;
+      const { error: dbError } = await supabase
+        .from('global_settings')
+        .delete()
+        .eq('key', key);
+
+      if (dbError) throw dbError;
+
+      // Delete potential official files from storage
+      await supabase.storage
+        .from('backgrounds')
+        .remove([`official/${themeId}.mp4`, `official/${themeId}.webm`, `official/${themeId}.gif`]);
+
+      // Refresh store
+      await get().fetchGlobalSettings();
+
+      // If the current theme matches, reset its background to preset default
+      if (get().colorPresetId === themeId) {
+        const theme = COLOR_PRESETS[themeId as ColorPresetId];
+        set({ backgroundType: 'custom', backgroundValue: theme.defaultBackground });
+      }
+
+      alert(`Official background for ${themeId} deleted successfully from database!`);
+    } catch (error: any) {
+      console.error('Delete failed:', error);
+      alert(`Official delete failed: ${error.message || error}`);
     }
   },
 
