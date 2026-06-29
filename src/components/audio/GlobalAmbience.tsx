@@ -15,6 +15,7 @@ import { useAmbientAudio } from '@/hooks/useAmbientAudio';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 import { AmbientSoundEngine } from '@/lib/audioEngine';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { LOFI_PLAYLIST } from '@/lib/lofiPlaylist';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -204,7 +205,12 @@ export function GlobalAmbience() {
             const isLoading = sounds[id]?.isLoading ?? false;
             const volume = sounds[id]?.volume ?? 0.5;
             const { color, glow } = getAccent(id);
-            const label = id.replace(/\.[^.]+$/, '').toUpperCase().slice(0, 6);
+            
+            const { currentLofiTrackIndex } = usePreferencesStore.getState();
+            const activeTrack = LOFI_PLAYLIST[currentLofiTrackIndex || 0] || LOFI_PLAYLIST[0];
+            const label = id === 'lofi' && isPlaying
+              ? activeTrack.title.toUpperCase().slice(0, 8)
+              : id.replace(/\.[^.]+$/, '').toUpperCase().slice(0, 6);
 
             return (
               <div key={id} className="flex flex-col items-center gap-2 shrink-0 pb-1" style={{ minWidth: '64px' }}>

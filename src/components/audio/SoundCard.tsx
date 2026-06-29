@@ -10,7 +10,10 @@
  * - Cleaner typography and layout
  */
 import { useTranslation } from 'react-i18next';
-import { Trash2 } from 'lucide-react';
+import { Trash2, SkipForward, SkipBack, ChevronDown } from 'lucide-react';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
+import { LOFI_PLAYLIST } from '@/lib/lofiPlaylist';
+import { AmbientSoundEngine } from '@/lib/audioEngine';
 
 // ─── Emoji / Style helpers ─────────────────────────────────────────────────────
 
@@ -98,6 +101,24 @@ export function SoundCard({
   const emoji = getEmojiFromName(id);
   const label = isCustom ? id.replace(/\.[^.]+$/, '') : t(`audio.${id}`);
 
+  const { currentLofiTrackIndex, setCurrentLofiTrackIndex } = usePreferencesStore();
+  const activeTrack = LOFI_PLAYLIST[currentLofiTrackIndex || 0] || LOFI_PLAYLIST[0];
+
+  const handleTrackChange = async (newIndex: number) => {
+    setCurrentLofiTrackIndex(newIndex);
+    if (isPlaying) {
+      const engine = AmbientSoundEngine.getInstance();
+      await engine.stop('lofi');
+      setTimeout(async () => {
+        try {
+          await engine.play('lofi', volume);
+        } catch (e) {
+          console.error(e);
+        }
+      }, 50);
+    }
+  };
+
   return (
     <article
       aria-label={label}
@@ -178,6 +199,54 @@ export function SoundCard({
         </span>
         {isPlaying && <WaveformBars color={styles.color} />}
       </div>
+
+      {/* Lofi Track Switcher Control */}
+      {id === 'lofi' && (
+        <div className="w-full flex flex-col items-center gap-1.5 mt-1 border-t border-white/5 pt-2">
+          {/* Active Track Title */}
+          <span className="text-[10px] font-medium text-muted-foreground truncate max-w-[120px] text-center" title={activeTrack.title}>
+            {isPlaying ? activeTrack.title : t('audio.lofiPlaylist', { defaultValue: 'Lofi Playlist' })}
+          </span>
+          
+          {/* Controls: Prev, Track Select, Next */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleTrackChange((currentLofiTrackIndex - 1 + LOFI_PLAYLIST.length) % LOFI_PLAYLIST.length)}
+              disabled={isLoading}
+              className="p-1 rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              title="Previous Track"
+            >
+              <SkipBack size={13} />
+            </button>
+
+            {/* Dropdown Track Select */}
+            <div className="relative flex items-center">
+              <select
+                value={currentLofiTrackIndex}
+                onChange={(e) => handleTrackChange(parseInt(e.target.value))}
+                disabled={isLoading}
+                className="appearance-none bg-black/30 hover:bg-black/50 text-[9px] font-bold text-muted-foreground hover:text-foreground px-2 py-0.5 pe-4 rounded border border-white/5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary select-none max-w-[70px] truncate"
+              >
+                {LOFI_PLAYLIST.map((t, idx) => (
+                  <option key={t.id} value={idx} className="bg-neutral-900 text-foreground">
+                    {idx + 1}. {t.title}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={8} className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground" />
+            </div>
+
+            <button
+              onClick={() => handleTrackChange((currentLofiTrackIndex + 1) % LOFI_PLAYLIST.length)}
+              disabled={isLoading}
+              className="p-1 rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              title="Next Track"
+            >
+              <SkipForward size={13} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Volume slider — always visible when playing */}
       <div

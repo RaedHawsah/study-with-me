@@ -41,6 +41,7 @@ interface PreferencesState {
   sounds: Record<string, SoundState>;
   customSoundIds: string[];
   showFloatingAudioDock: boolean;
+  currentLofiTrackIndex: number;
 
   // Global Admin Settings
   globalBackgrounds: Record<string, string>;
@@ -60,6 +61,7 @@ interface PreferencesState {
   setCustomSoundIds: (ids: string[]) => void;
   setCustomBackgrounds: (filenames: string[]) => void;
   setShowFloatingAudioDock: (show: boolean) => Promise<void>;
+  setCurrentLofiTrackIndex: (index: number) => void;
   clearStore: () => void;
   _saveGuestPreferences: () => void;
 }
@@ -80,6 +82,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   customSoundIds: [],
   showFloatingAudioDock: true,
   globalBackgrounds: {},
+  currentLofiTrackIndex: 0,
 
   _saveGuestPreferences: () => {
     try {
@@ -116,6 +119,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
       // For Guests: load from localStorage if exists
       try {
         const local = localStorage.getItem('guest_preferences');
+        const storedLofi = localStorage.getItem('swm_lofi_track_index');
         if (local) {
           const parsed = JSON.parse(local);
           set({
@@ -125,6 +129,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
             backgroundValue: parsed.backgroundValue || get().backgroundValue,
             showFloatingAudioDock: parsed.showFloatingAudioDock ?? get().showFloatingAudioDock,
             sounds: parsed.sounds || get().sounds,
+            currentLofiTrackIndex: storedLofi ? (parseInt(storedLofi, 10) || 0) : 0,
           });
           return;
         }
@@ -154,6 +159,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
       // Override logic: Global Admin Bg > User Setting > Theme Default
       const finalBg = globalBackgrounds[validThemeId] || s.backgroundValue || COLOR_PRESETS[validThemeId as ColorPresetId].defaultBackground;
 
+      const storedLofi = localStorage.getItem('swm_lofi_track_index');
       set({
         colorPresetId: validThemeId,
         timerShape: s.timerShape || 'circular',
@@ -163,7 +169,8 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
         sounds: {
           ...get().sounds,
           ...(s.audio?.volumes || {})
-        }
+        },
+        currentLofiTrackIndex: storedLofi ? (parseInt(storedLofi, 10) || 0) : 0,
       });
     }
   },
@@ -392,6 +399,13 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   setCustomSoundIds: (ids) => set({ customSoundIds: ids }),
   setCustomBackgrounds: (filenames) => set({ customBackgrounds: filenames }),
   
+  setCurrentLofiTrackIndex: (index) => {
+    set({ currentLofiTrackIndex: index });
+    try {
+      localStorage.setItem('swm_lofi_track_index', String(index));
+    } catch {}
+  },
+
   setShowFloatingAudioDock: async (show) => {
     set({ showFloatingAudioDock: show });
     try {

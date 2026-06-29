@@ -82,6 +82,22 @@ export class AmbientSoundEngine {
    * - Custom filenames (with extension) → try /audio/custom/filename first
    */
   private getPathCandidates(id: string): string[] {
+    if (id.startsWith('http://') || id.startsWith('https://')) {
+      return [id];
+    }
+    if (id === 'lofi') {
+      try {
+        const { LOFI_PLAYLIST } = require('@/lib/lofiPlaylist');
+        const { usePreferencesStore } = require('@/store/usePreferencesStore');
+        const index = usePreferencesStore.getState().currentLofiTrackIndex || 0;
+        const track = LOFI_PLAYLIST[index];
+        if (track) {
+          return [track.url];
+        }
+      } catch (e) {
+        console.warn('Failed to resolve lofi playlist candidates:', e);
+      }
+    }
     const hasExtension = /\.[a-z0-9]+$/i.test(id);
     if (hasExtension) {
       // Custom uploaded file
@@ -104,9 +120,17 @@ export class AmbientSoundEngine {
   // ── Fetch Helper ───────────────────────────────────────────────────────────
 
   private async fetchAudioBuffer(id: string): Promise<ArrayBuffer | null> {
+    let cacheKey = id;
+    if (id === 'lofi') {
+      try {
+        const { usePreferencesStore } = require('@/store/usePreferencesStore');
+        const index = usePreferencesStore.getState().currentLofiTrackIndex || 0;
+        cacheKey = `lofi_${index}`;
+      } catch {}
+    }
     // Use raw cache first (avoids re-fetch)
-    if (this.rawCache.has(id)) {
-      return this.rawCache.get(id)!.slice(0); // slice to get a fresh copy for decoding
+    if (this.rawCache.has(cacheKey)) {
+      return this.rawCache.get(cacheKey)!.slice(0); // slice to get a fresh copy for decoding
     }
 
     const candidates = this.getPathCandidates(id);
@@ -115,7 +139,7 @@ export class AmbientSoundEngine {
         const res = await fetch(path);
         if (!res.ok) continue;
         const buf = await res.arrayBuffer();
-        this.rawCache.set(id, buf);
+        this.rawCache.set(cacheKey, buf);
         return buf.slice(0);
       } catch { /* try next */ }
     }
@@ -130,7 +154,15 @@ export class AmbientSoundEngine {
    */
   async preload(id: string): Promise<void> {
     if (typeof window === 'undefined') return;
-    if (this.rawCache.has(id) || this.bufferCache.has(id)) return;
+    let cacheKey = id;
+    if (id === 'lofi') {
+      try {
+        const { usePreferencesStore } = require('@/store/usePreferencesStore');
+        const index = usePreferencesStore.getState().currentLofiTrackIndex || 0;
+        cacheKey = `lofi_${index}`;
+      } catch {}
+    }
+    if (this.rawCache.has(cacheKey) || this.bufferCache.has(cacheKey)) return;
 
     // Fire-and-forget background fetch
     this.fetchAudioBuffer(id).catch(() => {/* silent */});
@@ -138,6 +170,15 @@ export class AmbientSoundEngine {
 
   async play(id: string, volume: number): Promise<void> {
     if (typeof window === 'undefined') return;
+
+    let cacheKey = id;
+    if (id === 'lofi') {
+      try {
+        const { usePreferencesStore } = require('@/store/usePreferencesStore');
+        const index = usePreferencesStore.getState().currentLofiTrackIndex || 0;
+        cacheKey = `lofi_${index}`;
+      } catch {}
+    }
 
     this.stopRequests.delete(id);
 
@@ -148,8 +189,8 @@ export class AmbientSoundEngine {
     }
 
     // If a play is already in flight, wait for it
-    if (this.pendingPlay.has(id)) {
-      await this.pendingPlay.get(id);
+    if (this.pendingPlay.has(cacheKey)) {
+      await this.pendingPlay.get(cacheKey);
       if (this.channels.has(id)) {
         this.setVolume(id, volume);
       }
@@ -159,7 +200,7 @@ export class AmbientSoundEngine {
     const playPromise = (async () => {
       try {
         // Get or decode AudioBuffer
-        let audioBuffer = this.bufferCache.get(id);
+        let audioBuffer = this.bufferCache.get(cacheKey);
 
         if (!audioBuffer) {
           const rawBuf = await this.fetchAudioBuffer(id);
@@ -171,7 +212,7 @@ export class AmbientSoundEngine {
           // always called after a user gesture (click/tap on a SoundCard).
           const ctx = await this.getCtx();
           audioBuffer = await ctx.decodeAudioData(rawBuf);
-          this.bufferCache.set(id, audioBuffer);
+          this.bufferCache.set(cacheKey, audioBuffer);
         }
 
         // Check if stop was requested while we were loading
