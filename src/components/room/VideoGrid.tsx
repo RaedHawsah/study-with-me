@@ -8,6 +8,18 @@ import { Track } from 'livekit-client';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
 
+function getFlagEmoji(countryCode: string) {
+  try {
+    const codePoints = (countryCode || 'SA')
+      .toUpperCase()
+      .split('')
+      .map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  } catch {
+    return '🇸🇦';
+  }
+}
+
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
   const { t } = useTranslation('common');
   // Read self timer state to prevent parent from re-rendering every second
@@ -194,16 +206,19 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             ) : (
               peer.name?.charAt(0) || '?'
             )}
-            <div className={`
-              absolute bottom-0.5 end-0.5 w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-card/60 transition-colors duration-300
-              ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
-            `} />
+            <div 
+              className="absolute -bottom-1 -end-1 w-5.5 h-5.5 md:w-6.5 md:h-6.5 rounded-full border-2 border-card bg-black/45 backdrop-blur-sm flex items-center justify-center text-[11px] md:text-sm select-none shadow-md z-10"
+              title={isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA')}
+            >
+              {getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'))}
+            </div>
           </div>
 
           <div className="text-center mt-1 pointer-events-auto max-w-[90%]">
-            <h4 className="font-black text-xs sm:text-sm md:text-base tracking-tight truncate text-white drop-shadow-md">
-              {peer.name || 'Anonymous'}
-              {isMe && <span className="ms-1 opacity-70 text-[8px] md:text-[9px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
+            <h4 className="font-black text-xs sm:text-sm md:text-base tracking-tight truncate text-white drop-shadow-md flex items-center justify-center gap-1.5">
+              <span>{peer.name || 'Anonymous'}</span>
+              {isMe && <span className="opacity-70 text-[8px] md:text-[9px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
+              <span className="text-xs sm:text-sm">{getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'))}</span>
             </h4>
             <p className={`text-[10px] md:text-[11px] font-bold uppercase tracking-wide mt-0.5 drop-shadow-md transition-colors duration-300 ${
               isPaused ? 'text-yellow-300' : (isFocus ? 'text-white' : isBreak ? 'text-green-300' : 'text-white/60')
@@ -219,9 +234,10 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
       <div className={`mt-auto z-10 w-full`}>
         {hasVideo && (
           <div className="text-center mb-2 md:mb-4">
-            <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto">
-              {peer.name || 'Anonymous'}
-              {isMe && <span className="ms-1 opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
+            <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto flex items-center justify-center gap-1.5">
+              <span>{peer.name || 'Anonymous'}</span>
+              {isMe && <span className="opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
+              <span className="text-sm md:text-base">{getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'))}</span>
             </h4>
             <p className={`text-[11px] md:text-xs font-bold uppercase tracking-wide mt-0.5 drop-shadow-md transition-colors duration-300 ${
               isPaused ? 'text-yellow-300' : (isFocus ? 'text-white' : isBreak ? 'text-green-300' : 'text-white/60')

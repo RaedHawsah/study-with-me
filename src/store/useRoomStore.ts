@@ -25,6 +25,7 @@ export interface RoomPeer {
   remainingSeconds?: number;
   timerStatus?: 'running' | 'paused' | 'idle';
   timerLastUpdated?: number;
+  countryCode?: string;
 }
 
 export interface ChatMessage {
@@ -69,6 +70,7 @@ const INITIAL_STATE = {
   unreadCount: 0,
 
   errorMessage: null as string | null,
+  countryCode: 'SA' as string,
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -85,6 +87,7 @@ export interface RoomStore extends RoomState {
   setMyName:          (n: string)     => void;
   setLeaderId:        (id: string | null) => void;
   setSyncedTimerState:(s: SyncedTimerState | null) => void;
+  setCountryCode:     (code: string)  => void;
 
   addPeer:         (peer: RoomPeer)                          => void;
   removePeer:      (id: string)                              => void;
@@ -129,6 +132,7 @@ export const useRoomStore = create<RoomStore>()(
       setMyName:           (myName)            => set({ myName }),
       setLeaderId:         (leaderId)          => set({ leaderId }),
       setSyncedTimerState: (syncedTimerState)  => set({ syncedTimerState }),
+      setCountryCode:      (countryCode)      => set({ countryCode }),
 
       addPeer: (peer) =>
         set((s) => ({ peers: { ...s.peers, [peer.id]: peer } })),
@@ -188,6 +192,7 @@ export const useRoomStore = create<RoomStore>()(
         myName: state.myName,
         timerSync: state.timerSync,
         leaderId: state.leaderId,
+        countryCode: state.countryCode,
       }),
     }
   )

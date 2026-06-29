@@ -16,8 +16,18 @@ export function RoomSessionManager() {
   const actionsRef = useRef({ joinRoom, createRoom, leaveRoom, sendMessage });
   actionsRef.current = { joinRoom, createRoom, leaveRoom, sendMessage };
 
-  // 1. Reconnect on mount if we have a persisted session
+  // 1. Reconnect on mount if we have a persisted session, and fetch geo location country code
   useEffect(() => {
+    // Fetch country code
+    fetch('/api/geo')
+      .then(res => res.json())
+      .then(data => {
+        if (data.country) {
+          useRoomStore.getState().setCountryCode(data.country);
+        }
+      })
+      .catch(err => console.warn('Failed to get geo info:', err));
+
     const { status, roomId, myName, roomType, roomCode, myId } = useRoomStore.getState();
     
     if (status === 'joined' && roomId) {

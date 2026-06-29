@@ -69,6 +69,7 @@ export function useStudyRoom() {
         micOn: roomStore.micOn,
         cameraStreamId: roomStore.localStream?.id || null,
         screenStreamId: roomStore.screenStream?.id || null,
+        countryCode: roomStore.countryCode || 'SA',
         last_updated: new Date().toISOString()
       });
     }, 500);
@@ -292,7 +293,8 @@ export function useStudyRoom() {
               timerStatus: userState.timerStatus as RoomPeer['timerStatus'],
               timerLastUpdated: Date.now(), // Override with local timestamp to prevent clock skew
               stream: null, // Managed by LiveKit
-              screenStream: null // Managed by LiveKit
+              screenStream: null, // Managed by LiveKit
+              countryCode: (userState as any).countryCode || 'SA'
             };
           });
 
