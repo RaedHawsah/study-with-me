@@ -397,6 +397,7 @@ export function MovingWallpaper() {
         >
           {isVideo ? (
             <video
+              key={resolvedSrc}
               src={resolvedSrc}
               autoPlay
               muted
@@ -407,6 +408,7 @@ export function MovingWallpaper() {
             />
           ) : (
             <img
+              key={resolvedSrc}
               src={resolvedSrc}
               alt=""
               onError={() => setVideoError(true)}
