@@ -8,16 +8,18 @@ import { Track } from 'livekit-client';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
 
-function getFlagEmoji(countryCode: string) {
-  try {
-    const codePoints = (countryCode || 'SA')
-      .toUpperCase()
-      .split('')
-      .map(char => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints);
-  } catch {
-    return '🇸🇦';
-  }
+function getFlagEmoji(countryCode: string, className: string = "w-4 h-3 rounded-[1px] shadow-sm") {
+  const code = (countryCode || 'SA').toLowerCase();
+  return (
+    <img 
+      src={`https://flagcdn.com/w40/${code}.png`}
+      alt={countryCode}
+      className={`object-cover ${className}`}
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).style.display = 'none';
+      }}
+    />
+  );
 }
 
 function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, isMe?: boolean, isScreen?: boolean }) {
@@ -207,10 +209,10 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
               peer.name?.charAt(0) || '?'
             )}
             <div 
-              className="absolute -bottom-1 -end-1 w-5.5 h-5.5 md:w-6.5 md:h-6.5 rounded-full border-2 border-card bg-black/45 backdrop-blur-sm flex items-center justify-center text-[11px] md:text-sm select-none shadow-md z-10"
+              className="absolute -bottom-1 -end-1 w-5.5 h-5.5 md:w-6.5 md:h-6.5 rounded-full border-2 border-card bg-card overflow-hidden shadow-md z-10 flex items-center justify-center"
               title={isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA')}
             >
-              {getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'))}
+              {getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'), "w-full h-full rounded-full")}
             </div>
           </div>
 
@@ -218,7 +220,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             <h4 className="font-black text-xs sm:text-sm md:text-base tracking-tight truncate text-white drop-shadow-md flex items-center justify-center gap-1.5">
               <span>{peer.name || 'Anonymous'}</span>
               {isMe && <span className="opacity-70 text-[8px] md:text-[9px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
-              <span className="text-xs sm:text-sm">{getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'))}</span>
+              {getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'), "w-4 h-2.5 rounded-[1px] shadow-sm shrink-0")}
             </h4>
             <p className={`text-[10px] md:text-[11px] font-bold uppercase tracking-wide mt-0.5 drop-shadow-md transition-colors duration-300 ${
               isPaused ? 'text-yellow-300' : (isFocus ? 'text-white' : isBreak ? 'text-green-300' : 'text-white/60')
@@ -237,7 +239,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
             <h4 className="font-black text-sm md:text-lg tracking-tight truncate w-[90%] text-white drop-shadow-md mx-auto flex items-center justify-center gap-1.5">
               <span>{peer.name || 'Anonymous'}</span>
               {isMe && <span className="opacity-70 text-[8px] md:text-[10px] uppercase">{t('room.you', { defaultValue: '(You)' })}</span>}
-              <span className="text-sm md:text-base">{getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'))}</span>
+              {getFlagEmoji(isMe ? (useRoomStore.getState().countryCode || 'SA') : (peer.countryCode || 'SA'), "w-5 h-3.5 rounded-[2px] shadow-sm shrink-0")}
             </h4>
             <p className={`text-[11px] md:text-xs font-bold uppercase tracking-wide mt-0.5 drop-shadow-md transition-colors duration-300 ${
               isPaused ? 'text-yellow-300' : (isFocus ? 'text-white' : isBreak ? 'text-green-300' : 'text-white/60')
