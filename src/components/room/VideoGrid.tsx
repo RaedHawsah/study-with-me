@@ -124,7 +124,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
 
   return (
     <div ref={containerRef} className={`
-      w-full relative group overflow-hidden transition-all duration-500
+      w-full relative group overflow-hidden transition-all duration-200
       flex flex-col shadow-xl
       ${isFullscreen ? 'aspect-auto h-screen rounded-none border-none p-6 md:p-10 z-[100]' : 'aspect-[3/4] sm:aspect-square md:aspect-[4/3] rounded-3xl border p-3 md:p-4'}
       ${isMe ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'bg-card/40 backdrop-blur-md border-white/5 hover:border-white/10'}
@@ -135,7 +135,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
         <div className="absolute inset-0 z-0 bg-black">
           <VideoTrack
             trackRef={videoTrackRef}
-            className={`w-full h-full object-cover transition-opacity duration-700 ${isScreen ? 'object-contain' : ''}`}
+            className={`w-full h-full object-cover transition-opacity duration-200 ${isScreen ? 'object-contain' : ''}`}
           />
           {!isMe && !isScreen && audioTrackRef && (
              <AudioTrack trackRef={audioTrackRef} />
@@ -150,7 +150,7 @@ function ParticipantCard({ peer, isMe = false, isScreen = false }: { peer: any, 
 
       {!hasVideo && (
         <div className={`
-          absolute -inset-10 opacity-10 blur-3xl transition-opacity duration-1000
+          absolute -inset-10 opacity-10 blur-3xl transition-opacity duration-300
           ${isPaused ? 'bg-yellow-500' : (isFocus ? 'bg-primary' : isBreak ? 'bg-green-500' : 'bg-muted')}
         `} />
       )}

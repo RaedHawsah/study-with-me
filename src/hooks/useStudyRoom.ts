@@ -72,7 +72,7 @@ export function useStudyRoom() {
         countryCode: roomStore.countryCode || 'SA',
         last_updated: new Date().toISOString()
       });
-    }, 500);
+    }, 50);
   }, [totalXp, currentStreak]);
 
 
@@ -103,7 +103,7 @@ export function useStudyRoom() {
     };
 
     if (peerUpdateTimeoutRef.current) clearTimeout(peerUpdateTimeoutRef.current);
-    peerUpdateTimeoutRef.current = setTimeout(sendUpdate, 500);
+    peerUpdateTimeoutRef.current = setTimeout(sendUpdate, 50);
 
     const interval = setInterval(sendUpdate, 10000);
     return () => clearInterval(interval);
