@@ -69,7 +69,7 @@ const ADMIN_EMAIL = '55raed55@gmail.com';
 // ─── Store ────────────────────────────────────────────────────────────────────
 
 export const usePreferencesStore = create<PreferencesState>((set, get) => ({
-  colorPresetId: 'midnight',
+  colorPresetId: 'matcha',
   timerShape: 'circular',
   backgroundType: 'default',
   backgroundValue: '',
@@ -149,7 +149,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
     if (!error && data?.settings) {
       const s = data.settings;
       const { PRESET_ORDER } = require('@/lib/themes');
-      const validThemeId = PRESET_ORDER.includes(s.theme) ? s.theme : 'midnight';
+      const validThemeId = PRESET_ORDER.includes(s.theme) ? s.theme : 'matcha';
 
       // Override logic: Global Admin Bg > User Setting > Theme Default
       const finalBg = globalBackgrounds[validThemeId] || s.backgroundValue || COLOR_PRESETS[validThemeId as ColorPresetId].defaultBackground;
@@ -411,7 +411,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   },
 
   clearStore: () => set({
-    colorPresetId: 'midnight',
+    colorPresetId: 'matcha',
     timerShape: 'circular',
     backgroundType: 'default',
     backgroundValue: '',
